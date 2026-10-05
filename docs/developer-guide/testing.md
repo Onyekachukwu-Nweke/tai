@@ -1,0 +1,52 @@
+# Testing
+
+tai verification should establish that learners can study from their own material, inspect supporting sources, retain progress, and recover from interruptions. Test behavior and important failure modes rather than mirroring implementation details.
+
+## Test layers
+
+- **Unit:** deterministic review rules, session budgeting, activity validation, file limits, attempt outcomes, and error mapping. Inject clocks and provider clients.
+- **Contract:** input/output schemas, source-reference validation, and compatibility of persisted records and offline packs.
+- **Integration:** extraction, storage, ownership, deletion, generation validation, duplicate submissions, and interrupted saves using disposable data and fake providers.
+- **End-to-end:** upload → preview → concepts → activity → feedback → saved progress → return. Include mobile, keyboard, reload, and offline behavior.
+- **Content review:** inspect generated questions, explanations, rubrics, and practical tasks against actual source material. Passing a schema check does not establish educational correctness.
+
+Use the smallest layer that demonstrates the behavior, adding broader tests for boundaries and complete journeys. Documentation-only changes generally need link and consistency checks, not application tests.
+
+## Required scenarios by feature
+
+| Area | Verification |
+| --- | --- |
+| Upload and extraction | Supported PDF/TXT; empty, encrypted, unreadable, scanned, oversized, and unsupported files; actionable errors; existing usable space survives failure |
+| Source grounding | Stable references survive extraction; invented citation IDs and malformed AI output are rejected; insufficient evidence is surfaced |
+| Activities | Answers hidden initially; correct, incorrect, uncertain, hinted, revealed, skipped, and flagged outcomes handled distinctly |
+| Review and sessions | Configured intervals advance only on independent success; unsuccessful checks reset appropriately; estimates fit budget; overrides work |
+| Return flow | Simulated five-day gap yields a manageable recovery session without multiplying overdue work |
+| Persistence | Reload preserves submitted work; failed saves preserve the answer; retries do not duplicate attempts or unnecessary AI calls |
+| Offline packs | Explicitly saved pack works after offline reload; local progress persists; storage errors are visible; online-only operations are clearly unavailable |
+| Privacy | Cross-study-space access is denied; secrets stay server-side; logs omit raw learner material; deletion removes application-controlled source files and dependent records |
+| Accessibility | Keyboard operation, visible focus, accessible names, non-color status cues, readable list alternative, untimed questions, and mobile layout |
+| Resources and tasks | Links exist and content is free to access; access conditions are disclosed; tasks include self-check criteria and clear tool/time requirements |
+
+The PRD proposes 5, 15, and 30 minute presets but also asks for a ten-minute recovery demonstration. Resolve and document how that demo budget is provided before claiming that acceptance scenario passes.
+
+## Test data and AI behavior
+
+Use synthetic or explicitly permitted non-sensitive PDF/TXT fixtures. Include extraction limitations such as tables or equations where relevant. Never commit private learner materials, credentials, or real answers.
+
+Use fake AI responses for repeatable automated checks, including malformed output, invented references, contradictions, and provider failure. Keep any live-provider evaluation separate and document its configuration and costs. Record model and prompt versions for content audits.
+
+For the demo audit, follow PRD section 13: review at least 20 generated items across two subject areas, verify each source reference, and resolve known critical errors in demo items. Report the actual audit size and findings rather than claiming unperformed validation.
+
+## Tooling and file-size checks
+
+No supported test runner or executable checks are configured yet. When implementation tooling is introduced, document exact commands here for formatting, linting, type checks where applicable, authored-file length, and the relevant test suites. Local and CI checks should use the same underlying tools.
+
+The file-size check must fail above 350 physical lines for human- and AI-written software code files. Apply the scope and generated-code exemption in [code-hygiene.md](code-hygiene.md#file-size-and-responsibility). Generated exclusions must be identifiable and reproducible; AI authorship alone is never an exclusion.
+
+## Reliability and reporting
+
+Avoid arbitrary sleeps and blind retries. Use fake clocks, controlled failures, bounded waits, and isolated storage. Treat flaky checks as defects and report any skipped or quarantined coverage explicitly.
+
+For each pull request, state commands and scenarios actually run, their results, and omissions. Coverage percentages alone do not prove correctness. Check deterministic rules and data boundaries directly.
+
+Measure the PRD targets on representative material and a stated device: first small pack within 60 seconds and saved sessions opening within two seconds. Separate extraction and generation measurements. These are prototype targets, not established performance guarantees.
