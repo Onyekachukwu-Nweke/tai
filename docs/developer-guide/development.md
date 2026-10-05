@@ -1,6 +1,6 @@
 # Development
 
-Build tai against [PRD v0.2](../../PRD_v2.md), including its confirmed hackathon decisions. The repository currently contains documentation; framework, AI provider, storage, hosting, and executable setup commands remain implementation choices.
+Build tai against [PRD v0.2](../../PRD_v2.md), including its confirmed hackathon decisions. The repository currently contains documentation; the [roadmap](../roadmap/README.md) proposes a TypeScript web application with AWS Bedrock and serverless storage/hosting. Exact versions, account/model access, and deployment feasibility must pass M0; executable setup commands do not exist yet.
 
 ## Product boundaries
 

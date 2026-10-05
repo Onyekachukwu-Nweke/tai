@@ -49,6 +49,10 @@ Split by responsibility; do not compress formatting or move executable logic int
 - Verify changed authored code files meet the 350-line limit. Use the repository file-size check when available; otherwise count lines directly. Split oversized files before completion.
 - Never invent successful test results, content-audit findings, pilot outcomes, or performance measurements.
 
+## Roadmap
+
+Use [docs/roadmap/README.md](docs/roadmap/README.md) to scope implementation milestones. Its technology choices are a proposed baseline; account funding, exact model/Region access, and live capability remain subject to the documented M0 checks. Report acceptance evidence before marking a milestone complete.
+
 ## Documentation index
 
 - [Current product requirements](PRD_v2.md)
