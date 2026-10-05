@@ -10,14 +10,14 @@ Development guidelines for TAI:
 - [Code review](review.md): review priorities and acceptance checks.
 - [Testing](testing.md): test layers, learner scenarios, and content audits.
 
-This guide translates the [v0.2 PRD](../../PRD_v2.md) into initial development guidelines. Refer to the PRD for full acceptance criteria; this guide does not replace them. Framework, AI provider, storage, and hosting choices remain open.
+This guide translates the [v0.2 PRD](../../PRD_v2.md) into initial development guidelines. Refer to the PRD for full acceptance criteria; this guide does not replace them. The [roadmap](../roadmap/README.md) records the local-first baseline: browser extraction, IndexedDB as the canonical learner store, and a stateless server-side Bedrock gateway. Exact deployment and model access remain subject to M0 verification.
 
 ## Build within the agreed scope
 
 - Prioritize the P0 learner journey: upload material, inspect extracted content, select concepts, complete activities, receive feedback, save progress, and return to study.
 - Accept text-based PDF and TXT files only, with one material per study space. Use English for the hackathon interface and generation.
 - Keep proposed limits configurable: 10 MB uploads, 50 pages per PDF, review intervals of 1, 3, 7, and 14 days, and a three-day return-flow threshold.
-- Keep OCR, additional formats and languages, cross-device synchronization, and offline AI generation outside the hackathon scope.
+- Keep OCR, additional formats and languages, and cross-device synchronization outside the hackathon scope. Full offline mode is deferred to P1 after the P0 learning loop.
 
 Source: PRD sections 5, 7, 9, and 16–17.
 
@@ -33,9 +33,10 @@ Source: FR-01–04 and PRD sections 10–11.
 
 ## Separate AI generation from application rules
 
-- Use AI for source-grounded concepts, explanations, questions, rubrics, practical tasks, and suitable resource matching.
-- Keep file validation, access control, persistence, deletion, session budgets, review dates, and exact multiple-choice grading deterministic.
-- Validate structured AI responses and source references, bound retries, and provide a recoverable failure state.
+- Follow a fixed read → write → grade → targeted-follow-up teaching pipeline, including P0 scenario and calculation questions.
+- Use AI for source-grounded concepts, explanations, questions, rubrics, working-step feedback with uncertainty, practical tasks, and suitable resource matching.
+- Keep file validation, local study-space isolation, persistence, deletion, session budgets, review dates, exact multiple-choice grading, and numeric tolerance/unit checks against reviewed keys deterministic. Render LaTeX with safely configured KaTeX; never execute generated expressions using raw `eval`.
+- Validate structured AI responses and source references before rendering complete streamed items. Use explicit bounded retries after failures; do not retry automatically on reconnect.
 - Keep AI credentials server-side and use a replaceable provider adapter.
 - Recommend checked, freely accessible resource links; never invent URLs. Automated Google or YouTube integrations are not required for the MVP.
 
@@ -53,13 +54,13 @@ Source: FR-03–07 and PRD section 12.
 
 ## Design for access and data control
 
-- Make explicitly saved packs and local progress usable offline after reload. Clearly identify operations that require connectivity and report storage failures.
+- Keep original PDF/TXT files, extracted chunks, self-contained packs, drafts, and progress in IndexedDB. Report quota and save failures, and warn that clearing browser data removes this device’s learning history. Full offline mode (FR-10) is deferred to P1; do not build service-worker caching or offline-specific controls.
 - Provide a readable list alongside the concept map, keyboard access, visible focus, screen-reader labels, readable contrast, and untimed activities.
-- Support a single-device guest flow and disclose AI processing before sending material or answers to the provider.
-- Retain uploaded files for revisiting until the learner deletes them. Deleting a study space must remove its application-controlled source files, extracted content, activities, and attempts.
+- Support a single-device flow without accounts or a learner database. Disclose AI processing before sending bounded selected text or answers through the stateless Bedrock gateway; original files stay in the browser.
+- Retain original files locally for revisiting until the learner deletes them. Delete all dependent local records with the study space, cancel related requests where possible, and discard late responses so deletion cannot recreate data.
 - Avoid logging raw documents or answers by default. Enforce isolation between learners' study spaces.
 
-Source: FR-10–11 and PRD section 8.
+Source: FR-11 and PRD sections 8, 12, and 16; FR-10 is deferred.
 
 ## Deliver and verify working flows
 
@@ -67,6 +68,6 @@ Follow the PRD milestones: source pipeline, learning loop, continuity, applicati
 
 For each change, identify the relevant PRD requirement, check its acceptance criteria, and document what was verified and any remaining limitations. Use automated checks for deterministic rules and data behavior, and learner walkthroughs and content review for generated activities and usability.
 
-Before the demo, verify supported and rejected uploads, valid source links, correct and incorrect answers, hints and reveals, interrupted saves, duplicate submissions, recovery after a gap, offline reload, deletion, mobile layouts, and keyboard navigation. Audit generated demo content as described in PRD section 13. Report performance targets and pilot outcomes as measured results only after validation.
+Before the demo, verify supported and rejected uploads, valid source links, correct and incorrect answers, hints and reveals, interrupted saves, duplicate submissions, recovery after a gap, network-failure recovery, local storage quota failures, deletion, mobile layouts, and keyboard navigation. Audit generated demo content as described in PRD section 13. Report performance targets and pilot outcomes as measured results only after validation.
 
 Add setup commands, architecture decisions, and coding conventions here as implementation choices are made.

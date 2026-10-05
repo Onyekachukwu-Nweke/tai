@@ -4,17 +4,17 @@ All rows are **planned / unverified**. This matrix assigns ownership of requirem
 
 | Requirement | Delivery | Evidence required before completion |
 | --- | --- | --- |
-| FR-01 Ingestion | M1 | PDF/TXT valid and invalid fixtures, 10 MB/50-page boundaries, server validation, stable locations, extraction preview, retry preserves usable state |
+| FR-01 Ingestion | M1 | PDF/TXT valid and invalid fixtures, 10 MB/50-page boundaries in the browser, no source upload to the server, stable locations, extraction preview, retry preserves usable state |
 | FR-02 Concepts | M2 | 5–15 concepts when supported, selected sections, source evidence, editable labels with unchanged IDs, suggested edges, map/list parity, no forced prerequisites |
-| FR-03 Activities | M2 | At least 3 questions/2 selected concepts when supported; prompt/type/IDs/answer or rubric/explanation/source/duration fields; hidden answers; one supported MCQ answer with plausible, unambiguous alternatives; independent reveal/skip/hint state; uncertain grading; flagged exclusion |
+| FR-03 Activities | M2 | 3–5 question self-contained packs across 2 selected concepts when supported; prompt/type/IDs/answer or rubric/explanation/source/duration fields; hidden answers; one supported MCQ answer with plausible, unambiguous alternatives; source-grounded scenarios with rubric feedback; calculation items with independently checked keys, local tolerance/unit checks, safe KaTeX rendering and separate working feedback; independent reveal/skip/hint state; uncertain grading; flagged exclusion |
 | FR-04 Feedback | M2 | Supported/missing elements and source navigation; source vs supplementary labels; contradictions/uncertainty; challenge without penalty; wrong answer does not prove prerequisite weakness |
 | FR-05 Sessions | M3 | 5/15/30 presets, 10-minute recovery, choice/override, budget-fit estimates, due review plus practice when feasible, selection rationale, durable submissions |
 | FR-06 Evidence/review | M3 | Labels without mastery percentages; independent outcomes/confidence; fake-clock interval tests; hinted/revealed answers do not advance; overrides; heuristic disclosure |
 | FR-07 Return | M3 | Configurable 3-day offer, resume/recovery choices, 5-day simulation, bounded backlog, neutral copy and retained progress |
 | FR-08 Practical tasks | M4 | All task fields; suitable source support; simpler task; tools/cost/connectivity disclosure; feasible free alternative; self-reported completion separate; hazardous-task rejection |
 | FR-09 Resources | M4 | Real checked free URLs; publisher/channel, concept, language, format, access conditions and checked date; relevance reason; no-match; no autoplay/automatic navigation |
-| FR-10 Offline | M3–M4 | Explicit save and atomic completeness; app shell and selected pack survive offline reload; progress persists; free-text pending/self-check; quota failure; no false PDF/external-site caching claim |
-| FR-11 Privacy | M1–M4 | Guest flow, processing disclosure, original retention, all-copy deletion/clear-all, pending offline deletion, no resurrection, credential isolation and no raw-content logs |
+| FR-10 Offline | Deferred (P1) | None for P0. Verify instead that no offline UI or claims ship, and that dropped requests preserve local drafts and progress (FR-05, §12) |
+| FR-11 Privacy | M1–M4 | Guest flow, processing disclosure, local original retention, local deletion/clear-all, cancelled in-flight work and no resurrection from late responses, server-only credentials, no learner payload logging/caching, shared-device disclosure |
 
 ## Remaining PRD sections
 

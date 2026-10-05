@@ -8,15 +8,15 @@ Use lowercase kebab-case with a category prefix:
 
 ```text
 feat/source-linked-activities
-fix/offline-progress-save
-security/study-space-isolation
+fix/interrupted-progress-save
+security/local-space-isolation
 docs/developer-guide
 refactor/review-scheduling
 test/upload-validation
 chore/configure-linting
 ```
 
-Include an issue number when useful, for example `fix/42-offline-progress-save`. Avoid vague names such as `updates`.
+Include an issue number when useful, for example `fix/42-interrupted-progress-save`. Avoid vague names such as `updates`.
 
 ## Lifecycle
 
@@ -33,7 +33,7 @@ Prefer small working increments over long-running integration branches. Keep unf
 
 When configuring hosting, protect `main` against force pushes and deletion, require applicable checks, and use pull-request review where a reviewer is available. These are intended settings, not a claim that protections or CI already exist.
 
-Give source ownership, deletion, credential handling, and schema changes particular review attention. Document any expedited merge and deferred verification so it can be followed up.
+Give local source isolation, deletion, credential handling, and schema changes particular review attention. Document any expedited merge and deferred verification so it can be followed up.
 
 ## Demo and release references
 

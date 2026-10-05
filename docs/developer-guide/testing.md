@@ -5,9 +5,9 @@ tai verification should establish that learners can study from their own materia
 ## Test layers
 
 - **Unit:** deterministic review rules, session budgeting, activity validation, file limits, attempt outcomes, and error mapping. Inject clocks and provider clients.
-- **Contract:** input/output schemas, source-reference validation, and compatibility of persisted records and offline packs.
-- **Integration:** extraction, storage, ownership, deletion, generation validation, duplicate submissions, and interrupted saves using disposable data and fake providers.
-- **End-to-end:** upload → preview → concepts → activity → feedback → saved progress → return. Include mobile, keyboard, reload, and offline behavior.
+- **Contract:** input/output schemas, source-reference validation, and compatibility of persisted local records and self-contained packs.
+- **Integration:** extraction, IndexedDB storage, local study-space isolation, deletion, generation validation, duplicate submissions, and interrupted saves using disposable data and fake providers.
+- **End-to-end:** upload → preview → concepts → activity → feedback → saved progress → return. Include mobile, keyboard, reload, and network-failure recovery.
 - **Content review:** inspect generated questions, explanations, rubrics, and practical tasks against actual source material. Passing a schema check does not establish educational correctness.
 
 Use the smallest layer that demonstrates the behavior, adding broader tests for boundaries and complete journeys. Documentation-only changes generally need link and consistency checks, not application tests.
@@ -19,13 +19,19 @@ Use the smallest layer that demonstrates the behavior, adding broader tests for 
 | Upload and extraction | Supported PDF/TXT; empty, encrypted, unreadable, scanned, oversized, and unsupported files; actionable errors; existing usable space survives failure |
 | Source grounding | Stable references survive extraction; invented citation IDs and malformed AI output are rejected; insufficient evidence is surfaced |
 | Activities | Answers hidden initially; correct, incorrect, uncertain, hinted, revealed, skipped, and flagged outcomes handled distinctly |
+| Teaching pipeline | Read → write → grade → targeted follow-up works for recall, explanation, scenario, and calculation activities; follow-up responds to the observed answer without inventing a weakness |
+| Calculations and notation | Reviewed numeric keys; exact and boundary tolerance cases; equivalent, missing, and incompatible units; malformed/non-finite numbers; ambiguous or incorrect keys yield uncertainty; model working-step feedback matches the rubric; unsafe LaTeX is rejected and valid expressions render in KaTeX without raw evaluation |
 | Review and sessions | Configured intervals advance only on independent success; unsuccessful checks reset appropriately; estimates fit budget; overrides work |
 | Return flow | Simulated five-day gap yields a manageable recovery session without multiplying overdue work |
-| Persistence | Reload preserves submitted work; failed saves preserve the answer; retries do not duplicate attempts or unnecessary AI calls |
-| Offline packs | Explicitly saved pack works after offline reload; local progress persists; storage errors are visible; online-only operations are clearly unavailable |
-| Privacy | Cross-study-space access is denied; secrets stay server-side; logs omit raw learner material; deletion removes application-controlled source files and dependent records |
+| Persistence | IndexedDB retains original files, chunks, packs, drafts, and progress across reloads; quota/transaction errors are visible; failed saves retain the in-memory answer; retries do not duplicate attempts |
+| Network resilience | Dropped or interrupted AI requests preserve the local answer and offer explicit retry; reconnection never automatically replays requests; incomplete streamed items are not exposed |
+| Pack delivery | Self-contained 3–5 question packs include answers/rubrics, explanations, and source excerpts; MCQs grade locally; at most one bounded next-pack prefetch runs during study |
+| Privacy | Local study-space references cannot cross spaces; original files never leave the browser; the stateless gateway accepts only bounded text/answer context; secrets stay server-side and logs omit raw learner material |
+| Deletion and data loss | Local deletion removes original files and dependent records, discards late AI responses, and cannot recreate a deleted space; browser-data-loss disclosure is visible |
 | Accessibility | Keyboard operation, visible focus, accessible names, non-color status cues, readable list alternative, untimed questions, and mobile layout |
 | Resources and tasks | Links exist and content is free to access; access conditions are disclosed; tasks include self-check criteria and clear tool/time requirements |
+
+Full offline mode (FR-10) is deferred to P1. P0 verification does not require service-worker caching, saved-pack offline reload, offline status UI, or grading/deletion replay queues.
 
 The PRD proposes 5, 15, and 30 minute presets but also asks for a ten-minute recovery demonstration. Resolve and document how that demo budget is provided before claiming that acceptance scenario passes.
 
@@ -33,7 +39,7 @@ The PRD proposes 5, 15, and 30 minute presets but also asks for a ten-minute rec
 
 Use synthetic or explicitly permitted non-sensitive PDF/TXT fixtures. Include extraction limitations such as tables or equations where relevant. Never commit private learner materials, credentials, or real answers.
 
-Use fake AI responses for repeatable automated checks, including malformed output, invented references, contradictions, and provider failure. Keep any live-provider evaluation separate and document its configuration and costs. Record model and prompt versions for content audits.
+Use fake AI responses for repeatable automated checks, including malformed output, invented references, contradictions, and provider failure. Keep any live-provider evaluation separate and document its configuration and costs. Record model and prompt versions for content audits. For model selection, compare a smaller and a stronger Bedrock candidate using the same two source documents, prompts, task mix, and review rubric. Prioritize measured grounding, teaching quality, scenario/calculation correctness, and appropriate grading uncertainty; record latency, cost, and verified access/capabilities separately. Do not infer quality or capabilities from a model name.
 
 For the demo audit, follow PRD section 13: review at least 20 generated items across two subject areas, verify each source reference, and resolve known critical errors in demo items. Report the actual audit size and findings rather than claiming unperformed validation.
 
