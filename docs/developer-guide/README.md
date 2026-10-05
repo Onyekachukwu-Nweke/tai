@@ -1,8 +1,9 @@
 # Developer guide
 
-Development guidelines for tai:
+Development guidelines for TAI:
 
 - [Code hygiene](code-hygiene.md): file responsibilities, the 350-line limit, and safe data handling.
+- [Agent workflow](agent-workflow.md): principal engineer, coder, reviewer, and tester roles and handoffs.
 - [Development](development.md): scope, implementation boundaries, and workflow.
 - [Git branching](git-branching.md): branch naming and lifecycle.
 - [Pull requests and commits](pr-commits.md): commit conventions and verification evidence.

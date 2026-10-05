@@ -25,6 +25,12 @@ The hackathon scope supports text-based PDF and TXT uploads, one material per st
 - Maintain keyboard access, visible focus, readable labels, a list alternative to the concept map, and untimed activities.
 - Update affected documentation, schemas, consumers, fixtures, and compatibility checks together.
 
+## Development agents
+
+For substantial implementation work, use the [agent workflow](docs/developer-guide/agent-workflow.md): delegate bounded tasks to the principal engineer, coder, reviewer, and tester as appropriate. The primary agent coordinates ownership, integrates changes, and reports the result. Delegate independent review and verification when useful; small edits do not require every role.
+
+Read the relevant role definition in `.codex/agents/` and pass its instructions explicitly if the environment does not load named agents. Use one writer per file, identify the revision under review, and recheck affected behavior after fixes. Respect runtime concurrency limits and run dependent work in phases. Subagents must not recursively delegate or perform Git publishing actions unless explicitly assigned within user authorization.
+
 ## Code hygiene
 
 Every human- or AI-written software code file must have one cohesive responsibility and **must not exceed 350 physical lines**, including blanks and comments. This covers production code, tests, migrations, build scripts, and executable development scripts.
@@ -48,6 +54,7 @@ Split by responsibility; do not compress formatting or move executable logic int
 - [Current product requirements](PRD_v2.md)
 - [Documentation](docs/README.md)
 - [Developer guide](docs/developer-guide/README.md)
+- [Agent workflow](docs/developer-guide/agent-workflow.md)
 - [Development](docs/developer-guide/development.md)
 - [Code hygiene](docs/developer-guide/code-hygiene.md)
 - [Git branching](docs/developer-guide/git-branching.md)
