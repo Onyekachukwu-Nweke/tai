@@ -1,6 +1,6 @@
 # Delivery plan
 
-Every milestone is **not started**. These work packages define implementation order and evidence; they are not claims of completed work. Use the [acceptance matrix](acceptance-matrix.md) with the full PRD criteria.
+M0 is **in progress**, starting with the local authenticated study-space foundation; M1–M5 are **not started**. No milestone exit gate is complete. These work packages define implementation order and evidence; they are not claims of completed work. Use the [acceptance matrix](acceptance-matrix.md) with the full PRD criteria.
 
 ## M0 — Foundation and feasibility
 

@@ -1,0 +1,5 @@
+# Copy to .dev.vars; never commit populated secrets.
+# Generate a secret with: openssl rand -base64 32
+BETTER_AUTH_SECRET=
+GOOGLE_CLIENT_ID=
+GOOGLE_CLIENT_SECRET=

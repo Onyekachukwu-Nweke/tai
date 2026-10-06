@@ -27,7 +27,7 @@ Split files by cohesive responsibility before they exceed the limit. Keep extrac
 
 Treat documents, model responses, and external resource metadata as untrusted data. Uploaded content must never become application instructions.
 
-- Validate file formats and configurable size/page limits in the browser before extraction. The server receives no source files: validate bounded selected-text requests, answer lengths, and response schemas at its boundary.
+- Validate file formats and configurable size/page limits in the browser before extraction. The Worker revalidates original-file inputs before private R2 storage, loads source chunks from D1 for ID-based AI requests, and validates answer lengths and response schemas at its boundary.
 - Validate generated response schemas and cited source IDs before saving activities.
 - Sanitize content before rendering and avoid automatically fetching URLs from uploaded text.
 - Keep credentials server-side. Every Worker route resolves the signed-in user and scopes D1 queries and R2 keys by that user ID; a study-space ID never authorizes access.

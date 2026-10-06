@@ -1,0 +1,23 @@
+name = "tai"
+main = "apps/worker/src/index.ts"
+compatibility_date = "2026-10-06"
+compatibility_flags = ["nodejs_compat"]
+
+[assets]
+directory = "./dist/web"
+binding = "ASSETS"
+not_found_handling = "single-page-application"
+run_worker_first = ["/api/*"]
+
+[observability]
+enabled = false
+
+[vars]
+APP_ORIGIN = "http://localhost:8787"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "tai"
+# Local placeholder. Replace only after creating the remote database.
+database_id = "00000000-0000-0000-0000-000000000000"
+migrations_dir = "migrations"

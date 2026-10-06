@@ -1,0 +1,24 @@
+import { cloudflareTest, readD1Migrations } from "@cloudflare/vitest-plugin";
+import { defineConfig } from "vitest/config";
+
+export default defineConfig({
+  plugins: [
+    cloudflareTest(async () => ({
+      wrangler: { configPath: "./wrangler.toml" },
+      miniflare: {
+        bindings: {
+          APP_ORIGIN: "http://localhost:8787",
+          BETTER_AUTH_SECRET:
+            "synthetic-test-secret-with-at-least-32-characters",
+          GOOGLE_CLIENT_ID: "synthetic-client-id",
+          GOOGLE_CLIENT_SECRET: "synthetic-client-secret",
+          TEST_MIGRATIONS: await readD1Migrations("./migrations"),
+        },
+      },
+    })),
+  ],
+  test: {
+    include: ["tests/**/*.test.ts"],
+    setupFiles: ["./tests/setup.ts"],
+  },
+});

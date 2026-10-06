@@ -1,5 +1,18 @@
 # TAI - Self-directed Learning Companion
 
+## Development
+
+The M0 foundation is in progress. See [local setup](docs/developer-guide/setup.md) for Google sign-in configuration and verification.
+
+```sh
+nvm use
+npm ci
+npm run db:migrate
+npm run dev
+```
+
+The preview supports signed-in study-space creation/listing. Uploads and learning activities are not available yet.
+
 ## Documentation
 
 - [Product requirements (v0.2)](PRD_v2.md)
