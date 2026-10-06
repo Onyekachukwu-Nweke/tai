@@ -2,7 +2,7 @@
 
 **Version:** 0.2 · **Date:** 5 October 2026 · **Status:** Draft for hackathon implementation
 
-**Scope revision:** Canonical browser-local storage and low-data online AI replace P0 offline packs. FR-10 is deferred to P1. Scenario-based and calculation/equation questions are P0 where source evidence supports them.
+**Scope revision (6 October 2026):** Learners sign in (no guest mode); learner data is stored server-side on Cloudflare (D1 database, R2 files) and AI calls go through AI Gateway to Workers AI or Bedrock. Full offline study (FR-10) is deferred to P1. Scenario-based and calculation/equation questions are P0 where source evidence supports them.
 
 ## 1. Product summary
 
@@ -55,7 +55,7 @@ Primary users are students and independent learners across Africa who already ha
 - Automatic completion of graded assignments.
 - A comprehensive course marketplace, social network, or career platform.
 - Executing learner code, automated project grading, or unrestricted web crawling.
-- Full offline study, offline AI generation, cross-device synchronization, accounts, or advanced adaptive algorithms.
+- Full offline study, offline AI generation, sign-in methods beyond Google, or advanced adaptive algorithms.
 - Additional document formats, general scanned-PDF OCR, or a second language in P0. Math-heavy image transcription is only an optional gated experiment, not a prerequisite for equation support.
 - Production server/provider retention-policy design, automated retention schedules, or compliance infrastructure.
 
@@ -74,7 +74,7 @@ P0 means required for the end-to-end demo. P1 means a stretch feature after P0 w
 | P0 | Return flow | Rebuild a short session after a gap without accumulating compulsory overdue work |
 | P0 | Practical learning | One source-grounded application task per suitable concept; learner self-check |
 | P0 | Supplementary resources | Relevant free resources, including YouTube and websites discovered through Google; use checked links or a small curated collection |
-| P1 | Limited connectivity | Full offline study is deferred; local persistence and network-failure recovery remain P0 |
+| P1 | Limited connectivity | Full offline study is deferred; server-saved progress and network-failure recovery remain P0 |
 | P0 | Privacy and accessibility | Clear processing disclosure, deletion, keyboard use, untimed questions |
 | P1 | Learning puzzles | Matching and ordering where pedagogically appropriate |
 | P2 | Expanded discovery | Live resource search with URL, access, and relevance verification |
@@ -82,7 +82,7 @@ P0 means required for the end-to-end demo. P1 means a stretch feature after P0 w
 
 ## 6. Core learner journey
 
-1. **Create a study space:** give it a title, optionally describe the learning goal, and select a PDF or TXT file for browser-local import.
+1. **Create a study space:** give it a title, optionally describe the learning goal, and select a PDF or TXT file (after signing in).
 2. **Check the material:** show extracted text, section/page references, processing status, and warnings. Let the learner correct the title or retry before generation.
 3. **Explore concepts:** present important concepts and suggested relationships. The learner selects, renames, or excludes concepts. Inferred prerequisites are marked as suggestions.
 4. **Choose a session:** ask how much time is available and whether the learner wants to learn, review, or practise. Recommend a session with a brief reason.
@@ -94,17 +94,17 @@ P0 means required for the end-to-end demo. P1 means a stretch feature after P0 w
 
 ### FR-01 — Ingest learner material
 
-**Requirement:** Accept PDF and TXT files only; validate and extract them in the browser with stable source references. Original files are not uploaded to the application server.
+**Requirement:** Accept PDF and TXT files only; validate and extract them in the browser with stable source references, then store the original and extracted chunks server-side for the signed-in learner.
 
 **Acceptance criteria:**
 
 - Display supported formats and proposed limits before upload: 10 MB and 50 pages per PDF for the prototype.
-- Enforce configurable file size, format, and PDF page limits in the browser. The stateless AI endpoint separately enforces request byte/text limits, schemas, and output budgets for selected excerpts and answers; it does not accept source-file uploads.
+- Enforce configurable file size, format, and PDF page limits in the browser and re-check size, type, chunk count and text size on the server. AI requests send only IDs; the server loads source chunks itself.
 - Every extracted chunk retains document ID, section or page location, and text offsets where available.
 - Empty, unreadable, encrypted, oversized, or unsupported files produce actionable errors.
 - Scanned PDFs without extractable text are identified and ask for a text-based PDF or TXT file.
-- Equation activities require reliably extracted or reviewed, explicitly transcribed evidence. Flag missing symbols or ambiguous notation and ask for correction or a usable text source; do not guess. Optional math-heavy image transcription requires a separate go/no-go check for model capability, quality, data/cost budget, and explicit consent to send selected image crops. It must disclose this exception to text-only requests; full-document upload and general scanned-PDF OCR remain outside P0.
-- A failed import does not erase a previously usable study space. Store originals and extracted chunks in IndexedDB; report storage failures without claiming the import succeeded.
+- Equation activities require reliably extracted or reviewed, explicitly transcribed evidence. Flag missing symbols or ambiguous notation and ask for correction or a usable text source; do not guess. Optional math-heavy image transcription requires a separate go/no-go check for model capability, quality, data/cost budget, and explicit consent to send selected image crops. It must disclose this exception to text-only requests; sending whole documents to a model and general scanned-PDF OCR remain outside P0.
+- A failed import does not erase a previously usable study space. Store the original (R2) and extracted chunks (D1) as one material revision; report upload or storage failures without claiming the import succeeded.
 
 ### FR-02 — Organize concepts
 
@@ -159,7 +159,7 @@ P0 means required for the end-to-end demo. P1 means a stretch feature after P0 w
 - If review is due, offer a review item plus targeted practice when time permits.
 - Explain selection in plain language, such as “You asked for another check on this concept.”
 - Learners can change the time budget, skip an activity, or choose a different concept.
-- Persist progress in IndexedDB after each submitted activity before showing completion. Save answer drafts locally before AI grading; a failed request retains the answer for an explicit manual retry, without automatically queuing or replaying grading.
+- Persist the attempt and updated progress on the server after each submitted activity before showing completion; retries with the same attempt ID must not duplicate evidence. Keep an unacknowledged answer in the browser so a failed request can be retried explicitly, without automatic queuing or replay.
 
 ### FR-06 — Track evidence and schedule review
 
@@ -213,7 +213,7 @@ P0 means required for the end-to-end demo. P1 means a stretch feature after P0 w
 
 ### FR-10 — Full offline study (P1, deferred)
 
-Full offline study is outside the P0 demo. Omit service workers, cached app shells, save-for-offline actions/manifests, offline indicators, queued grading, deletion queues, and outbox replay. Local persistence and network-failure recovery remain P0 under FR-05, FR-11, and §12; they do not guarantee availability after a disconnected reload. Reassess offline delivery after the core learning loop is validated.
+Full offline study is outside the P0 demo. Omit service workers, cached app shells, save-for-offline actions/manifests, offline indicators, queued grading, deletion queues, and outbox replay. Server-saved progress and network-failure recovery remain P0 under FR-05, FR-11, and §12; they do not guarantee availability after a disconnected reload. Reassess offline delivery after the core learning loop is validated.
 
 ### FR-11 — Protect learner data
 
@@ -221,13 +221,13 @@ Full offline study is outside the P0 demo. Omit service workers, cached app shel
 
 **Acceptance criteria:**
 
-- Allow a single-device guest flow without requiring a name, school, or account.
-- Before online processing, disclose that bounded selected excerpts and answers needed for rubric grading pass through the application server to the configured AI service. Original PDF/TXT files remain in the browser. Any optional image-transcription experiment requires separate disclosure and consent for bounded selected crops under FR-01; it is not part of the P0 text-only path.
-- Retain originals, chunks, packs, drafts, attempts, and progress in IndexedDB as the canonical store. Do not automatically delete originals after extraction.
-- Learners can delete a study space and all its local originals, extracted text, activities, drafts, and attempts, or clear all data. Cancel associated in-flight work and discard late responses so deletion cannot recreate records; no server deletion queue is needed.
+- Require sign-in with Google before creating a study space. Store only the provider ID, email and display name; do not ask for school, age or other profile data.
+- Before online processing, disclose that bounded selected excerpts and answers needed for rubric grading are sent to the configured AI service. Original files are stored privately for the learner and are not sent to the model. Any optional image-transcription experiment requires separate disclosure and consent for bounded selected crops under FR-01; it is not part of the P0 text-only path.
+- Retain originals (R2) and chunks, packs, attempts and progress (D1) until the learner deletes them, so they can be revisited from any signed-in device.
+- Learners can delete a study space (original, extracted text, activities, attempts and progress) or their whole account and data. Mark the space deleted first so late AI results cannot recreate records.
 - Deletion removes application-controlled data. Production server/provider retention-policy design is outside the hackathon scope; do not promise deletion from systems the application does not control.
 - Do not log raw documents or answer text by default; keep analytics optional and minimal.
-- Keep AI credentials server-side. Use no learner database or authentication service; isolate local records by study-space ID and validate references. A browser profile is the data boundary, not secure account isolation. Disclose shared-device access and loss of work when browser data is cleared without backup.
+- Keep AI credentials server-side. Scope every record and file to the server-resolved user; a study-space ID is never authorization. Prevent access to another learner’s study spaces and test it. Configure AI Gateway and server logs not to store prompt, document or answer text.
 
 ## 8. Interface requirements
 
@@ -264,41 +264,41 @@ A second language is outside this hackathon scope. Let learners request simpler 
 
 ### Deterministic application responsibilities
 
-- Browser file validation, source identifiers, local study-space isolation, persistence, and deletion; server request validation and abuse controls.
+- File validation (browser and server), source identifiers, sign-in and per-user ownership checks, persistence, deletion, request validation and per-user AI quotas.
 - Session budgeting and review dates.
 - Exact grading of validated multiple-choice items and numeric final-answer checks using validated keys, configured tolerances, and supported unit rules.
-- Local draft and progress writes, explicit retries, and duplicate-attempt prevention.
+- Progress writes, explicit retries, and duplicate-attempt prevention through idempotent attempt IDs.
 - Validation of AI output schemas and cited source IDs.
 
 ### Bounded tutor stages
 
-Use a fixed structured workflow: **read → write → grade → targeted follow-up**. Read selects and interprets bounded source evidence; write produces validated activities, keys, and rubrics; grade combines deterministic answer checks with rubric feedback when needed; follow-up addresses an identified gap. Each model task has a schema, validated source IDs, input/output limits, and a clear failure state. These are application-controlled stages, not autonomous agents or a requirement for four calls per answer. Reuse saved read/write outputs across a pack; MCQ and numeric final-answer checks stay local. Invoke model grading only for answers/working needing a rubric, and generate follow-up, hints, or alternate explanations only when needed or requested within the session/cost budget.
+Use a fixed structured workflow: **read → write → grade → targeted follow-up**. Read selects and interprets bounded source evidence; write produces validated activities, keys, and rubrics; grade combines deterministic answer checks with rubric feedback when needed; follow-up addresses an identified gap. Each model task has a schema, validated source IDs, input/output limits, and a clear failure state. These are application-controlled stages, not autonomous agents or a requirement for four calls per answer. Reuse saved read/write outputs across a pack; MCQ and numeric final-answer checks never call the model. Invoke model grading only for answers/working needing a rubric, and generate follow-up, hints, or alternate explanations only when needed or requested within the session/cost budget.
 
 ### Proposed processing flow
 
-Import PDF/TXT in browser → validate, extract, and persist originals/chunks in IndexedDB → select bounded excerpts for concept generation → validate concepts → learner selects concepts → retrieve local chunks → send selected excerpts through stateless AI endpoint → validate structured pack and source references → save self-contained pack locally → study and check multiple-choice/numeric final answers locally → save answers before online rubric grading → record evidence locally → calculate next review.
+Sign in → import PDF/TXT in browser → validate and extract → store original (R2) and chunks (D1) → server generates concepts from bounded chunks → learner selects concepts → server loads selected chunks and generates a pack → validate structure and source references → save pack (D1) and stream validated items → check multiple-choice/numeric final answers instantly in the browser and re-check on the server → rubric-grade free text and working online → record evidence → calculate next review.
 
 Treat uploaded text as content, never as executable instructions. Reject invented citation IDs, sanitize extracted and generated content before rendering, and avoid automatic fetching of arbitrary URLs from uploaded text. Validate references against actual chunks; this checks traceability but does not establish factual accuracy. Offer explicit, bounded manual retries and a clear fallback if generation fails. Do not automatically replay failed generation or grading requests.
 
-IndexedDB is the canonical learner store; the browser extracts PDF/TXT and retrieves source chunks. The server is a stateless AI proxy with no learner database, source-file storage, authentication, or synchronization. It validates bounded requests, holds credentials, and invokes the provider without persisting learner payloads. AWS Bedrock is the proposed provider, subject to funding, Region, and model-access checks in the roadmap. Keep the AI adapter replaceable; framework and hosting remain implementation choices.
+TAI runs as one Cloudflare Worker serving the web app and API, with D1 as the single learner database and R2 for original files. The browser extracts PDF/TXT; the server owns sign-in, ownership checks, persistence, quotas and all model calls. Model calls go through AI Gateway to Workers AI or Amazon Bedrock, chosen per task by measured quality. Keep the AI adapter replaceable.
 
 ## 11. Minimum data model
 
 | Entity | Essential fields |
 | --- | --- |
-| StudySpace | ID, title, goal, preferred language, created date; scoped to this browser profile |
-| Material | ID, study-space ID, filename, format, original file/blob, processing status, retention state |
+| User | ID, auth provider ID, email, display name, created date, daily AI usage counters |
+| StudySpace | ID, user ID, title, goal, preferred language, created date, deleted state |
+| Material | ID, study-space ID, filename, format, original file key (R2), revision, processing status |
 | SourceChunk | ID, material ID, text, page/section, offsets |
 | Concept | ID, study-space ID, title, description, source IDs, suggested prerequisites |
 | Activity | ID, concept IDs, type, prompt, answer/rubric, numeric key/tolerances/unit policy where applicable, explanation, source IDs, duration, flag state |
 | ActivityPack | ID, study-space ID, schema version, activities including answers/rubrics and explanations, cited source excerpts with IDs |
-| AnswerDraft | ID, study-space ID, activity ID, answer text/working and final value/unit where applicable, updated date; retained for manual retry, not a job queue |
-| Attempt | ID, activity ID, outcome, numeric result and rubric/working outcome/uncertainty where applicable, hint/reveal state, optional confidence, timestamp |
+| Attempt | ID (client-generated, for idempotent retry), activity ID, outcome, numeric result and rubric/working outcome/uncertainty where applicable, hint/reveal state, optional confidence, timestamp |
 | ConceptProgress | Concept ID, evidence label, review step, next review date, last independent check |
 | Session | ID, study-space ID, budget, activity IDs, completion state, last activity |
 | Resource | ID, title, publisher, URL, concept tags, language, format, access conditions, checked date |
 
-Persist learner entities in IndexedDB using stable IDs and a schema version. Updating or deleting material invalidates dependent generated activities unless they still have valid evidence. Do not infer sensitive characteristics from performance.
+Persist learner entities in D1 using stable IDs, schema versions and migrations. Unacknowledged answer drafts live only in the browser until submitted. Updating or deleting material invalidates dependent generated activities unless they still have valid evidence. Do not infer sensitive characteristics from performance.
 
 ## 12. Reliability and performance targets
 
@@ -306,12 +306,12 @@ These are prototype acceptance targets, not measured results or production servi
 
 - Show immediate processing feedback and a recoverable state for long-running generation.
 - Aim to prepare the first 3–5-question pack within 60 seconds on representative supported material. Measure browser extraction, time to first usable question, and full-pack generation separately. Stream incrementally where supported; expose only complete questions after schema and source-reference validation, never incomplete model output.
-- After the current pack is usable, allow at most one bounded next-pack pre-generation request while the learner studies, subject to session needs and cost budget. Reuse successful results locally; cancel or discard obsolete work. Measure before claiming improved latency.
+- After the current pack is usable, allow at most one bounded next-pack pre-generation request while the learner studies, subject to session needs and cost budget. Reuse saved results; cancel or discard obsolete work. Measure before claiming improved latency.
 - Saved sessions should open within two seconds on the target test device.
 - Minimize initial assets; avoid required video, large decorative images, or automatic full-document downloads. Send only bounded selected text (aim for a few KB when sufficient) and necessary grading context to AI, never the whole PDF. Measure actual request sizes instead of promising a fixed data-use guarantee.
 - Prevent duplicate submissions from generating duplicate attempts or repeated AI calls.
 - Persist activity progress before presenting completion; on failure, retain the learner’s answer and offer retry.
-- Confirm the core flow in mobile viewport, keyboard-only interaction, network interruption, and reload with connectivity. A dropped request must preserve local progress and drafts for manual retry; disconnected reload and app-shell availability are outside P0.
+- Confirm the core flow in mobile viewport, keyboard-only interaction, network interruption, and reload with connectivity. A dropped request must preserve saved progress and the unsent answer for manual retry; disconnected reload and app-shell availability are outside P0.
 
 ## 13. Validation and success measures
 
@@ -328,7 +328,7 @@ These are prototype acceptance targets, not measured results or production servi
 
 ### Quality-first model evaluation
 
-Compare a smaller and a stronger eligible Bedrock model on the same two permitted source documents and the same activity/answer cases before choosing the default. Include one quantitative document and one supporting scenario-based reasoning. Assess source fidelity, question usefulness, independent numeric-key correctness, working/rubric feedback (including uncertainty), hints and alternate explanations, then measure latency, request size, and cost. Use consistent prompts and budgets and record model IDs/Regions and actual results; choose quality sufficient for the learning loop before optimizing price. Model availability, credits, and access must be verified, not assumed; no OpenAI access or funding is implied. If only one model is accessible, record the comparison as blocked rather than claiming it passed.
+Compare candidate models from Workers AI and Amazon Bedrock (for example gpt-oss-120b or Kimi K2.6 against Claude Haiku) through AI Gateway on the same two permitted source documents and the same activity/answer cases before choosing the default. Include one quantitative document and one supporting scenario-based reasoning. Assess source fidelity, question usefulness, independent numeric-key correctness, working/rubric feedback (including uncertainty), hints and alternate explanations, then measure latency, request size, and cost. Use consistent prompts and budgets and record model IDs/Regions and actual results; choose quality sufficient for the learning loop before optimizing price. Model availability, credits, and access must be verified, not assumed; no OpenAI access or funding is implied. If only one model is accessible, record the comparison as blocked rather than claiming it passed.
 
 ### Small learner pilot
 
@@ -346,11 +346,11 @@ If time permits, repeat a small concept check several days later and report the 
 
 ## 14. Implementation milestones
 
-1. **Source pipeline:** browser PDF/TXT import and extraction, IndexedDB originals/chunks, source references, material preview, and local deletion.
+1. **Source pipeline:** sign-in, browser PDF/TXT import and extraction, stored originals and chunks, source references, material preview, and deletion.
 2. **Learning loop:** concept selection, bounded read/write/grade/follow-up workflow, P0 scenarios and calculation/equation questions, safe math rendering, deterministic numeric checks, rubric feedback, hints/alternate explanations, and source inspection.
 3. **Continuity:** session budgeting, attempt persistence, review rules, and recovery flow.
 4. **Application and access:** practical task templates, curated resource matching, low-data requests, and accessibility pass.
-5. **Demo verification:** content audit, failure cases, network-failure recovery, local storage and mobile checks, and learner walkthroughs.
+5. **Demo verification:** content audit, failure cases, cross-user access checks, network-failure recovery, mobile checks, and learner walkthroughs.
 
 Exit each milestone with a working flow. If time is short, simplify map complexity and resource-discovery implementation before removing source traceability or the core recall-and-return loop.
 
@@ -365,10 +365,10 @@ Exit each milestone with a working flow. If time is short, simplify map complexi
 | Cross-subject promise exceeds prototype capability | Publish format/topic limitations and test more than one subject without claiming universal coverage |
 | Review recommendations feel rigid | Allow overrides, skipping, and earlier review; avoid permanent locks |
 | Free resources are unavailable or irrelevant | Maintain a dated curated collection and return no match when appropriate |
-| Browser data is cleared or storage is full | Explain local persistence, report save failures, and avoid implying permanent backups |
-| AI latency or cost interrupts study | Generate 3–5-question reusable packs, validate streamed items, bound manual retries and pre-generation, retain results locally, and measure latency/cost |
-| Connection fails during grading | Save drafts first, preserve completed work, offer manual retry, and prevent duplicate attempts; no background replay |
-| Shared browser exposes learner data | Explain browser-profile boundary and local deletion; do not imply account isolation or cloud backup |
+| Sign-in deters learners | Google one-tap sign-in only; explain why sign-in is needed (saved progress across devices); collect minimal data |
+| AI latency or cost interrupts study | Generate 3–5-question reusable packs, validate streamed items, bound manual retries and pre-generation, per-user daily quotas, and measure latency/cost |
+| Connection fails during grading | Keep the unsent answer in the browser, preserve completed work, offer manual retry, and use idempotent attempt IDs; no background replay |
+| One learner sees another's data | Scope every query and file by server-resolved user; automated cross-user access tests; private file storage |
 | Learners cannot use text-heavy experiences | Plain language, adjustable text, small activity steps, accessible controls, and future language review |
 
 ## 16. Confirmed hackathon decisions
@@ -379,20 +379,22 @@ Exit each milestone with a working flow. If time is short, simplify map complexi
 | Active learning | Scenarios and calculation/equation questions join P0 where evidence supports them; matching/ordering puzzles remain P1 |
 | Tutor workflow | Fixed bounded read/write/grade/follow-up stages; explicit hints and alternate explanations, no autonomous loop or four-call-per-answer requirement |
 | Mathematical feedback | Safe LaTeX rendering, deterministic numeric tolerance/unit checks, separate uncertain rubric grading of working, and independently checked demo keys |
-| Model selection | Evaluate smaller versus stronger eligible Bedrock models on the same two documents; prioritize learning quality and report actual access, costs, and results |
+| Model selection | Evaluate Workers AI and Bedrock candidates through AI Gateway on the same two documents; prioritize learning quality, allow per-task routing, and report actual access, costs, and results |
+| Platform | Cloudflare: one Worker (web app + API), D1 database, R2 files, AI Gateway. No MongoDB, no second database |
+| Identity | Google sign-in required; no guest mode |
 | Usability participants | Any available learner group; institution-specific recruitment is optional |
 | Language | English only; no second language during this hackathon |
 | Subject coverage | Learner-provided subjects; no predefined subject curriculum |
 | Supplementary resources | Relevant free, available content such as YouTube videos and educational websites found through Google |
-| Source-file handling | Parse and retain originals in the browser; send selected text for AI and support local deletion |
-| Canonical storage | IndexedDB holds originals, chunks, packs, drafts, attempts, and progress; no learner database, authentication, or sync |
+| Source-file handling | Parse in the browser; retain originals privately in R2 until the learner deletes them; models receive only selected chunks |
+| Storage | D1 holds users, chunks, concepts, packs, attempts and progress; R2 holds originals; the browser holds only unsent answer drafts |
 | Offline scope | Defer FR-10/full offline study to P1; omit service workers, app-shell caching, save-for-offline actions/manifests, offline indicators, queued grading, deletion queues, and outbox replay |
-| Connectivity resilience | Keep low-data requests, local progress/drafts, and explicit manual retries in P0; persistence does not guarantee offline app loading |
+| Connectivity resilience | Keep low-data requests (IDs, not text), small packs, browser-held unsent answers and explicit manual retries in P0; no offline app loading |
 | Pack portability | Self-contained JSON carries questions, answers, explanations, and source excerpts; future offline delivery still needs caching, storage, and recovery validation |
 | Production retention policy | Outside the short hackathon scope; retain basic application deletion and processing disclosure |
 
 ## 17. Remaining implementation choices
 
-Choose framework, hosting, exact Bedrock model/Region (or documented provider fallback), and simplest viable resource-link mechanism during implementation. IndexedDB canonical storage and a stateless AI endpoint are agreed architecture boundaries. Use the proposed file limits and review intervals as configurable defaults. These choices should serve the end-to-end MVP without expanding the scope.
+Choose the exact model per task, auth library (Better Auth baseline), and simplest viable resource-link mechanism during implementation. Cloudflare Workers, D1, R2, AI Gateway and required Google sign-in are agreed architecture boundaries. Use the proposed file limits and review intervals as configurable defaults. These choices should serve the end-to-end MVP without expanding the scope.
 
 The core scope remains: learners bring their own materials, and TAI supports understanding, practice, retention, and continued learning.

@@ -6,7 +6,7 @@ tai verification should establish that learners can study from their own materia
 
 - **Unit:** deterministic review rules, session budgeting, activity validation, file limits, attempt outcomes, and error mapping. Inject clocks and provider clients.
 - **Contract:** input/output schemas, source-reference validation, and compatibility of persisted local records and self-contained packs.
-- **Integration:** extraction, IndexedDB storage, local study-space isolation, deletion, generation validation, duplicate submissions, and interrupted saves using disposable data and fake providers.
+- **Integration:** extraction, sign-in, D1/R2 storage (local Wrangler bindings), cross-user isolation, deletion, generation validation, duplicate submissions, and interrupted saves using disposable data and fake providers.
 - **End-to-end:** upload → preview → concepts → activity → feedback → saved progress → return. Include mobile, keyboard, reload, and network-failure recovery.
 - **Content review:** inspect generated questions, explanations, rubrics, and practical tasks against actual source material. Passing a schema check does not establish educational correctness.
 
@@ -23,10 +23,10 @@ Use the smallest layer that demonstrates the behavior, adding broader tests for 
 | Calculations and notation | Reviewed numeric keys; exact and boundary tolerance cases; equivalent, missing, and incompatible units; malformed/non-finite numbers; ambiguous or incorrect keys yield uncertainty; model working-step feedback matches the rubric; unsafe LaTeX is rejected and valid expressions render in KaTeX without raw evaluation |
 | Review and sessions | Configured intervals advance only on independent success; unsuccessful checks reset appropriately; estimates fit budget; overrides work |
 | Return flow | Simulated five-day gap yields a manageable recovery session without multiplying overdue work |
-| Persistence | IndexedDB retains original files, chunks, packs, drafts, and progress across reloads; quota/transaction errors are visible; failed saves retain the in-memory answer; retries do not duplicate attempts |
+| Persistence | Originals, chunks, packs and progress survive reload and are available from a second signed-in device; failed saves keep the unsent answer; retries with the same attempt ID do not duplicate attempts |
 | Network resilience | Dropped or interrupted AI requests preserve the local answer and offer explicit retry; reconnection never automatically replays requests; incomplete streamed items are not exposed |
 | Pack delivery | Self-contained 3–5 question packs include answers/rubrics, explanations, and source excerpts; MCQs grade locally; at most one bounded next-pack prefetch runs during study |
-| Privacy | Local study-space references cannot cross spaces; original files never leave the browser; the stateless gateway accepts only bounded text/answer context; secrets stay server-side and logs omit raw learner material |
+| Privacy and auth | Unauthenticated requests are rejected; one user cannot read, write or delete another's spaces or R2 files; AI requests accept IDs, not source text; quotas block excess AI calls; secrets stay server-side; Worker and AI Gateway logs omit raw learner material; space/account deletion removes D1 rows and R2 objects |
 | Deletion and data loss | Local deletion removes original files and dependent records, discards late AI responses, and cannot recreate a deleted space; browser-data-loss disclosure is visible |
 | Accessibility | Keyboard operation, visible focus, accessible names, non-color status cues, readable list alternative, untimed questions, and mobile layout |
 | Resources and tasks | Links exist and content is free to access; access conditions are disclosed; tasks include self-check criteria and clear tool/time requirements |
@@ -39,7 +39,7 @@ The PRD proposes 5, 15, and 30 minute presets but also asks for a ten-minute rec
 
 Use synthetic or explicitly permitted non-sensitive PDF/TXT fixtures. Include extraction limitations such as tables or equations where relevant. Never commit private learner materials, credentials, or real answers.
 
-Use fake AI responses for repeatable automated checks, including malformed output, invented references, contradictions, and provider failure. Keep any live-provider evaluation separate and document its configuration and costs. Record model and prompt versions for content audits. For model selection, compare a smaller and a stronger Bedrock candidate using the same two source documents, prompts, task mix, and review rubric. Prioritize measured grounding, teaching quality, scenario/calculation correctness, and appropriate grading uncertainty; record latency, cost, and verified access/capabilities separately. Do not infer quality or capabilities from a model name.
+Use fake AI responses for repeatable automated checks, including malformed output, invented references, contradictions, and provider failure. Keep any live-provider evaluation separate and document its configuration and costs. Record model and prompt versions for content audits. For model selection, compare Workers AI and Bedrock candidates through AI Gateway using the same two source documents, prompts, task mix, and review rubric. Prioritize measured grounding, teaching quality, scenario/calculation correctness, and appropriate grading uncertainty; record latency, cost, and verified access/capabilities separately. Do not infer quality or capabilities from a model name.
 
 For the demo audit, follow PRD section 13: review at least 20 generated items across two subject areas, verify each source reference, and resolve known critical errors in demo items. Report the actual audit size and findings rather than claiming unperformed validation.
 

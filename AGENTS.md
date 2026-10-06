@@ -6,7 +6,7 @@ TAI (`tai`) is a self-directed learning companion. Learners bring their own cour
 
 Use **TAI** as the product name and **tai** for code identifiers where appropriate. [PRD v0.2](PRD_v2.md) is the current product specification; [PRD v0.1](PRD.md) is historical context. Follow v0.2 where the versions differ.
 
-The hackathon scope supports text-based PDF and TXT uploads, one material per study space, and English only. Prioritize the P0 learner journey and implementation milestones in the PRD. IndexedDB is the canonical learner-data store; a stateless server calls Bedrock using selected text. Full offline mode is deferred to P1. Exact tooling and hosting choices must pass the roadmap readiness checks. Do not assume tooling or infrastructure exists.
+The hackathon scope supports text-based PDF and TXT uploads, one material per study space, and English only. Prioritize the P0 learner journey and implementation milestones in the PRD. TAI runs on Cloudflare: one Worker (web app + API), required Google sign-in, D1 as the single learner database, R2 for original files, and AI Gateway in front of Workers AI and Bedrock. Full offline mode is deferred to P1. Exact tooling and hosting choices must pass the roadmap readiness checks. Do not assume tooling or infrastructure exists.
 
 ## Working rules
 
@@ -21,10 +21,11 @@ The hackathon scope supports text-based PDF and TXT uploads, one material per st
 - Sanitize content before rendering, validate local study-space/source associations, and avoid automatically fetching arbitrary URLs from uploaded text.
 - Preserve progress across interruptions. Save submissions before showing completion, retain answers when saving fails, and prevent duplicate attempts or unnecessary repeated AI calls on retry.
 - Keep hints, reveals, skips, correctness, and optional confidence distinct. Do not count hinted or revealed answers as independent recall success.
-- Keep materials, self-contained packs, drafts, attempts and progress in IndexedDB. Parse PDF/TXT locally and send only bounded selected text to the stateless AI endpoint. Do not add a learner database, accounts, server-side source storage, or synchronization.
+- Parse PDF/TXT in the browser; store originals in R2 and chunks, packs, attempts and progress in D1. AI requests carry IDs; the Worker loads chunks itself. Do not add a second database, a queue, or a guest mode.
 - Preserve local answers on request failure and offer explicit retry; do not queue grading or replay requests on reconnect. Full offline mode is P1: do not build a service worker, app-shell cache, offline save/indicator, outbox, or deletion queue for P0.
 - Generate 3–5 question packs. Stream only complete validated items; bound next-pack pre-generation and cancel stale work. Local MCQ grading must not call AI.
-- Retain original source files locally until learner deletion. Delete associated IndexedDB data transactionally, cancel in-flight requests, and discard late responses for deleted or changed spaces. Do not promise recovery after browser storage is cleared.
+- Scope every query and R2 key by the server-resolved user ID; a study-space ID is never authorization. Deleting a space or account removes its D1 rows and R2 objects; mark spaces deleted first so late AI results are rejected.
+- Check per-user AI quotas before every model call. Keep prompts, documents and answers out of Worker and AI Gateway logs.
 - Maintain keyboard access, visible focus, readable labels, a list alternative to the concept map, and untimed activities.
 - Update affected documentation, schemas, consumers, fixtures, and compatibility checks together.
 
@@ -54,7 +55,7 @@ Split by responsibility; do not compress formatting or move executable logic int
 
 ## Roadmap
 
-Use [docs/roadmap/README.md](docs/roadmap/README.md) to scope implementation milestones. Its technology choices are a proposed baseline; account funding, exact model/Region access, and live capability remain subject to the documented M0 checks. Report acceptance evidence before marking a milestone complete.
+Use [docs/roadmap/README.md](docs/roadmap/README.md) to scope implementation milestones. Its technology choices are the agreed baseline; provider access, model choice and live capability remain subject to the documented M0 checks. Report acceptance evidence before marking a milestone complete.
 
 ## Documentation index
 

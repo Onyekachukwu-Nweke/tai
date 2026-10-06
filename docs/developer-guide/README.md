@@ -10,7 +10,7 @@ Development guidelines for TAI:
 - [Code review](review.md): review priorities and acceptance checks.
 - [Testing](testing.md): test layers, learner scenarios, and content audits.
 
-This guide translates the [v0.2 PRD](../../PRD_v2.md) into initial development guidelines. Refer to the PRD for full acceptance criteria; this guide does not replace them. The [roadmap](../roadmap/README.md) records the local-first baseline: browser extraction, IndexedDB as the canonical learner store, and a stateless server-side Bedrock gateway. Exact deployment and model access remain subject to M0 verification.
+This guide translates the [v0.2 PRD](../../PRD_v2.md) into initial development guidelines. Refer to the PRD for full acceptance criteria; this guide does not replace them. The [roadmap](../roadmap/README.md) records the Cloudflare baseline: one Worker, required Google sign-in, D1, R2, and AI Gateway in front of Workers AI and Bedrock. Exact model access remains subject to M0 verification.
 
 ## Build within the agreed scope
 
@@ -54,9 +54,9 @@ Source: FR-03–07 and PRD section 12.
 
 ## Design for access and data control
 
-- Keep original PDF/TXT files, extracted chunks, self-contained packs, drafts, and progress in IndexedDB. Report quota and save failures, and warn that clearing browser data removes this device’s learning history. Full offline mode (FR-10) is deferred to P1; do not build service-worker caching or offline-specific controls.
+- Store originals in R2 and chunks, packs, attempts and progress in D1 so learners can continue on any signed-in device. Report save failures and keep the unsent answer for retry. Full offline mode (FR-10) is deferred to P1; do not build service-worker caching or offline-specific controls.
 - Provide a readable list alongside the concept map, keyboard access, visible focus, screen-reader labels, readable contrast, and untimed activities.
-- Support a single-device flow without accounts or a learner database. Disclose AI processing before sending bounded selected text or answers through the stateless Bedrock gateway; original files stay in the browser.
+- Require Google sign-in and collect only provider ID, email and display name. Disclose that selected chunks and answers are sent to the AI provider; original files are stored privately and never sent to the model. Enforce per-user ownership on every route.
 - Retain original files locally for revisiting until the learner deletes them. Delete all dependent local records with the study space, cancel related requests where possible, and discard late responses so deletion cannot recreate data.
 - Avoid logging raw documents or answers by default. Enforce isolation between learners' study spaces.
 

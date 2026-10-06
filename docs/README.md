@@ -1,6 +1,6 @@
 # TAI documentation
 
-- [Development roadmap](roadmap/README.md): architecture, technology choices, Bedrock readiness, delivery milestones, and acceptance gates.
+- [Development roadmap](roadmap/README.md): architecture, technology choices, AI provider readiness, delivery milestones, and acceptance gates.
 - [Developer guide](developer-guide/README.md): guidelines for building and validating TAI.
 - [Product requirements (v0.2)](../PRD_v2.md): current draft scope, acceptance criteria, and confirmed hackathon decisions.
 

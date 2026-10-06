@@ -30,13 +30,13 @@ Treat documents, model responses, and external resource metadata as untrusted da
 - Validate file formats and configurable size/page limits in the browser before extraction. The server receives no source files: validate bounded selected-text requests, answer lengths, and response schemas at its boundary.
 - Validate generated response schemas and cited source IDs before saving activities.
 - Sanitize content before rendering and avoid automatically fetching URLs from uploaded text.
-- Keep credentials server-side and enforce study-space associations at each local data-access boundary. Local IDs do not authenticate a user; the stateless gateway exposes no learner-record retrieval API.
+- Keep credentials server-side. Every Worker route resolves the signed-in user and scopes D1 queries and R2 keys by that user ID; a study-space ID never authorizes access.
 - Keep review scheduling, session budgeting, exact multiple-choice grading, and numeric tolerance/unit checks against reviewed keys in deterministic application code. Validate finite numeric values and permitted units explicitly; never use raw `eval` for generated mathematics. Render LaTeX through safely configured KaTeX, with untrusted HTML commands disabled.
 - Bound explicit retries and preserve a usable state when extraction or generation fails. Do not replay requests automatically when connectivity returns.
 
 ## Persistence and retries
 
-IndexedDB is the canonical store for original files, extracted content, self-contained packs, drafts, and progress. Persist drafts locally and save submitted progress before showing completion. Prevent retries or duplicate submissions from creating duplicate attempts or unnecessary repeated AI calls. Preserve the learner's answer when saving fails.
+D1 is the canonical store for extracted content, packs, attempts and progress; R2 holds original files. Keep an unsent answer in the browser until the server acknowledges it, and save submitted progress before showing completion. Prevent retries or duplicate submissions from creating duplicate attempts or unnecessary repeated AI calls. Preserve the learner's answer when saving fails.
 
 Do not hold storage transactions open during AI or network calls. Use explicit processing states and persist the information needed to recover interrupted work. Version persisted schemas and invalidate activities whose source evidence is no longer valid. Surface quota errors without claiming a failed write was saved. Deletion removes local dependent records, cancels related work where possible, and makes late responses ineligible for persistence. There is no server deletion queue or synchronization outbox.
 

@@ -1,54 +1,51 @@
 # Technology decisions
 
-**Status:** recommended implementation baseline; validate and pin exact compatible versions in M0. No libraries are installed by this document. Bedrock preference follows the available-funding constraint; it does not depend on OpenAI credits.
+**Status:** agreed baseline as of 6 October 2026; pin exact versions in M0. No libraries are installed by this document.
 
-| Area | Recommendation | Reason and alternative |
+| Area | Decision | Reason and alternative |
 | --- | --- | --- |
-| Web | React + TypeScript + Vite | Lightweight local-first client application; Next.js remains an alternative if server rendering becomes necessary, which the current PRD does not require |
-| Styling | CSS with shared accessible components and tokens | Keep mobile UI readable and assets small; add a component library only for a concrete accessibility or delivery benefit |
-| AI endpoint | Stateless TypeScript on Node.js; streaming Lambda Function URL candidate | Credentials and provider prompts remain server-side; no learner database, login service or durable jobs |
-| Validation | Zod schemas at browser/API/provider boundaries | Validate shape plus application invariants; provider JSON syntax is insufficient |
-| Extraction | PDF.js (`pdfjs-dist`) text extraction; explicit TXT decoding | Preserve page evidence without OCR; test browser parsing performance and equation/table limitations before committing to implementation |
-| Math rendering | KaTeX with `trust: false`, bounded expression size and accessible MathML output | Readable equations from model-written LaTeX without executing content; show raw text fallback on render failure |
-| Numeric checking | Small deterministic checker: finite-number parsing, absolute/relative tolerance, allow-listed unit conversions | Final answers graded locally against reviewed keys; no `eval`, no general symbolic algebra in P0 |
-| Canonical learner data | IndexedDB through Dexie | Local originals, chunks, self-contained packs, drafts and progress; transactional writes and honest storage-loss disclosure |
-| AI | AWS SDK for JavaScript v3, Bedrock Runtime Converse/ConverseStream adapter | AWS billing and replaceable provider boundary; fake adapter for local work and deterministic tests |
-| Pre-generation | One bounded browser-initiated next-pack request while studying | Reduce waiting without a queue; cancel stale work and measure unused-pack cost |
-| Web hosting | HTTPS static assets; S3/CloudFront candidate with streaming endpoint routing | S3 holds app assets only; no learner files. Verify proxy streaming, no-store AI responses and deployment-level rate controls |
-| Infrastructure | AWS SAM/CloudFormation templates | Reproducible small serverless deployment; avoid adding several competing provisioning tools |
-| Verification | Vitest for domain/contracts; Playwright for browser journeys | Deterministic rules plus local persistence, interrupted-request and UI checks; manually inspect generated educational content |
-| CI | Repository-hosted checks for format, lint, types, file length, tests and links | Start with actual runnable scripts and pin dependencies; fake providers are the default CI path |
+| Web | React + TypeScript + Vite | Lightweight client served as Worker static assets |
+| Styling | CSS with shared accessible components and tokens | Small assets and readable mobile UI; add a component library only for a concrete benefit |
+| API | One Cloudflare Worker (TypeScript, Hono router) serving static assets and `/api/*` | One deployable; streaming responses are native; Cloudflare edge locations near learners |
+| Auth | Required Google sign-in via Better Auth on D1 | Workers-compatible, data stays in our D1. Confirm in M0; a hosted provider (e.g. Clerk) is the fallback if integration stalls |
+| Database | Cloudflare D1 (SQLite) | Native binding, no connection management, free tier fits the hackathon. Neon Postgres via Hyperdrive is the fallback if Postgres features are required. Do not run two databases |
+| File storage | Cloudflare R2, private bucket | Original PDF/TXT files under owner-scoped keys, served only through the Worker |
+| AI routing | Cloudflare AI Gateway | Per-route rate limits, fallback between providers, usage metrics; configure it not to store prompt/response bodies |
+| AI models | Workers AI and Amazon Bedrock behind one adapter | Choose per task by measured quality; see [AI provider and budget](ai-provider-and-budget.md) |
+| Validation | Zod at browser/API/provider boundaries | Shape plus application invariants; provider JSON syntax is insufficient |
+| Extraction | PDF.js (`pdfjs-dist`) in the browser; explicit TXT decoding | Avoids Worker CPU limits; learner sees extraction problems before upload. No OCR |
+| Math rendering | KaTeX with `trust: false`, bounded expression size, MathML output | Readable equations without executing content; raw-text fallback on failure |
+| Numeric checking | Small deterministic checker: finite-number parsing, absolute/relative tolerance, allow-listed units | Shared by browser and Worker; no `eval`, no symbolic algebra in P0 |
+| Infrastructure | Wrangler (`wrangler.toml`) for Worker, D1, R2 and bindings; D1 migrations in the repo | One tool; no SAM/CloudFormation |
+| Verification | Vitest (with the Workers test pool) for domain, API and contracts; Playwright for browser journeys | Deterministic rules, ownership and persistence checks; manual content review for generated material |
+| CI | Format, lint, types, file length, tests and links | Fake AI provider is the default CI path |
 
-Official capability references: [Vite templates](https://vite.dev/guide/), [React TypeScript](https://react.dev/learn/typescript), [Zod](https://zod.dev/), [PDF.js](https://mozilla.github.io/pdf.js/getting_started/), [Dexie](https://dexie.org/docs/), [Bedrock JS SDK v3](https://docs.aws.amazon.com/sdk-for-javascript/v3/developer-guide/javascript_bedrock-runtime_code_examples.html), [AWS SAM](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/what-is-sam.html), [Vitest](https://vitest.dev/guide/), [Playwright](https://playwright.dev/docs/intro).
-
-These are engineering recommendations, not claims that this combination has been benchmarked for TAI. M0 must prove browser PDF extraction and one bounded streamed Bedrock response before the real provider pipeline is considered viable.
+These are engineering decisions, not benchmarks. M0 must prove sign-in, a D1 write/read, browser PDF extraction and one streamed model response through AI Gateway before the real pipeline is considered viable.
 
 ## Proposed repository layout
 
 ```text
-apps/web/                  UI, local extraction, canonical IndexedDB storage
-apps/api/                  Stateless streaming AI handlers and request limits
-packages/domain/           Learning evidence, sessions, review rules
+apps/web/                  React UI, PDF.js extraction, rendering
+apps/worker/               Hono API, auth, ownership checks, AI task handlers
+packages/domain/           Grading, numeric checks, evidence, sessions, review rules
 packages/contracts/        Versioned API, pack and provider schemas
-packages/adapters/         Bedrock, IndexedDB and fake implementations
+packages/adapters/         Workers AI, Bedrock, D1, R2 and fake implementations
 packages/content/          Prompt versions and checked resource catalog
-infra/                     SAM templates and safe configuration examples
+migrations/                D1 SQL migrations
 tests/                     Cross-boundary fixtures and end-to-end checks
 docs/roadmap/              Plan, decisions and acceptance evidence index
 ```
 
-Create only directories needed by the active milestone. A monorepo does not require separately deployed services for every module. Use one package manager and lockfile; choose compatible versions at bootstrap and document exact commands in the developer guide. No source file exceeds 350 physical lines.
+Create only directories needed by the active milestone. Use one package manager and lockfile. No source file exceeds 350 physical lines.
 
 ## Alternatives and revisit triggers
 
-- A stateless Node HTTP service is the local-demo fallback if Lambda streaming is unavailable. It needs server-side Bedrock credentials, not SQLite or another learner database. Do not claim AWS deployment validation from a local run.
-- Do not add managed vector search, embeddings, Knowledge Bases, AgentCore, runtime multi-agent orchestration, or provisioned model throughput for the first demo. Revisit retrieval only after source-quality measurements show the need.
-- Curate real free resources manually across the demonstration subjects. Automated Google/YouTube discovery is not a dependency.
-- Start with a simple source-linked concept map and equivalent list; avoid graph-layout infrastructure unless usability requires it.
-- Select model/region by actual access, quality, cost and latency tests. A model family or pricing example is not a pinned deployment identifier.
+- MongoDB Atlas is not used: its driver needs extra compatibility work on Workers and the Atlas Data API has been removed.
+- Do not add vector search, embeddings, agent frameworks or queues for the first demo. Revisit retrieval only after source-quality measurements show the need.
+- Curate real free resources manually. Automated Google/YouTube discovery is not a dependency.
+- Start with a concept list plus a simple map; avoid graph-layout infrastructure unless usability requires it.
+- If the Workers Free plan CPU limit is hit by streaming validation, move to Workers Paid rather than restructuring.
 
 ## M0 decision record to fill during implementation
 
-Record exact runtime/package versions, package manager, deploy region, selected model or inference-profile ID, account-plan constraints, PDF extraction results, browser storage/migration behavior and streaming transport results, model evaluation evidence, and measured cost sample. Until verified, these fields remain pending. A different implementation choice needs a brief rationale and corresponding roadmap update, not a new approval ceremony for routine engineering decisions.
-
-Full offline mode, service-worker/app-shell caching, pin/save actions and reconnect queues are P1 work, not dependencies of this stack. IndexedDB remains P0 regardless of that deferral.
+Record exact package versions, Wrangler/compatibility date, auth library and OAuth setup, D1/R2 binding names, AI Gateway configuration, selected model per task with evaluation evidence, PDF extraction results on a low-end Android device, and a measured cost sample. A later change needs a brief rationale and a roadmap update.

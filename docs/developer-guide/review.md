@@ -31,13 +31,13 @@ Block changes that introduce or modify authored software code files exceeding 35
 
 ## Data and boundary checks
 
-Verify local study-space isolation, input validation, sanitized rendering, server-side secrets, and safe errors. IndexedDB is canonical: original files are parsed and retained in the browser, and the stateless Bedrock gateway receives bounded selected text rather than files. Do not introduce a learner database or account/authentication flow. Raw documents and answers must not enter logs by default. Retained source files and dependent application data must be removed through local learner deletion. Cancel related in-flight work where possible and reject late responses after deletion. Disclose data loss if browser storage is cleared.
+Verify that every Worker route requires sign-in and scopes D1 queries and R2 keys by the server-resolved user; check input validation, sanitized rendering, server-side secrets, per-user AI quotas and safe errors. AI requests carry IDs and the Worker loads chunks itself. Do not introduce a second database, a queue or a guest mode. Raw documents and answers must not enter Worker or AI Gateway logs. Space and account deletion must remove D1 rows and R2 objects, and late AI results must not recreate deleted spaces.
 
 Check stable IDs, persisted schema versions, activity invalidation after source changes, and compatibility with saved packs. Review failure handling and duplicate-submission behavior. A dropped request must preserve the local answer and offer an explicit bounded retry, without automatic reconnect requests or duplicate attempt commits. Check quota errors and failed transactions. Full offline mode is deferred; offline caching, save controls, status UI, and grading/deletion queues are outside P0.
 
 Keep packs self-contained with 3–5 questions, answers or rubrics, explanations, and source excerpts. Stream complete validated items only, grade MCQs locally, and bound prefetch to one next pack while the learner studies.
 
-Compare smaller and stronger Bedrock candidates on the same two source documents and tasks. Review measured teaching quality, grounding, calculation correctness, latency, and cost; model capabilities and access must be verified rather than assumed.
+Compare Workers AI and Bedrock candidates through AI Gateway on the same two source documents and tasks. Review measured teaching quality, grounding, calculation correctness, latency, and cost; model capabilities and access must be verified rather than assumed.
 
 ## Verification and usability
 
