@@ -45,7 +45,7 @@ The coordinator owns integration and any user-authorized commit, push, merge, or
 
 ## Additional specialties
 
-Keep the team at four core roles for now. Assign focused security/privacy review for ownership and deletion changes, accessibility review for learner interfaces, and learning-content audits for generated questions and rubrics. Add a permanent specialist only when repeated work justifies it.
+Keep the team at four core roles for now. Assign focused security/privacy review for local study-space isolation and deletion changes, accessibility review for learner interfaces, and learning-content audits for generated questions and rubrics. Add a permanent specialist only when repeated work justifies it.
 
 ## Configuration and use
 

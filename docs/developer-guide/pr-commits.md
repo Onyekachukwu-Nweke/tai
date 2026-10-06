@@ -9,7 +9,7 @@ Use Conventional Commit-style subjects:
 ```text
 feat(activities): add source-linked recall questions
 fix(progress): avoid duplicate attempts on retry
-security(storage): enforce study-space ownership
+security(storage): enforce local study-space isolation
 docs: update developer guide
 test(review): cover hinted-answer scheduling
 ```
@@ -41,7 +41,7 @@ Checks not run and why.
 
 ## Compatibility and data
 
-Affected schemas, saved packs, source references, ownership, or deletion.
+Affected schemas, local packs, source references, study-space isolation, or deletion.
 Migration and recovery notes, when applicable.
 
 ## UI evidence
@@ -53,6 +53,6 @@ Omit inapplicable sections. Describe remaining limitations honestly and distingu
 
 ## Evidence and merging
 
-Include evidence appropriate to the change: deterministic scheduling tests, source-reference validation, duplicate-save checks, offline reloads, deletion checks, or accessibility walkthroughs. Generated-content changes need content review as well as schema checks.
+Include evidence appropriate to the change: deterministic scheduling tests, source-reference validation, duplicate-save checks, network-failure recovery, deletion checks, or accessibility walkthroughs. Generated-content changes need content review as well as schema checks.
 
 Applicable configured checks must pass. Resolve blocking feedback and request another review after material changes. Use the repository's configured merge strategy; for squash merges, make the final title a suitable commit subject and preserve important verification context in the description.

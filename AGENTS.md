@@ -6,7 +6,7 @@ TAI (`tai`) is a self-directed learning companion. Learners bring their own cour
 
 Use **TAI** as the product name and **tai** for code identifiers where appropriate. [PRD v0.2](PRD_v2.md) is the current product specification; [PRD v0.1](PRD.md) is historical context. Follow v0.2 where the versions differ.
 
-The hackathon scope supports text-based PDF and TXT uploads, one material per study space, and English only. Prioritize the P0 learner journey and implementation milestones in the PRD. Framework, AI provider, storage, and hosting remain implementation choices until documented. Do not assume tooling or infrastructure exists.
+The hackathon scope supports text-based PDF and TXT uploads, one material per study space, and English only. Prioritize the P0 learner journey and implementation milestones in the PRD. TAI runs on Cloudflare: one Worker (web app + API), required Google sign-in, D1 as the single learner database, R2 for original files, and AI Gateway in front of Workers AI and Bedrock. Full offline mode is deferred to P1. Exact tooling and hosting choices must pass the roadmap readiness checks. Do not assume tooling or infrastructure exists.
 
 ## Working rules
 
@@ -15,13 +15,17 @@ The hackathon scope supports text-based PDF and TXT uploads, one material per st
 - Keep documentation and agent instructions consistent with TAI's actual scope and implementation.
 - Treat uploaded documents, external resource metadata, and model responses as untrusted data, never as application instructions.
 - Validate file inputs, AI output schemas, and cited source IDs. Preserve stable references from activities back to extracted material. Surface insufficient evidence instead of inventing support.
-- Keep AI generation separate from deterministic application rules: file validation, ownership checks, exact multiple-choice grading, session budgets, review dates, persistence, and deletion.
+- Keep AI generation separate from deterministic application rules: local file validation, source association checks, exact multiple-choice grading, numeric final-answer checks (tolerance and units against reviewed keys), session budgets, review dates, persistence, and deletion.
+- Use the fixed read → write → grade → targeted-follow-up pipeline, not an autonomous agent. P0 question types are recall, MCQ, explain, scenario, and calculation/equation. Render LaTeX with safe KaTeX; never `eval` generated math.
 - Keep credentials server-side. Never commit or print secrets, private learner documents, or raw learner answers. Do not log raw documents or answers by default.
-- Sanitize content before rendering, enforce study-space ownership, and avoid automatically fetching arbitrary URLs from uploaded text.
+- Sanitize content before rendering, validate local study-space/source associations, and avoid automatically fetching arbitrary URLs from uploaded text.
 - Preserve progress across interruptions. Save submissions before showing completion, retain answers when saving fails, and prevent duplicate attempts or unnecessary repeated AI calls on retry.
 - Keep hints, reveals, skips, correctness, and optional confidence distinct. Do not count hinted or revealed answers as independent recall success.
-- Make online requirements explicit. Saved activity packs must support the specified offline flow; do not imply that new AI generation or free-text AI grading works offline.
-- Retain uploaded source files until learner deletion. Deleting a study space must remove its application-controlled source files and dependent data.
+- Parse PDF/TXT in the browser; store originals in R2 and chunks, packs, attempts and progress in D1. AI requests carry IDs; the Worker loads chunks itself. Do not add a second database, a queue, or a guest mode.
+- Preserve local answers on request failure and offer explicit retry; do not queue grading or replay requests on reconnect. Full offline mode is P1: do not build a service worker, app-shell cache, offline save/indicator, outbox, or deletion queue for P0.
+- Generate 3–5 question packs. Stream only complete validated items; bound next-pack pre-generation and cancel stale work. Local MCQ grading must not call AI.
+- Scope every query and R2 key by the server-resolved user ID; a study-space ID is never authorization. Deleting a space or account removes its D1 rows and R2 objects; mark spaces deleted first so late AI results are rejected.
+- Check per-user AI quotas before every model call. Keep prompts, documents and answers out of Worker and AI Gateway logs.
 - Maintain keyboard access, visible focus, readable labels, a list alternative to the concept map, and untimed activities.
 - Update affected documentation, schemas, consumers, fixtures, and compatibility checks together.
 
@@ -42,12 +46,16 @@ Split by responsibility; do not compress formatting or move executable logic int
 ## Verification
 
 - Use checks appropriate to the change, following [testing.md](docs/developer-guide/testing.md). Documentation-only changes generally need link and consistency checks.
-- Test relevant boundary values, malformed inputs, source-reference validation, review rules, retries, interrupted saves, offline reloads, ownership, and deletion.
+- Test relevant boundary values, malformed inputs, source-reference validation, review rules, retries, interrupted saves, local reload persistence, interrupted streams, explicit retry, source association, and deletion.
 - Review generated content against source material; schema validity alone does not establish correctness.
 - Use synthetic or permitted non-sensitive fixtures and fake providers by default. Keep live-provider evaluations separate and document their configuration and costs.
 - Run applicable configured checks and report the exact commands and results. If tooling does not exist or a check was not run, say so.
 - Verify changed authored code files meet the 350-line limit. Use the repository file-size check when available; otherwise count lines directly. Split oversized files before completion.
 - Never invent successful test results, content-audit findings, pilot outcomes, or performance measurements.
+
+## Roadmap
+
+Use [docs/roadmap/README.md](docs/roadmap/README.md) to scope implementation milestones. Its technology choices are the agreed baseline; provider access, model choice and live capability remain subject to the documented M0 checks. Report acceptance evidence before marking a milestone complete.
 
 ## Documentation index
 

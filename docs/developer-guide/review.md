@@ -8,7 +8,7 @@ Review tai for correct learning behavior, source traceability, data protection, 
 2. Are generated claims traceable to valid source chunks, with uncertainty shown honestly?
 3. Are learner data and credentials protected at access and rendering boundaries?
 4. Do saves, retries, interruptions, and reloads preserve progress without duplication?
-5. Are offline behavior, accessibility, and learner controls appropriate?
+5. Are network-failure recovery, accessibility, and learner controls appropriate?
 6. Does verification support the claimed behavior and relevant failure cases?
 7. Is the implementation cohesive and easy to maintain?
 
@@ -21,6 +21,9 @@ Block changes that introduce or modify authored software code files exceeding 35
 - Answers stay hidden until submission or deliberate reveal.
 - Hints, reveals, skips, confidence, and correctness remain distinct.
 - Flagged items do not contribute to scoring until reviewed or regenerated.
+- The read → write → grade → targeted-follow-up pipeline includes P0 scenario and calculation questions.
+- Numeric grading uses reviewed keys with explicit tolerance and unit rules; model feedback assesses working steps and allows uncertainty.
+- LaTeX uses safe KaTeX rendering; generated expressions never reach raw `eval`.
 - Uncertain rubric outcomes are allowed; source support is not presented as factual verification.
 - Review timing is deterministic and described as a heuristic.
 - Session estimates fit the selected budget; returning learners face no compulsory backlog.
@@ -28,9 +31,13 @@ Block changes that introduce or modify authored software code files exceeding 35
 
 ## Data and boundary checks
 
-Verify ownership checks, input validation, sanitized rendering, server-side secrets, and safe errors. Raw documents and answers must not enter logs by default. Retained source files and dependent application data must be removed through learner deletion.
+Verify that every Worker route requires sign-in and scopes D1 queries and R2 keys by the server-resolved user; check input validation, sanitized rendering, server-side secrets, per-user AI quotas and safe errors. AI requests carry IDs and the Worker loads chunks itself. Do not introduce a second database, a queue or a guest mode. Raw documents and answers must not enter Worker or AI Gateway logs. Space and account deletion must remove D1 rows and R2 objects, and late AI results must not recreate deleted spaces.
 
-Check stable IDs, persisted schema versions, activity invalidation after source changes, and compatibility with saved packs. Review failure handling and duplicate-submission behavior. Offline flows must not imply that new AI generation or free-text grading is available without connectivity.
+Check stable IDs, persisted schema versions, activity invalidation after source changes, and compatibility with saved packs. Review failure handling and duplicate-submission behavior. A dropped request must preserve the local answer and offer an explicit bounded retry, without automatic reconnect requests or duplicate attempt commits. Check quota errors and failed transactions. Full offline mode is deferred; offline caching, save controls, status UI, and grading/deletion queues are outside P0.
+
+Keep packs self-contained with 3–5 questions, answers or rubrics, explanations, and source excerpts. Stream complete validated items only, grade MCQs locally, and bound prefetch to one next pack while the learner studies.
+
+Compare Workers AI and Bedrock candidates through AI Gateway on the same two source documents and tasks. Review measured teaching quality, grounding, calculation correctness, latency, and cost; model capabilities and access must be verified rather than assumed.
 
 ## Verification and usability
 
