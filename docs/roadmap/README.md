@@ -15,7 +15,7 @@ This roadmap translates the complete PRD into an architecture, proposed technolo
 5. [Acceptance matrix](acceptance-matrix.md): PRD coverage and required evidence.
 6. [Risks and decisions](risks-and-decisions.md): explicit product-rule interpretations and unresolved readiness checks.
 
-Current local implementation and checks: [M0 foundation evidence](m0-foundation-evidence.md).
+Current local implementation and checks: [M0 foundation evidence](m0-foundation-evidence.md) and [browser extraction evidence](m0-extraction-evidence.md).
 
 ## Delivery sequence
 

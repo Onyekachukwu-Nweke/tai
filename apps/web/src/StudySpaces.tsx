@@ -4,10 +4,12 @@ import {
   studySpaceResponseSchema,
 } from "../../../packages/contracts/study-spaces";
 import { api, ApiError, authClient } from "./api";
+import { MaterialPreview } from "./MaterialPreview";
 
 type Space = { id: string; title: string; createdAt: string };
 
 export function StudySpaces() {
+  const [activeSpace, setActiveSpace] = useState<Space | null>(null);
   const [spaces, setSpaces] = useState<Space[]>([]);
   const [title, setTitle] = useState("");
   const [loading, setLoading] = useState(true);
@@ -93,7 +95,7 @@ export function StudySpaces() {
       <form className="card" onSubmit={createSpace}>
         <label htmlFor="space-title">What would you like to learn?</label>
         <p id="title-help" className="fine-print">
-          Give your space a name. You can add materials in a later release.
+          Give your space a name, then preview a PDF or TXT file locally.
         </p>
         <div className="form-row">
           <input
@@ -133,12 +135,30 @@ export function StudySpaces() {
           <li className="card" key={space.id}>
             <h3>{space.title}</h3>
             <p className="fine-print">
-              Ready for the next step. Uploads are not available in this
-              preview.
+              Preview your material locally. Uploads are not available yet.
             </p>
+            <button
+              type="button"
+              className="secondary"
+              id={`preview-${space.id}`}
+              onClick={() => setActiveSpace(space)}
+            >
+              Preview material
+            </button>
           </li>
         ))}
       </ul>
+      {activeSpace && (
+        <MaterialPreview
+          key={activeSpace.id}
+          title={activeSpace.title}
+          onClose={() => {
+            const id = activeSpace.id;
+            setActiveSpace(null);
+            document.getElementById(`preview-${id}`)?.focus();
+          }}
+        />
+      )}
     </section>
   );
 }
