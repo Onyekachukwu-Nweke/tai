@@ -1,6 +1,6 @@
 # TAI development roadmap
 
-**Planning baseline:** 5 October 2026 · **Specification:** [PRD v0.2](../../PRD_v2.md) · **Implementation status:** not started.
+**Planning baseline:** 5 October 2026 · **Specification:** [PRD v0.2](../../PRD_v2.md) · **Implementation status:** M0 foundation in progress.
 
 TAI runs on Cloudflare: one Worker (web app + API), required Google sign-in, D1 as the single database, R2 for original files, and AI Gateway in front of Workers AI and Bedrock. Full offline mode is deferred to P1.
 
@@ -15,6 +15,8 @@ This roadmap translates the complete PRD into an architecture, proposed technolo
 5. [Acceptance matrix](acceptance-matrix.md): PRD coverage and required evidence.
 6. [Risks and decisions](risks-and-decisions.md): explicit product-rule interpretations and unresolved readiness checks.
 
+Current local implementation and checks: [M0 foundation evidence](m0-foundation-evidence.md).
+
 ## Delivery sequence
 
 ```text
@@ -28,7 +30,7 @@ M0 Foundation, sign-in, and provider feasibility
 
 M0 establishes development tooling and validates deployment assumptions. M1–M5 implement the PRD's five milestones. Accessibility, privacy, source traceability, and error handling start with their owning feature; they are not deferred to a final polish phase.
 
-No calendar deadline or team capacity has been supplied. Sequence by exit criteria rather than invented dates. Re-estimate after M0 and each completed milestone. Each stage is currently **not started**; research in this folder is planning evidence only.
+No calendar deadline or team capacity has been supplied. Sequence by exit criteria rather than invented dates. Re-estimate after M0 and each completed milestone. M0 is **in progress**; M1–M5 are **not started**. See [local setup](../developer-guide/setup.md) for the current implementation scope. Live provider and device readiness gates remain open.
 
 ## Working agreement
 
@@ -38,7 +40,7 @@ Create a focused branch and pull request for each coherent work package. Include
 
 ## First implementation task
 
-Start M0 with a thin Worker + React skeleton, Google sign-in, one D1 table, versioned contracts, fake AI adapter and automated checks. In parallel, the account owner sets up Cloudflare (Workers AI, AI Gateway) and, if pursued, AWS Bedrock access and a spending ceiling. Development proceeds with fake responses until a provider is ready; a live AI demo cannot be marked ready until the [AI provider gate](ai-provider-and-budget.md) passes.
+Start M0 with a thin Worker + React skeleton, Google sign-in, one application table in D1 (plus auth tables), versioned contracts, fake AI adapter and automated checks. In parallel, the account owner sets up Cloudflare (Workers AI, AI Gateway) and, if pursued, AWS Bedrock access and a spending ceiling. Development proceeds with fake responses until a provider is ready; a live AI demo cannot be marked ready until the [AI provider gate](ai-provider-and-budget.md) passes.
 
 ## Connectivity story for the demo
 

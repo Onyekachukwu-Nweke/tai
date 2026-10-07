@@ -2,6 +2,7 @@
 
 Development guidelines for TAI:
 
+- [Local setup](setup.md): runtime, local D1, Google sign-in, and checks.
 - [Code hygiene](code-hygiene.md): file responsibilities, the 350-line limit, and safe data handling.
 - [Agent workflow](agent-workflow.md): principal engineer, coder, reviewer, and tester roles and handoffs.
 - [Development](development.md): scope, implementation boundaries, and workflow.

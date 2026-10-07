@@ -45,7 +45,7 @@ For the demo audit, follow PRD section 13: review at least 20 generated items ac
 
 ## Tooling and file-size checks
 
-No supported test runner or executable checks are configured yet. When implementation tooling is introduced, document exact commands here for formatting, linting, type checks where applicable, authored-file length, and the relevant test suites. Local and CI checks should use the same underlying tools.
+Run `npm run check` for the configured formatting, ESLint, TypeScript, authored-file length, local Markdown links, Vitest Workers tests, and production/dry-run builds. Local and CI use the same command. See [local setup](setup.md) for individual commands and current coverage limits.
 
 The file-size check must fail above 350 physical lines for human- and AI-written software code files. Apply the scope and generated-code exemption in [code-hygiene.md](code-hygiene.md#file-size-and-responsibility). Generated exclusions must be identifiable and reproducible; AI authorship alone is never an exclusion.
 
