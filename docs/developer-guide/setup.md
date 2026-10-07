@@ -1,6 +1,6 @@
 # Local development
 
-M0 introduces a React client served by one Hono Worker, Better Auth with Google, and local D1. This preview supports creating and listing study spaces. Uploads, deletion, learning activities, and live AI are not implemented yet. Use synthetic data during development.
+M0 introduces a React client served by one Hono Worker, Better Auth with Google, and local D1. This preview supports creating/listing study spaces and previewing PDF/TXT extraction in the browser. Uploads, deletion, learning activities, and live AI are not implemented yet. Use synthetic data during development.
 
 ## Prerequisites and commands
 
@@ -41,7 +41,17 @@ This runs formatting, ESLint, TypeScript, the 350-line authored-code check, loca
 
 Tests use local D1 migrations and synthetic sessions with the actual auth implementation. The fake concept adapter is internal test infrastructure and makes no network or billed model calls. There is no fake educational-content endpoint or production test-login route.
 
-The link checker checks relative Markdown file targets, not anchors or remote URL availability. Generated `dist`, installed dependencies, and Wrangler state are excluded from authored-code checks. Playwright covers browser behavior with mocked API responses; full browser-to-Worker OAuth and PDF extraction/device tests remain future work. On Linux, use `npx playwright install --with-deps chromium` if browser system dependencies are missing.
+The link checker checks relative Markdown file targets, not anchors or remote URL availability. Generated `dist`, installed dependencies, and Wrangler state are excluded from authored-code checks. Playwright covers browser behavior with mocked API responses; full browser-to-Worker OAuth and low-end device extraction tests remain future work. On Linux, use `npx playwright install --with-deps chromium` if browser system dependencies are missing.
+
+## Local material previews
+
+Create a study space and choose **Preview material**. Select a text-based PDF or UTF-8 TXT file. The original and extracted text remain in memory in the current tab; closing the preview, changing spaces, signing out, or reloading discards them. Nothing is uploaded to D1, R2, or an AI provider. A failed replacement leaves the previous successful preview visible.
+
+Limits are 10,000,000 bytes (decimal 10 MB), 50 PDF pages, 500,000 extracted UTF-16 characters, and 500 chunks. PDF parsing uses a lazy-loaded, locally bundled PDF.js worker. Chunk offsets refer to normalized extracted section text, not PDF byte positions. Password-protected, unreadable, textless, or oversized material is rejected with explicit recovery guidance. English support is disclosed; language detection is not implemented.
+
+Always compare equations, symbols, tables, and reading order with the original. Extraction is not verification of meaning or correctness. The preview shows one page/section at a time, capped at 20,000 visible characters, with a truncation notice. Device testing and source storage remain open roadmap gates.
+
+Synthetic fixtures are reproducible with `node scripts/generate-material-fixtures.mjs`. Real PDF.js extraction runs in the browser tests; pure file validation/chunking rules run with Vitest.
 
 ## Implementation layout
 

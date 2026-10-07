@@ -178,3 +178,29 @@ footer {
     padding: 18px;
   }
 }
+
+.preview-actions {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-top: 16px;
+}
+.material-preview h2,
+.material-preview h3 {
+  overflow-wrap: anywhere;
+}
+.material-preview select {
+  max-width: 100%;
+  min-height: 44px;
+  font: inherit;
+  padding: 8px;
+}
+.source-text {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  max-height: 420px;
+  overflow: auto;
+  background: #f6f7f2;
+  padding: 16px;
+  font: inherit;
+}
