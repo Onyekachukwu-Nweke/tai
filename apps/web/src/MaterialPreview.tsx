@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { ApiError } from "./api";
 import { Reauthenticate } from "./Reauthenticate";
 import { SourceReader } from "./SourceReader";
+import { ConceptExplorer } from "./ConceptExplorer";
 import { materialPath, saveMaterial } from "./material-storage";
 import { extractMaterial } from "./material/extract";
 import {
@@ -30,6 +31,13 @@ export function MaterialPreview({
   const [saving, setSaving] = useState(false);
   const saveController = useRef<AbortController | null>(null);
   const [sectionIndex, setSectionIndex] = useState(0);
+  const [focusedChunk, setFocusedChunk] = useState<{
+    id: string;
+    text: string;
+    start: number;
+    end: number;
+  } | null>(null);
+  const [readerRequest, setReaderRequest] = useState(0);
   const [busy, setBusy] = useState(false);
   const [status, setStatus] = useState("");
   const [error, setError] = useState("");
@@ -120,6 +128,25 @@ export function MaterialPreview({
   }
 
   const section = preview?.sections[sectionIndex];
+  const exactFocus =
+    section &&
+    focusedChunk &&
+    focusedChunk.start >= 0 &&
+    focusedChunk.end > focusedChunk.start &&
+    focusedChunk.end <= section.text.length &&
+    section.text.slice(focusedChunk.start, focusedChunk.end) ===
+      focusedChunk.text
+      ? focusedChunk
+      : null;
+  const windowStart = exactFocus
+    ? Math.max(
+        0,
+        Math.min(exactFocus.start - 5_000, section!.text.length - 20_000),
+      )
+    : 0;
+  const windowEnd = section
+    ? Math.min(section.text.length, windowStart + 20_000)
+    : 0;
   return (
     <section className="card material-preview" aria-labelledby="material-title">
       <h2 id="material-title" tabIndex={-1} ref={heading}>
@@ -195,6 +222,7 @@ export function MaterialPreview({
           spaceId={spaceId}
           page={section?.location ?? 1}
           onPageChange={(page) => setSectionIndex(page - 1)}
+          focusRequest={readerRequest}
         />
       )}
       {saved && <a href={`${materialPath(spaceId)}/original`}>Open original</a>}
@@ -240,14 +268,53 @@ export function MaterialPreview({
                 {section.location} · {section.text.length.toLocaleString()}{" "}
                 extracted characters
               </p>
-              <pre className="source-text">
-                {section.text.slice(0, 20_000) ||
-                  "No text could be extracted from this page."}
+              <pre
+                className="source-text"
+                tabIndex={-1}
+                data-focused-source={focusedChunk?.id ?? ""}
+              >
+                {exactFocus ? (
+                  <>
+                    {section.text.slice(windowStart, exactFocus.start)}
+                    <mark>
+                      {section.text.slice(exactFocus.start, exactFocus.end)}
+                    </mark>
+                    {section.text.slice(exactFocus.end, windowEnd)}
+                  </>
+                ) : (
+                  section.text.slice(0, 20_000) ||
+                  "No text could be extracted from this page."
+                )}
               </pre>
               {section.text.length > 20_000 && (
-                <p>Showing the first 20,000 characters of this section.</p>
+                <p>
+                  Showing extracted characters {windowStart + 1}–{windowEnd} of{" "}
+                  {section.text.length.toLocaleString()} for this section.
+                </p>
               )}
             </>
+          )}
+          {saved && section && (
+            <ConceptExplorer
+              spaceId={spaceId}
+              location={section.location}
+              onSource={(source) => {
+                const index = preview.sections.findIndex(
+                  (item) => item.location === source.location,
+                );
+                if (index >= 0) setSectionIndex(index);
+                setFocusedChunk({
+                  id: source.id,
+                  text: source.text,
+                  start: source.start,
+                  end: source.end,
+                });
+                setReaderRequest((value) => value + 1);
+                requestAnimationFrame(() =>
+                  document.querySelector<HTMLElement>(".source-text")?.focus(),
+                );
+              }}
+            />
           )}
         </div>
       )}

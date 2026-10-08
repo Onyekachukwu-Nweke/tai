@@ -41,6 +41,8 @@ This runs formatting, ESLint, TypeScript, the 350-line authored-code check, loca
 
 Tests use local D1 migrations and synthetic sessions with the actual auth implementation. The fake concept adapter is internal test infrastructure and makes no network or billed model calls. There is no fake educational-content endpoint or production test-login route.
 
+The concept explorer currently uses that deterministic fake adapter through authenticated concept routes. The interface labels its output as an unreviewed development preview. This proves owner-scoped chunk retrieval, citation validation, persistence, editing, retry and source navigation; it does not establish concept quality or live-model readiness.
+
 The link checker checks relative Markdown file targets, not anchors or remote URL availability. Generated `dist`, installed dependencies, and Wrangler state are excluded from authored-code checks. Playwright covers browser behavior with mocked API responses; full browser-to-Worker OAuth and low-end device extraction tests remain future work. On Linux, use `npx playwright install --with-deps chromium` if browser system dependencies are missing.
 
 ## Local material previews
