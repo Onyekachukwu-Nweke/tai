@@ -6,9 +6,14 @@ import {
   type ConceptProvider,
 } from "../../../packages/adapters/fake-concepts";
 import { createStudySpaces } from "./study-spaces";
+import {
+  FakeActivityPackProvider,
+  type ActivityPackProvider,
+} from "../../../packages/adapters/fake-activity-packs";
 
 export function createApp(
   provider: ConceptProvider = new FakeConceptProvider(),
+  activityProvider: ActivityPackProvider = new FakeActivityPackProvider(),
 ) {
   const app = new Hono<{ Bindings: Env; Variables: Variables }>();
 
@@ -59,7 +64,7 @@ export function createApp(
     });
     await next();
   });
-  app.route("/api/study-spaces", createStudySpaces(provider));
+  app.route("/api/study-spaces", createStudySpaces(provider, activityProvider));
 
   app.notFound((c) => c.json({ error: "Not found." }, 404));
   app.onError((_error, c) =>

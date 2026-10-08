@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import type { ConceptCollection } from "../../../packages/contracts/concepts";
 import { generateConcepts, loadConcepts, updateConcept } from "./concept-api";
+import { ActivityPack } from "./ActivityPack";
 
 type Source = ConceptCollection["concepts"][number]["sources"][number];
 export function ConceptExplorer({
@@ -178,6 +179,13 @@ export function ConceptExplorer({
             ))}
           </ul>
         </>
+      )}
+      {concepts.length > 0 && (
+        <ActivityPack
+          spaceId={spaceId}
+          selectedCount={concepts.filter((concept) => concept.selected).length}
+          onSource={onSource}
+        />
       )}
     </section>
   );

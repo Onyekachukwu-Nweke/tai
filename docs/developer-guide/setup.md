@@ -1,6 +1,6 @@
 # Local development
 
-M0 introduces a React client served by one Hono Worker, Better Auth with Google, and local D1. This preview supports study spaces, browser PDF/TXT extraction, private original/text storage, reopening saved material, and study-space deletion. Learning activities and live AI are not implemented yet. Use synthetic data during development.
+M0 introduces a React client served by one Hono Worker, Better Auth with Google, and local D1. This preview supports study spaces, browser PDF/TXT extraction, private original/text storage, reopening saved material, concept organization, learner-safe activity-pack previews, and study-space deletion. Activity submission, grading and live AI are not implemented yet. Use synthetic data during development.
 
 ## Prerequisites and commands
 
@@ -42,6 +42,8 @@ This runs formatting, ESLint, TypeScript, the 350-line authored-code check, loca
 Tests use local D1 migrations and synthetic sessions with the actual auth implementation. The fake concept adapter is internal test infrastructure and makes no network or billed model calls. There is no fake educational-content endpoint or production test-login route.
 
 The concept explorer currently uses that deterministic fake adapter through authenticated concept routes. The interface labels its output as an unreviewed development preview. This proves owner-scoped chunk retrieval, citation validation, persistence, editing, retry and source navigation; it does not establish concept quality or live-model readiness.
+
+The activity-pack preview also uses a deterministic fake adapter. An explicit request sends only a request UUID; the Worker loads selected concepts and chunks, validates a canonical 3–5 question pack and returns a strict learner DTO without answers, correct option IDs, rubrics or answer explanations. At least two selected concepts are required. Prompts persist in D1 and reload, but there is no answer entry, reveal, submission or grading in this slice. Run `npm run db:migrate` after pulling migration `0004_activity_packs.sql`.
 
 The link checker checks relative Markdown file targets, not anchors or remote URL availability. Generated `dist`, installed dependencies, and Wrangler state are excluded from authored-code checks. Playwright covers browser behavior with mocked API responses; full browser-to-Worker OAuth and low-end device extraction tests remain future work. On Linux, use `npx playwright install --with-deps chromium` if browser system dependencies are missing.
 
