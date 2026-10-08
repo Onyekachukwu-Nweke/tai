@@ -247,6 +247,16 @@ footer {
   border-radius: 8px;
   padding: 16px;
 }
+.activity-pack {
+  margin-top: 24px;
+}
+.activity-pack > ol {
+  padding-left: 24px;
+}
+.activity-card {
+  border-top: 1px solid #d7dfd5;
+  padding: 12px 0;
+}
 .concept-card form {
   display: flex;
   gap: 8px;

@@ -8,8 +8,13 @@ import type { Env, Variables } from "./env";
 import { materialRoutes } from "./material-routes";
 import type { ConceptProvider } from "../../../packages/adapters/fake-concepts";
 import { conceptRoutes } from "./concept-routes";
+import type { ActivityPackProvider } from "../../../packages/adapters/fake-activity-packs";
+import { activityPackRoutes } from "./activity-pack-routes";
 
-export function createStudySpaces(provider: ConceptProvider) {
+export function createStudySpaces(
+  provider: ConceptProvider,
+  activityProvider: ActivityPackProvider,
+) {
   const studySpaces = new Hono<{ Bindings: Env; Variables: Variables }>();
 
   studySpaces.get("/", async (c) => {
@@ -83,5 +88,6 @@ export function createStudySpaces(provider: ConceptProvider) {
 
   studySpaces.route("/", materialRoutes);
   studySpaces.route("/", conceptRoutes(provider));
+  studySpaces.route("/", activityPackRoutes(activityProvider));
   return studySpaces;
 }
