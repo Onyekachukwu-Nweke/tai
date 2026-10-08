@@ -31,7 +31,7 @@ M0 is **in progress**, with the local authenticated study-space foundation and b
 
 - M2.1: Selected-section retrieval and roughly 5–15 source-backed editable concepts; preserve IDs and show suggested edges distinctly. Provide map/list parity and no prerequisite locks.
 - M2.2: Generate self-contained 3–5 question packs across at least two selected concepts when material supports it, mixing recall, MCQ, explain, scenario and calculation/equation types as the source allows. Validate JSON shape, concept membership, citation IDs, revision, response bounds, and numeric keys/tolerances/units.
-- M2.3: Hidden answers, hints, alternate explanations, deliberate reveal, skip, local MCQ and numeric final-answer checks, recall self-check, and online rubric feedback on explanations, scenarios and working with an uncertain outcome. Render LaTeX with safe KaTeX. Show supported/missing elements and clickable source excerpts.
+- M2.3 (in progress): Hidden recall/MCQ review keys, deliberate reveal, skip, deterministic MCQ checks, recall self-check and saved ungraded explanations are implemented. Hints, alternate explanations, numeric checks, rubric feedback, scenarios, working and uncertainty remain.
 - M2.3b: Targeted follow-up: after an incorrect or uncertain result, generate one new question aimed at the identified gap, within the session/cost budget.
 - M2.4: Flag/challenge without penalty; block flagged content from future scoring; distinguish supplementary explanation from source-supported content. Persist packs and attempts using versioned contracts.
 
@@ -44,7 +44,7 @@ M0 is **in progress**, with the local authenticated study-space foundation and b
 **Depends on:** M2 activities/attempts. **Coverage:** FR-05–07; Today's session and Session summary.
 
 - M3.1: Session presets 5/15/30 minutes plus a 10-minute recovery option; learn/review/practise choice; explain selection, allow overrides, fit estimated budget without timing out learners.
-- M3.2: Persist submissions before completion; retry with stable attempt IDs. Write attempts and progress in one D1 batch keyed by attempt ID; keep unacknowledged drafts in browser storage for explicit manual retry.
+- M3.2 (in progress): Attempts persist before completion with stable IDs, immutable replay and explicit browser-draft retry. Atomic progress writes remain for M3.3.
 - M3.3: Implement evidence labels and review policy from [decisions](risks-and-decisions.md); separate correctness, hints/reveals, confidence and timestamps. Fake clocks cover 1/3/7/14-day intervals.
 - M3.4: Resume unfinished work or build a short session after configurable inactivity. No forced backlog or broken-streak penalty.
 

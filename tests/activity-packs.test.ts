@@ -81,15 +81,13 @@ describe("source-backed activity packs", () => {
     const first = await call(owner.spaceId, owner.cookie, provider);
     expect(first.status).toBe(200);
     const raw = await first.text();
-    for (const privateKey of [
-      "supportedAnswer",
-      "correctOptionId",
-      "rubric",
-      "answerExplanation",
-    ])
-      expect(raw).not.toContain(privateKey);
+    expect(raw).not.toContain('"rubric"');
     const pack = learnerActivityPackSchema.parse(JSON.parse(raw));
     expect(pack.questions).toHaveLength(3);
+    expect(pack.questions[0]).toMatchObject({
+      type: "recall",
+      review: { supportedAnswer: owner.preview.chunks[0]!.text },
+    });
     expect(pack.questions[2]?.type).toBe("explain");
     expect(
       new Set(pack.questions.flatMap((question) => question.conceptIds)).size,

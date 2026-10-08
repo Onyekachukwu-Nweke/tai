@@ -6,10 +6,12 @@ import { ActivityPack } from "./ActivityPack";
 type Source = ConceptCollection["concepts"][number]["sources"][number];
 export function ConceptExplorer({
   spaceId,
+  userId,
   location,
   onSource,
 }: {
   spaceId: string;
+  userId: string;
   location: number;
   onSource: (source: Source) => void;
 }) {
@@ -182,6 +184,7 @@ export function ConceptExplorer({
       )}
       {concepts.length > 0 && (
         <ActivityPack
+          userId={userId}
           spaceId={spaceId}
           selectedCount={concepts.filter((concept) => concept.selected).length}
           onSource={onSource}

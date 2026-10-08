@@ -1,18 +1,29 @@
 import { useEffect, useState } from "react";
 import type { LearnerActivityPack } from "../../../packages/contracts/activity-packs";
 import { generateActivityPack, loadActivityPack } from "./activity-pack-api";
+import { ActivityQuestion } from "./ActivityQuestion";
+import { loadActivityState } from "./activity-attempt-api";
+import type { ActivityAttemptResponse } from "../../../packages/contracts/activity-attempts";
 
 type Source = LearnerActivityPack["questions"][number]["sources"][number];
 export function ActivityPack({
   spaceId,
+  userId,
   selectedCount,
   onSource,
 }: {
   spaceId: string;
+  userId: string;
   selectedCount: number;
   onSource: (source: Source) => void;
 }) {
   const [pack, setPack] = useState<LearnerActivityPack | null>(null);
+  const [attempts, setAttempts] = useState<
+    Record<string, ActivityAttemptResponse>
+  >({});
+  const [flags, setFlags] = useState<Record<string, "incorrect" | "ambiguous">>(
+    {},
+  );
   const [busy, setBusy] = useState(false),
     [error, setError] = useState("");
   useEffect(() => {
@@ -24,6 +35,29 @@ export function ActivityPack({
       );
     return () => controller.abort();
   }, [spaceId]);
+  useEffect(() => {
+    if (!pack?.packId) return;
+    const controller = new AbortController();
+    loadActivityState(spaceId, pack.packId, controller.signal)
+      .then((state) => {
+        setAttempts(
+          Object.fromEntries(
+            state.attempts.map((item) => [item.questionId, item.result]),
+          ),
+        );
+        setFlags(
+          Object.fromEntries(
+            state.flags.map((item) => [item.questionId, item.reason]),
+          ),
+        );
+      })
+      .catch(() =>
+        setError(
+          "Saved practice state could not be loaded. Retry by reopening this material.",
+        ),
+      );
+    return () => controller.abort();
+  }, [pack?.packId, spaceId]);
   async function prepare() {
     setBusy(true);
     setError("");
@@ -44,8 +78,8 @@ export function ActivityPack({
       <h3 id="activity-heading">Practice activities</h3>
       <p className="notice">
         Development preview: these prompts come from a deterministic fake
-        provider and have not been reviewed for teaching quality. Answers and
-        grading are not available in this slice.
+        provider and have not been reviewed for teaching quality. Multiple
+        choice is checked deterministically; explanations are saved ungraded.
       </p>
       <button
         type="button"
@@ -75,40 +109,16 @@ export function ActivityPack({
       {pack && pack.questions.length > 0 && (
         <ol aria-label="Saved activity pack">
           {pack.questions.map((question) => (
-            <li key={question.id} className="activity-card">
-              <p>
-                <strong>
-                  {question.type === "mcq"
-                    ? "Multiple choice"
-                    : question.type === "recall"
-                      ? "Recall"
-                      : "Explain"}
-                </strong>{" "}
-                · about {question.estimatedMinutes} min
-              </p>
-              <p>{question.prompt}</p>
-              {question.type === "mcq" && (
-                <ul aria-label={`Options for ${question.prompt}`}>
-                  {question.options.map((option) => (
-                    <li key={option.id}>{option.text}</li>
-                  ))}
-                </ul>
-              )}
-              <ul aria-label={`Sources for ${question.prompt}`}>
-                {question.sources.map((source) => (
-                  <li key={source.id}>
-                    <button
-                      type="button"
-                      className="source-link"
-                      onClick={() => onSource(source)}
-                    >
-                      Open source section {source.location}:{" "}
-                      {source.text.slice(0, 80)}
-                    </button>
-                  </li>
-                ))}
-              </ul>
-            </li>
+            <ActivityQuestion
+              key={question.id}
+              userId={userId}
+              spaceId={spaceId}
+              packId={pack.packId!}
+              question={question}
+              onSource={onSource}
+              initialResult={attempts[question.id] ?? null}
+              initialFlag={flags[question.id] ?? null}
+            />
           ))}
         </ol>
       )}

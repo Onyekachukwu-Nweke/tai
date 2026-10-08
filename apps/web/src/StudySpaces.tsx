@@ -14,7 +14,7 @@ type Space = {
   deletionPending?: boolean;
 };
 
-export function StudySpaces() {
+export function StudySpaces({ userId }: { userId: string }) {
   const [activeSpace, setActiveSpace] = useState<Space | null>(null);
   const [spaces, setSpaces] = useState<Space[]>([]);
   const [title, setTitle] = useState("");
@@ -184,6 +184,7 @@ export function StudySpaces() {
       </ul>
       {activeSpace && (
         <MaterialWorkspace
+          userId={userId}
           spaceId={activeSpace.id}
           key={activeSpace.id}
           title={activeSpace.title}
