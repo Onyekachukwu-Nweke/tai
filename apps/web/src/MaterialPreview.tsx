@@ -15,11 +15,13 @@ type Selection = { file: File; documentId: string };
 export function MaterialPreview({
   title,
   spaceId,
+  userId,
   initialPreview,
   onClose,
 }: {
   title: string;
   spaceId: string;
+  userId: string;
   initialPreview: Preview | null;
   onClose: () => void;
 }) {
@@ -296,6 +298,7 @@ export function MaterialPreview({
           )}
           {saved && section && (
             <ConceptExplorer
+              userId={userId}
               spaceId={spaceId}
               location={section.location}
               onSource={(source) => {

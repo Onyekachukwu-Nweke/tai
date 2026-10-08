@@ -69,6 +69,7 @@ Latency is dominated by model generation, not network distance. Measure time to 
 ## Persistence and failure handling
 
 - Submitting an answer writes the attempt and updated progress in one D1 batch, keyed by a client-generated attempt ID so a double-click or retry returns the original result instead of duplicating evidence.
+- Until progress scheduling lands, attempt interactions are immutable D1 rows keyed by learner, space and client-generated attempt ID. The Worker hashes the canonical request, returns the prior response for an identical retry, rejects changed reuse, and reloads the current canonical question before grading.
 - Until the server acknowledges an answer, the browser keeps the draft in local storage and offers explicit retry after a network failure. No background queue or replay.
 - A dropped model stream keeps any items already validated and saved; the learner can retry the rest. A retry may cost another inference.
 

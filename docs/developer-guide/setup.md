@@ -1,6 +1,6 @@
 # Local development
 
-M0 introduces a React client served by one Hono Worker, Better Auth with Google, and local D1. This preview supports study spaces, browser PDF/TXT extraction, private original/text storage, reopening saved material, concept organization, learner-safe activity-pack previews, and study-space deletion. Activity submission, grading and live AI are not implemented yet. Use synthetic data during development.
+TAI uses a React client served by one Hono Worker, Better Auth with Google, and local D1. This preview supports study spaces, browser extraction, private source storage, concepts, activity packs, deterministic MCQ checks, saved practice interactions and study-space deletion. Model grading and live AI are not implemented yet. Use synthetic data during development.
 
 ## Prerequisites and commands
 
@@ -43,7 +43,7 @@ Tests use local D1 migrations and synthetic sessions with the actual auth implem
 
 The concept explorer currently uses that deterministic fake adapter through authenticated concept routes. The interface labels its output as an unreviewed development preview. This proves owner-scoped chunk retrieval, citation validation, persistence, editing, retry and source navigation; it does not establish concept quality or live-model readiness.
 
-The activity-pack preview also uses a deterministic fake adapter. An explicit request sends only a request UUID; the Worker loads selected concepts and chunks, validates a canonical 3–5 question pack and returns a strict learner DTO without answers, correct option IDs, rubrics or answer explanations. At least two selected concepts are required. Prompts persist in D1 and reload, but there is no answer entry, reveal, submission or grading in this slice. Run `npm run db:migrate` after pulling migration `0004_activity_packs.sql`.
+The activity-pack preview also uses a deterministic fake adapter. An explicit request sends only a request UUID; the Worker loads selected concepts and chunks and validates a canonical 3–5 question pack. The authenticated DTO carries bounded recall and MCQ review keys for local checking, but the interface hides them until submission or deliberate reveal and never writes them to browser storage. Attempts persist before acknowledgment; failed saves keep a user-scoped draft for explicit retry. Explanations are saved ungraded. Run `npm run db:migrate` after pulling migrations, including `0005_activity_attempts.sql`.
 
 The link checker checks relative Markdown file targets, not anchors or remote URL availability. Generated `dist`, installed dependencies, and Wrangler state are excluded from authored-code checks. Playwright covers browser behavior with mocked API responses; full browser-to-Worker OAuth and low-end device extraction tests remain future work. On Linux, use `npx playwright install --with-deps chromium` if browser system dependencies are missing.
 
@@ -63,7 +63,7 @@ Synthetic fixtures are reproducible with `node scripts/generate-material-fixture
 - `apps/worker`: Hono routes, session resolution, ownership and request validation.
 - `packages/contracts`: versioned boundary schemas.
 - `packages/adapters`: internal fake AI adapter.
-- `migrations`: auth tables and one application table, `study_spaces`.
+- `migrations`: auth and versioned application tables for spaces, materials, concepts, packs and attempts.
 - `tests`: synthetic contracts and Worker/D1 integration checks.
 
 A study-space ID is not authorization. The Worker resolves the session and scopes data access to its user ID. Authentication requires multiple library-owned tables; the roadmap's initial “one table” means one **application** table, alongside auth tables in the same D1 database.

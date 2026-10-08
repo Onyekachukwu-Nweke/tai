@@ -30,13 +30,27 @@ const baseQuestion = {
   sources: z.array(source).min(1).max(4),
 };
 const learnerQuestion = z.discriminatedUnion("type", [
-  z.object({ ...baseQuestion, type: z.literal("recall") }).strict(),
+  z
+    .object({
+      ...baseQuestion,
+      type: z.literal("recall"),
+      review: z
+        .object({ supportedAnswer: z.string().min(1).max(2_000) })
+        .strict(),
+    })
+    .strict(),
   z.object({ ...baseQuestion, type: z.literal("explain") }).strict(),
   z
     .object({
       ...baseQuestion,
       type: z.literal("mcq"),
       options: z.array(option).min(3).max(5),
+      review: z
+        .object({
+          correctOptionId: uuid,
+          answerExplanation: z.string().min(1).max(1_000),
+        })
+        .strict(),
     })
     .strict(),
 ]);
@@ -168,14 +182,28 @@ export function toLearnerActivityPack(pack: CanonicalActivityPack) {
           estimatedMinutes: question.estimatedMinutes,
           sources: question.sources,
           options: question.options,
+          review: {
+            correctOptionId: question.correctOptionId,
+            answerExplanation: question.answerExplanation,
+          },
         }
-      : {
-          id: question.id,
-          type: question.type,
-          conceptIds: question.conceptIds,
-          prompt: question.prompt,
-          estimatedMinutes: question.estimatedMinutes,
-          sources: question.sources,
-        },
+      : question.type === "recall"
+        ? {
+            id: question.id,
+            type: question.type,
+            conceptIds: question.conceptIds,
+            prompt: question.prompt,
+            estimatedMinutes: question.estimatedMinutes,
+            sources: question.sources,
+            review: { supportedAnswer: question.supportedAnswer },
+          }
+        : {
+            id: question.id,
+            type: question.type,
+            conceptIds: question.conceptIds,
+            prompt: question.prompt,
+            estimatedMinutes: question.estimatedMinutes,
+            sources: question.sources,
+          },
   );
 }

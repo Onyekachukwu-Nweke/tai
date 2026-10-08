@@ -96,8 +96,7 @@ export function App() {
         </p>
         <p className="notice">
           Early development preview · Study spaces, source-backed concepts and
-          activity-pack previews are available. Answering and feedback are
-          coming next.
+          activity packs and saved practice responses are available.
         </p>
         {error && (
           <div className="error" role="alert">
@@ -110,7 +109,7 @@ export function App() {
         {loading ? (
           <p role="status">Checking your session…</p>
         ) : user ? (
-          <StudySpaces key={user.id} />
+          <StudySpaces key={user.id} userId={user.id} />
         ) : (
           <section className="card" aria-labelledby="signin-title">
             <h2 id="signin-title">Start with your own space</h2>

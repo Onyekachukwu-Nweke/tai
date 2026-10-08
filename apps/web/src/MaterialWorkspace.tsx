@@ -7,10 +7,12 @@ import type { MaterialPreview as Preview } from "./material/types";
 
 export function MaterialWorkspace({
   spaceId,
+  userId,
   title,
   onClose,
 }: {
   spaceId: string;
+  userId: string;
   title: string;
   onClose: () => void;
 }) {
@@ -59,6 +61,7 @@ export function MaterialWorkspace({
   return (
     <MaterialPreview
       spaceId={spaceId}
+      userId={userId}
       title={title}
       initialPreview={saved}
       onClose={onClose}
