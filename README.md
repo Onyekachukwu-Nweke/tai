@@ -11,7 +11,7 @@ npm run db:migrate
 npm run dev
 ```
 
-The preview supports signed-in study-space creation/listing and local PDF/TXT extraction previews. Material uploads and learning activities are not available yet.
+The preview supports signed-in study-space creation/listing and PDF/TXT previews with private material saving, reopening, and study-space deletion. Learning activities are not available yet.
 
 ## Documentation
 

@@ -29,7 +29,7 @@ One deployable Worker, one database, one bucket. No queue, no job workers, no ou
 | AI adapter | Task kinds `concepts`, `pack`, `grade`, `followup`, `hint`, `explain_again`, `practical_task`; server-owned prompts; output schema and citation validation; provider routing per task |
 | Resource catalog | Bundled checked links matched by concept tags |
 
-PDF parsing stays in the browser: Workers have tight per-request CPU limits, and parsing locally lets the learner see extraction problems before anything is uploaded.
+PDF text extraction stays in the browser. Before storage, the Worker validates PDF structure, encryption status, and actual page count using pdf-lib; it does not extract PDF text or prove that submitted text matches the original. Structural validation still needs deployment CPU/memory evaluation on complex compressed documents.
 
 ## Identity and ownership
 
@@ -74,7 +74,7 @@ Latency is dominated by model generation, not network distance. Measure time to 
 
 ## Deletion
 
-Deleting a study space removes its D1 rows and R2 objects in one server operation, after marking the space deleted so in-flight AI work cannot write results into it. Deleting the account removes all spaces, sessions and the user row. Deletion does not retract text already sent to a model provider; disclose this. Enable AI Gateway settings that avoid storing prompt/response bodies, and do not log learner text in the Worker.
+Deleting a study space first marks it deleted so reads and new uploads fail. Cleanup then removes material rows and R2 originals. D1/R2 are not one transaction: registered upload writers must settle before deletion returns complete. Pending cleanup returns an explicit retry state and retains a minimal ledger; there is no background deletion queue. A minimal owner/space tombstone prevents late requests from recreating data. Deleting the account removes all spaces, sessions and the user row. Deletion does not retract text already sent to a model provider; disclose this. Enable AI Gateway settings that avoid storing prompt/response bodies, and do not log learner text in the Worker.
 
 ## Abuse and spend controls
 

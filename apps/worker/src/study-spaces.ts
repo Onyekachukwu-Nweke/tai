@@ -5,16 +5,22 @@ import {
   type StudySpace,
 } from "../../../packages/contracts/study-spaces";
 import type { Env, Variables } from "./env";
+import { materialRoutes } from "./material-routes";
 
 export const studySpaces = new Hono<{ Bindings: Env; Variables: Variables }>();
 
 studySpaces.get("/", async (c) => {
   const rows = await c.env.DB.prepare(
-    "SELECT id, title, created_at AS createdAt FROM study_spaces WHERE user_id = ? AND deleted_at IS NULL ORDER BY created_at DESC, id DESC",
+    "SELECT id, title, created_at AS createdAt, deleted_at FROM study_spaces WHERE user_id = ? AND (deleted_at IS NULL OR EXISTS (SELECT 1 FROM material_imports m WHERE m.user_id = study_spaces.user_id AND m.space_id = study_spaces.id)) ORDER BY created_at DESC, id DESC",
   )
     .bind(c.get("user").id)
-    .all<StudySpace>();
-  return c.json({ schemaVersion: 1, spaces: rows.results });
+    .all<StudySpace & { deleted_at: string | null }>();
+  return c.json({
+    schemaVersion: 1,
+    spaces: rows.results.map(({ deleted_at, ...space }) =>
+      deleted_at ? { ...space, deletionPending: true } : space,
+    ),
+  });
 });
 
 studySpaces.get("/:id", async (c) => {
@@ -70,3 +76,5 @@ studySpaces.post(
     return c.json({ schemaVersion: 1, space }, 201);
   },
 );
+
+studySpaces.route("/", materialRoutes);

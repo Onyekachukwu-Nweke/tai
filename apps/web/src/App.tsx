@@ -95,8 +95,8 @@ export function App() {
           A place for your materials, your questions, and your next small step.
         </p>
         <p className="notice">
-          Early development preview · Study spaces and local material previews
-          are available. Uploads and learning activities are coming next.
+          Early development preview · Study spaces and material storage are
+          available. Learning activities are coming next.
         </p>
         {error && (
           <div className="error" role="alert">
