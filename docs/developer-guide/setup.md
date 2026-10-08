@@ -1,6 +1,6 @@
 # Local development
 
-M0 introduces a React client served by one Hono Worker, Better Auth with Google, and local D1. This preview supports creating/listing study spaces and previewing PDF/TXT extraction in the browser. Uploads, deletion, learning activities, and live AI are not implemented yet. Use synthetic data during development.
+M0 introduces a React client served by one Hono Worker, Better Auth with Google, and local D1. This preview supports study spaces, browser PDF/TXT extraction, private original/text storage, reopening saved material, and study-space deletion. Learning activities and live AI are not implemented yet. Use synthetic data during development.
 
 ## Prerequisites and commands
 
@@ -12,7 +12,7 @@ npm run db:migrate
 npm run dev
 ```
 
-Open `http://localhost:8787`. The development command builds the client and serves it through Wrangler; restart it after client edits. D1 is persisted locally in the ignored `.wrangler` directory. No Cloudflare account or remote resource is required for this local shell. Without OAuth configuration, the app reports that sign-in is unavailable; there is no guest or development-login bypass.
+Open `http://localhost:8787`. The development command builds the client and serves it through Wrangler; restart it after client edits. D1 is persisted locally in the ignored `.wrangler` directory. The `ORIGINALS` R2 binding is emulated locally alongside D1. No Cloudflare account or remote resource is required locally. Without OAuth configuration, the app reports that sign-in is unavailable; there is no guest or development-login bypass.
 
 For client hot reload, run `npm run dev:web` alongside Wrangler, set `APP_ORIGIN` to `http://localhost:5173` in `.dev.vars`, and use that origin in the browser and Google OAuth configuration. The Vite server proxies `/api` to Wrangler. Restart Wrangler after changing its variables.
 
@@ -45,11 +45,11 @@ The link checker checks relative Markdown file targets, not anchors or remote UR
 
 ## Local material previews
 
-Create a study space and choose **Preview material**. Select a text-based PDF or UTF-8 TXT file. The original and extracted text remain in memory in the current tab; closing the preview, changing spaces, signing out, or reloading discards them. Nothing is uploaded to D1, R2, or an AI provider. A failed replacement leaves the previous successful preview visible.
+Create a study space and choose **Preview material**. Select a text-based PDF or UTF-8 TXT file. Until **Save material** is selected, the original and extracted text remain in tab memory. Saving stores the original in private R2 and validated extracted content in D1. Saved material reopens from the account after reload. One immutable material is allowed per space; create a new space for another file. No AI request is made during saving. A failed save retains the matching original and preview for explicit retry with the same document ID.
 
 Limits are 10,000,000 bytes (decimal 10 MB), 50 PDF pages, 500,000 extracted UTF-16 characters, and 500 chunks. PDF parsing uses a lazy-loaded, locally bundled PDF.js worker. Chunk offsets refer to normalized extracted section text, not PDF byte positions. Password-protected, unreadable, textless, or oversized material is rejected with explicit recovery guidance. English support is disclosed; language detection is not implemented.
 
-Always compare equations, symbols, tables, and reading order with the original. Extraction is not verification of meaning or correctness. The preview shows one page/section at a time, capped at 20,000 visible characters, with a truncation notice. Device testing and source storage remain open roadmap gates.
+Always compare equations, symbols, tables, and reading order with the original. Extraction is not verification of meaning or correctness. The preview shows one page/section at a time, capped at 20,000 visible characters, with a truncation notice. Device testing remains an open roadmap gate. The Worker independently checks original size/type, TXT text, and PDF structure/page count; PDF text fidelity still requires learner inspection.
 
 Synthetic fixtures are reproducible with `node scripts/generate-material-fixtures.mjs`. Real PDF.js extraction runs in the browser tests; pure file validation/chunking rules run with Vitest.
 
@@ -65,3 +65,23 @@ Synthetic fixtures are reproducible with `node scripts/generate-material-fixture
 A study-space ID is not authorization. The Worker resolves the session and scopes data access to its user ID. Authentication requires multiple library-owned tables; the roadmap's initial “one table” means one **application** table, alongside auth tables in the same D1 database.
 
 The `sharp` override pins 0.35.5 to resolve the transitive librsvg advisory in Cloudflare local tooling. Revisit the override when upstream Miniflare updates its dependency. npm 11 is pinned because npm 10 failed while resolving the current test-tool peer dependencies.
+
+## Storage and deletion
+
+Run `npm run db:migrate` after updating the checkout. Wrangler emulates private R2 locally; remote deployment requires provisioning the `tai-originals` bucket and D1. These changes do not provision resources. Original downloads require ownership checks and return attachments.
+
+Uploads reserve an immutable object key before writing R2 and commit content only while the space is active. Retries compare document ID and payload fingerprint. Study-space deletion denies material reads immediately, then removes originals and material rows. An in-flight writer or cleanup failure returns pending deletion; the UI offers explicit retry and does not claim success. No reconnect replay, queue, or background cleanup is installed.
+
+A hard-terminated Worker can leave an unsettled upload reservation. It stays tracked rather than permitting another writer or claiming deletion complete. For local development only, use the stopped-Worker recovery procedure below. Remote operational reconciliation remains unverified; a timeout alone does not prove that no late write can occur. Account deletion is not implemented in this slice.
+
+The pinned pdf-lib 1.17.1 parser needs a privacy patch: upstream warnings include document-controlled numeric tokens. `scripts/patch-pdf-lib.mjs` checks exact source hashes and replaces those warnings with fixed-message rejection. `postinstall`, `pretest`, and `prebuild` apply it; do not bypass lifecycle scripts for a deployment build. Browser PDF.js is unaffected. Review this patch when upgrading pdf-lib. Server PDF validation checks structure/page count, not extracted-text fidelity, and complex compressed PDFs still need deployed CPU/memory evaluation.
+
+### Recover an interrupted local import
+
+Stop **every** Wrangler process using this checkout's local store, including processes in other terminals. Then run:
+
+```sh
+npm run materials:recover -- --local --confirm-worker-stopped
+```
+
+This command deletes originals tracked by unsettled local import records and changes those records to retryable failures. It never touches ready materials or remote storage. If an R2 deletion fails, its ledger remains for another explicit run. Restart Wrangler and retry the original upload or pending deletion in the UI. The command requires your acknowledgement that writers are stopped; it cannot establish quiescence for you. Do not run it while the app is serving requests. Remote recovery needs a separate, verified maintenance procedure.

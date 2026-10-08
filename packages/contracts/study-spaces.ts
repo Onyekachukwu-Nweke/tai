@@ -12,6 +12,7 @@ export const studySpaceSchema = z
     id: z.string().uuid(),
     title: z.string().min(1).max(120),
     createdAt: z.string().datetime(),
+    deletionPending: z.boolean().optional(),
   })
   .strict();
 

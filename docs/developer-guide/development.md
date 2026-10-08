@@ -1,6 +1,6 @@
 # Development
 
-Build tai against [PRD v0.2](../../PRD_v2.md), including its confirmed hackathon decisions. The repository currently contains documentation; the [roadmap](../roadmap/README.md) defines a TypeScript app on Cloudflare: one Worker (web app + API), required Google sign-in, D1 database, R2 files, and AI Gateway in front of Workers AI and Bedrock. Exact versions, provider/model access, and deployment feasibility must pass M0; executable setup commands do not exist yet.
+Build tai against [PRD v0.2](../../PRD_v2.md), including its confirmed hackathon decisions. The repository contains a working local application; the [roadmap](../roadmap/README.md) defines a TypeScript app on Cloudflare: one Worker (web app + API), required Google sign-in, D1 database, R2 files, and AI Gateway in front of Workers AI and Bedrock. Exact versions, provider/model access, and deployment feasibility must pass M0; see [local setup](setup.md) for executable commands and verification limits.
 
 ## Product boundaries
 
@@ -22,7 +22,7 @@ Parse documents in the browser, then store the original in R2 and chunks, concep
 
 Use small self-contained JSON packs of 3–5 questions, including answers, explanations, and source excerpts. Stream only complete validated items, grade multiple-choice answers locally, and allow one bounded background prefetch for the next pack while the learner studies. Preserve drafts on network failure and offer an explicit bounded retry. Do not add automatic reconnect retries, pending-grading queues, outbox replay, service workers, app-shell caching, save-for-offline controls, or offline status UI. Full offline mode is P1 follow-up.
 
-Delete a study space and its dependent data locally; cancel its in-flight work where possible and discard late responses. No server delete queue is needed. Report quota and transaction failures without losing the current in-memory answer or claiming that unsaved work is durable.
+Delete a study space and its dependent D1/R2 data server-side; cancel its in-flight work where possible and discard late responses. No server delete queue is needed. Report quota and transaction failures without losing the current in-memory answer or claiming that unsaved work is durable.
 
 Use a fixed teaching pipeline: read source-grounded material → write an answer → grade → offer targeted follow-up. P0 activities include scenario and calculation questions alongside recall and explanation. Render mathematical notation with KaTeX using safe settings; never execute generated expressions with raw `eval`. Grade numeric answers deterministically against reviewed answer keys with explicit tolerance and unit rules. Use rubric-based model feedback for working steps, preserving an uncertain result when evidence or the key is ambiguous.
 

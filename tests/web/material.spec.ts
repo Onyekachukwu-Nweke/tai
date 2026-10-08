@@ -6,6 +6,9 @@ const fileInput = (page: Page) => page.getByLabel("Choose a PDF or TXT file");
 const extracted = (page: Page) => page.locator("pre");
 
 async function openPreview(page: Page) {
+  await page.route("**/api/study-spaces/*/material", (route) =>
+    route.fulfill({ json: { schemaVersion: 1, material: null } }),
+  );
   await page.route("**/api/session", (route) =>
     route.fulfill({
       json: {

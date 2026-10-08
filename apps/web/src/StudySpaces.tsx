@@ -4,9 +4,15 @@ import {
   studySpaceResponseSchema,
 } from "../../../packages/contracts/study-spaces";
 import { api, ApiError, authClient } from "./api";
-import { MaterialPreview } from "./MaterialPreview";
+import { MaterialWorkspace } from "./MaterialWorkspace";
+import { DeleteStudySpace } from "./DeleteStudySpace";
 
-type Space = { id: string; title: string; createdAt: string };
+type Space = {
+  id: string;
+  title: string;
+  createdAt: string;
+  deletionPending?: boolean;
+};
 
 export function StudySpaces() {
   const [activeSpace, setActiveSpace] = useState<Space | null>(null);
@@ -135,21 +141,50 @@ export function StudySpaces() {
           <li className="card" key={space.id}>
             <h3>{space.title}</h3>
             <p className="fine-print">
-              Preview your material locally. Uploads are not available yet.
+              Preview and save your material, or reopen a saved original.
             </p>
             <button
               type="button"
               className="secondary"
               id={`preview-${space.id}`}
+              disabled={space.deletionPending}
               onClick={() => setActiveSpace(space)}
             >
               Preview material
             </button>
+            {space.deletionPending && (
+              <p role="status">
+                Deletion is pending. Retry to finish removing the material.
+              </p>
+            )}
+            <DeleteStudySpace
+              deletionPending={space.deletionPending}
+              spaceId={space.id}
+              title={space.title}
+              onDeleting={() => {
+                if (activeSpace?.id === space.id) setActiveSpace(null);
+                setSpaces((previous) =>
+                  previous.map((item) =>
+                    item.id === space.id
+                      ? { ...item, deletionPending: true }
+                      : item,
+                  ),
+                );
+              }}
+              onDeleted={() => {
+                setSpaces((previous) =>
+                  previous.filter((item) => item.id !== space.id),
+                );
+                setMessage("Study space and material deleted.");
+                document.getElementById("space-title")?.focus();
+              }}
+            />
           </li>
         ))}
       </ul>
       {activeSpace && (
-        <MaterialPreview
+        <MaterialWorkspace
+          spaceId={activeSpace.id}
           key={activeSpace.id}
           title={activeSpace.title}
           onClose={() => {
