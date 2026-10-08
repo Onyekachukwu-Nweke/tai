@@ -195,6 +195,34 @@ footer {
   font: inherit;
   padding: 8px;
 }
+.source-reader {
+  margin: 20px 0;
+  border: 1px solid #d7dfd5;
+  border-radius: 8px;
+  padding: 16px;
+}
+.source-reader label {
+  align-self: center;
+}
+.source-reader select {
+  min-width: 110px;
+}
+.pdf-canvas-wrap {
+  width: 100%;
+  overflow: auto;
+  background: #e8ece8;
+  padding: 8px;
+}
+.pdf-canvas-wrap canvas {
+  display: block;
+  width: 100%;
+  height: auto;
+  margin: 0 auto;
+  background: white;
+}
+.pdf-canvas-wrap canvas[hidden] {
+  display: none;
+}
 .source-text {
   white-space: pre-wrap;
   overflow-wrap: anywhere;

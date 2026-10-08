@@ -18,7 +18,7 @@ M0 is **in progress**, with the local authenticated study-space foundation and b
 **Depends on:** M0 contracts/tooling. **Coverage:** FR-01, FR-11 foundation; Home, Material review, basic Settings.
 
 - M1.1: Required sign-in; owner-scoped study-space CRUD in D1; processing disclosure; browser PDF/TXT import. One material per space; original stored in R2.
-- M1.2: Validate actual file bytes/size and PDF page count in the browser, extract stable source chunks, upload original and chunks as one material revision with server-side re-validation, report scanned/encrypted/empty/unsupported/oversized failures, and preview page/section evidence.
+- M1.2: Validate actual file bytes/size and PDF page count in the browser, extract stable source chunks, upload original and chunks as one material revision with server-side re-validation, report scanned/encrypted/empty/unsupported/oversized failures, and preview page/section evidence. Let learners explicitly fetch and render a saved PDF one page at a time beside its canonical extracted-text alternative.
 - M1.3: Retry without losing usable data; processing status; reopen the original through the Worker; server deletion of D1 rows and R2 objects; initial keyboard/mobile states.
 
 **Exit demo:** a signed-in learner imports PDF and TXT, inspects page/section references and warnings, revisits the original from another device, and deletes the space. Another user cannot read its records or files. Invalid imports fail recoverably. Defaults 10 MB/50 pages are enforced in the browser and re-checked by the Worker.

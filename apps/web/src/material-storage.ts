@@ -45,6 +45,13 @@ export async function loadMaterial(spaceId: string, signal: AbortSignal) {
   return materialEnvelopeSchema.parse(await response.json()).material;
 }
 
+export async function fetchOriginal(spaceId: string, signal: AbortSignal) {
+  const response = await checked(
+    await fetch(`${materialPath(spaceId)}/original`, { signal }),
+  );
+  return new Uint8Array(await response.arrayBuffer());
+}
+
 export async function saveMaterial(
   spaceId: string,
   preview: MaterialPreview,
