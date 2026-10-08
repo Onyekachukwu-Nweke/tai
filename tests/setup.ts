@@ -8,6 +8,10 @@ beforeEach(async () => {
   if (objects.objects.length)
     await env.ORIGINALS.delete(objects.objects.map((object) => object.key));
   await env.DB.batch([
+    env.DB.prepare("DELETE FROM concept_relations"),
+    env.DB.prepare("DELETE FROM concept_sources"),
+    env.DB.prepare("DELETE FROM concepts"),
+    env.DB.prepare("DELETE FROM concept_requests"),
     env.DB.prepare("DELETE FROM material_chunks"),
     env.DB.prepare("DELETE FROM material_sections"),
     env.DB.prepare("DELETE FROM material_imports"),

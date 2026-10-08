@@ -1,81 +1,144 @@
 import { z } from "zod";
 
-const identifier = z.string().min(1).max(128);
+const id = z.string().uuid();
+const source = z
+  .object({
+    id: z.string().min(1).max(128),
+    location: z.number().int().min(1).max(50),
+    start: z.number().int().min(0),
+    end: z.number().int().positive(),
+    text: z.string().trim().min(1).max(12_000),
+  })
+  .strict()
+  .refine(
+    (value) =>
+      value.end > value.start && value.end - value.start === value.text.length,
+    "Invalid source offsets",
+  );
+export const generateConceptsSchema = z
+  .object({
+    schemaVersion: z.literal(1),
+    requestId: id,
+    selection: z.object({ location: z.number().int().min(1).max(50) }).strict(),
+  })
+  .strict();
 export const sourceContextSchema = z
   .object({
-    studySpaceId: identifier,
-    materialId: identifier,
+    studySpaceId: id,
+    materialId: id,
+    location: z.number().int().min(1).max(50),
     chunks: z
-      .array(
-        z
-          .object({
-            id: identifier,
-            studySpaceId: identifier,
-            materialId: identifier,
-            text: z.string().trim().min(1).max(12000),
-          })
-          .strict(),
-      )
+      .array(source.extend({ studySpaceId: id, materialId: id }))
       .min(1)
       .max(20),
   })
   .strict();
-
-export const conceptResultSchema = z
+export const conceptDraftResultSchema = z
   .object({
     schemaVersion: z.literal(1),
     concepts: z
       .array(
         z
           .object({
-            id: identifier,
             title: z.string().trim().min(1).max(120),
-            description: z.string().trim().min(1).max(2000),
-            sourceIds: z.array(identifier).min(1).max(20),
+            description: z.string().trim().min(1).max(2_000),
+            sourceIds: z.array(z.string().min(1).max(128)).min(1).max(20),
           })
           .strict(),
       )
       .min(1)
       .max(15),
+    relations: z
+      .array(
+        z
+          .object({
+            from: z.number().int().min(0),
+            to: z.number().int().min(0),
+            kind: z.literal("suggested"),
+          })
+          .strict(),
+      )
+      .max(30),
   })
   .strict();
-
+export const conceptSchema = z
+  .object({
+    id,
+    title: z.string().min(1).max(120),
+    label: z.string().min(1).max(120),
+    description: z.string().min(1).max(2_000),
+    selected: z.boolean(),
+    sources: z.array(source).min(1).max(20),
+  })
+  .strict();
+export const conceptCollectionSchema = z
+  .object({
+    schemaVersion: z.literal(1),
+    status: z.enum(["empty", "pending", "ready", "failed"]),
+    requestId: id.nullable(),
+    location: z.number().int().min(1).max(50).nullable(),
+    concepts: z.array(conceptSchema).max(15),
+    relations: z
+      .array(
+        z
+          .object({ fromId: id, toId: id, kind: z.literal("suggested") })
+          .strict(),
+      )
+      .max(30),
+    error: z.string().max(240).nullable(),
+    provider: z.literal("fake"),
+  })
+  .strict();
+export const updateConceptSchema = z
+  .object({
+    schemaVersion: z.literal(1),
+    label: z.string().trim().min(1).max(120).optional(),
+    selected: z.boolean().optional(),
+  })
+  .strict()
+  .refine((value) => value.label !== undefined || value.selected !== undefined);
 export type SourceContext = z.infer<typeof sourceContextSchema>;
-export type ConceptResult = z.infer<typeof conceptResultSchema>;
-
+export type ConceptDraftResult = z.infer<typeof conceptDraftResultSchema>;
+export type ConceptCollection = z.infer<typeof conceptCollectionSchema>;
 export function validateSourceContext(input: unknown): SourceContext {
   const context = sourceContextSchema.parse(input);
   const ids = new Set<string>();
-  for (const chunk of context.chunks) {
+  for (const chunk of context.chunks)
     if (
       chunk.studySpaceId !== context.studySpaceId ||
       chunk.materialId !== context.materialId ||
+      chunk.location !== context.location ||
+      chunk.end <= chunk.start ||
       ids.has(chunk.id)
-    ) {
+    )
       throw new Error("Invalid source association");
-    }
-    ids.add(chunk.id);
-  }
+    else ids.add(chunk.id);
   return context;
 }
-
-export function validateConceptResult(
+export function validateConceptDrafts(
   input: unknown,
-  source: SourceContext,
-): ConceptResult {
-  const context = validateSourceContext(source);
-  const result = conceptResultSchema.parse(input);
-  const sourceIds = new Set(context.chunks.map((chunk) => chunk.id));
-  const conceptIds = new Set<string>();
-  for (const concept of result.concepts) {
+  sourceContext: SourceContext,
+): ConceptDraftResult {
+  const context = validateSourceContext(sourceContext);
+  const result = conceptDraftResultSchema.parse(input);
+  const sources = new Set(context.chunks.map((chunk) => chunk.id));
+  for (const concept of result.concepts)
     if (
-      conceptIds.has(concept.id) ||
       new Set(concept.sourceIds).size !== concept.sourceIds.length ||
-      concept.sourceIds.some((id) => !sourceIds.has(id))
-    ) {
+      concept.sourceIds.some((sourceId) => !sources.has(sourceId))
+    )
       throw new Error("Invalid concept references");
-    }
-    conceptIds.add(concept.id);
-  }
+  if (
+    new Set(result.concepts.map((concept) => concept.title.toLocaleLowerCase()))
+      .size !== result.concepts.length
+  )
+    throw new Error("Duplicate concepts");
+  for (const relation of result.relations)
+    if (
+      relation.from === relation.to ||
+      relation.from >= result.concepts.length ||
+      relation.to >= result.concepts.length
+    )
+      throw new Error("Invalid concept relation");
   return result;
 }

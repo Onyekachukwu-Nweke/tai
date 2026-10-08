@@ -9,10 +9,12 @@ export function SourceReader({
   spaceId,
   page,
   onPageChange,
+  focusRequest = 0,
 }: {
   spaceId: string;
   page: number;
   onPageChange: (page: number) => void;
+  focusRequest?: number;
 }) {
   const [open, setOpen] = useState(false);
   const [document, setDocument] = useState<PDFDocumentProxy | null>(null);
@@ -70,6 +72,10 @@ export function SourceReader({
       });
     return () => controller.abort();
   }, [document, open, page]);
+
+  useEffect(() => {
+    if (focusRequest > 0 && !open) void load();
+  }, [focusRequest]);
 
   useEffect(
     () => () => {

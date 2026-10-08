@@ -86,6 +86,10 @@ describe("private material persistence", () => {
     expect((await upload(spaceId, cookie, preview)).status).toBe(404);
     expect((await env.ORIGINALS.list()).objects).toHaveLength(0);
     for (const table of [
+      "concept_relations",
+      "concept_sources",
+      "concepts",
+      "concept_requests",
       "material_chunks",
       "material_sections",
       "material_imports",
