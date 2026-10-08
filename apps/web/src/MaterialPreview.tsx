@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { ApiError } from "./api";
 import { Reauthenticate } from "./Reauthenticate";
+import { SourceReader } from "./SourceReader";
 import { materialPath, saveMaterial } from "./material-storage";
 import { extractMaterial } from "./material/extract";
 import {
@@ -189,6 +190,13 @@ export function MaterialPreview({
           </button>
         </div>
       )}
+      {saved && preview?.format === "pdf" && (
+        <SourceReader
+          spaceId={spaceId}
+          page={section?.location ?? 1}
+          onPageChange={(page) => setSectionIndex(page - 1)}
+        />
+      )}
       {saved && <a href={`${materialPath(spaceId)}/original`}>Open original</a>}
       <p role="status">{status}</p>
       {error && (
@@ -201,6 +209,11 @@ export function MaterialPreview({
       {preview && (
         <div>
           <h3>{preview.filename}</h3>
+          <p className="fine-print">
+            Extracted text below is the source used for citations and learning
+            activities. For PDFs, open the matching rendered page to compare
+            layout, equations, tables, and symbols.
+          </p>
           {preview.warnings.length > 0 && (
             <ul aria-label="Extraction warnings">
               {preview.warnings.map((warning, index) => (
