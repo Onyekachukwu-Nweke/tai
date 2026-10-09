@@ -22,7 +22,6 @@ import { ActivityGradedFeedback } from "./ActivityGradedFeedback";
 import { CalculationAnswer } from "./CalculationAnswer";
 import { MultipleChoiceAnswer } from "./MultipleChoiceAnswer";
 import { ActivityConfidence } from "./ActivityConfidence";
-
 type Question = LearnerActivityPack["questions"][number];
 export function ActivityQuestion({
   userId,
@@ -228,19 +227,29 @@ export function ActivityQuestion({
       )}
       {!result &&
         (question.type === "explain" || question.type === "scenario") && (
-          <button
-            disabled={busy || !draft.answer.trim()}
-            onClick={() =>
-              void submit({
-                ...base(),
-                interaction: "explain_submit",
-                answer: draft.answer,
-              })
-            }
-          >
-            Save{" "}
-            {question.type === "scenario" ? "scenario response" : "explanation"}
-          </button>
+          <>
+            <button
+              disabled={busy || Boolean(flag) || !draft.answer.trim()}
+              onClick={() =>
+                void submit({
+                  ...base(),
+                  interaction: "explain_submit",
+                  answer: draft.answer,
+                })
+              }
+            >
+              Save{" "}
+              {question.type === "scenario"
+                ? "scenario response"
+                : "explanation"}
+            </button>
+            {flag && (
+              <p>
+                This flagged question cannot be submitted for rubric feedback.
+                Your draft remains available.
+              </p>
+            )}
+          </>
         )}
       {!result && question.type === "recall" && !checkingRecall && (
         <button

@@ -55,6 +55,18 @@ export async function reserveRubricRequest(
   return result.meta.changes === 1;
 }
 
+export const loadActiveRubricForAttempt = (
+  env: Env,
+  userId: string,
+  spaceId: string,
+  attemptId: string,
+) =>
+  env.DB.prepare(
+    "SELECT request_hash,state,response_json FROM activity_rubric_requests WHERE user_id=? AND space_id=? AND attempt_id=? AND state IN ('pending','ready') LIMIT 1",
+  )
+    .bind(userId, spaceId, attemptId)
+    .first<RubricRequestRow>();
+
 const currentAttempt = `EXISTS(
  SELECT 1 FROM activity_attempts a
  JOIN activity_packs p ON p.user_id=a.user_id AND p.space_id=a.space_id AND p.id=a.pack_id

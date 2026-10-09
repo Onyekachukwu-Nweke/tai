@@ -14,6 +14,7 @@ import {
 import {
   failRubricRequest,
   finishRubricRequest,
+  loadActiveRubricForAttempt,
   loadRubricRequest,
   reserveRubricRequest,
 } from "./activity-rubric-store";
@@ -107,7 +108,21 @@ export async function gradeExplanation(
       spaceId,
       input.requestId,
     );
-    if (!raced || raced.request_hash !== hash)
+    if (!raced) {
+      const active = await loadActiveRubricForAttempt(
+        env,
+        userId,
+        spaceId,
+        input.attemptId,
+      );
+      if (active)
+        throw new RubricFailure(
+          409,
+          "Rubric feedback already exists or is being prepared for this attempt.",
+        );
+      throw new RubricFailure(409, "This request could not be reserved.");
+    }
+    if (raced.request_hash !== hash)
       throw new RubricFailure(409, "This request ID was already used.");
     return existing(raced);
   }

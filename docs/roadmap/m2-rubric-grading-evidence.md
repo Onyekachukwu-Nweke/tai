@@ -8,6 +8,13 @@ The response contract accepts the outcomes `supported`, `partial`, `not_supporte
 
 Grading requests are owner-scoped and reserved before provider work. An identical ready request replays its saved response without another provider call. Failed requests remain failed and require an explicit retry with a new request ID. Final persistence checks that the attempt and current pack revision still exist, the space is not deleted, and the question has not been flagged. Rubric outcomes do not update concept progress.
 
+The final M2 review adds a database-enforced single active rubric request per
+owner-scoped attempt. Concurrent different request IDs cannot both reach the
+provider; a failed reservation releases the attempt for an explicit new-ID
+retry. Migration 0013 retains legacy rows and follow-up references while
+marking duplicate pending requests failed. A ready request takes precedence;
+otherwise the oldest pending request remains active.
+
 The explanation attempt is persisted before grading begins. If grading fails, the saved attempt and browser draft remain, and the learner gets an explicit retry control. Successful feedback and its source links restore after reload. The interface labels the fake-provider limitation and exposes outcome text in addition to visual styling.
 
 Automated evidence covers strict schema bounds, unchanged rubric elements, exact citations, server-built private context, owner isolation, immutable request replay, failed-request retry rules, flagged-question rejection, no progress advancement, draft retention after grading failure, explicit retry, source-linked feedback, and reload restoration.

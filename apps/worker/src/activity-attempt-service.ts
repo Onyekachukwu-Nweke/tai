@@ -190,7 +190,9 @@ export async function recordAttempt(
       "This question is not pending in the active study session.",
     );
   if (
-    input.interaction === "mcq_submit" &&
+    ["mcq_submit", "explain_submit", "calculation_submit"].includes(
+      input.interaction,
+    ) &&
     (await questionIsFlagged(
       env,
       userId,
