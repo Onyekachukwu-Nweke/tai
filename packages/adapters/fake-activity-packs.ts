@@ -60,6 +60,10 @@ export class FakeActivityPackProvider implements ActivityPackProvider {
               "Uses the cited excerpts without adding an unsupported claim.",
             ],
           };
+    const scenarioSources =
+      firstSource.id === secondSource.id
+        ? [firstSource]
+        : [firstSource, secondSource];
     return {
       schemaVersion: 1,
       questions: [
@@ -82,6 +86,22 @@ export class FakeActivityPackProvider implements ActivityPackProvider {
           rubric: [`Uses the cited point: ${secondSource.text}`],
         },
         third,
+        {
+          id: questionId(4),
+          type: "scenario",
+          conceptIds: [first.id, second.id],
+          prompt: `A classmate understands ${first.label} but is unsure how it affects ${second.label} during a practice task. Describe what you would tell them using the cited material.`,
+          assumptions: [
+            "Use only the supplied situation and cited excerpts.",
+            "State when the material does not support a needed detail.",
+          ],
+          estimatedMinutes: 4,
+          sources: scenarioSources,
+          rubric: [
+            `Applies the cited point about ${first.label}.`,
+            `Connects the response to ${second.label} without an unsupported claim.`,
+          ],
+        },
       ],
     };
   }

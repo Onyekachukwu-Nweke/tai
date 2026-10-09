@@ -72,10 +72,13 @@ export async function gradeExplanation(
     attempt.pack_id,
     attempt.question_id,
   );
-  if (!question || question.type !== "explain")
+  if (
+    !question ||
+    (question.type !== "explain" && question.type !== "scenario")
+  )
     throw new RubricFailure(
       404,
-      "The current explanation question was not found.",
+      "The current free-text question was not found.",
     );
   if (
     await questionIsFlagged(

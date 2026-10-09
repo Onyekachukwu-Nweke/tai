@@ -84,7 +84,7 @@ export function ActivityRubricFeedback({
       {busy && <p role="status">Preparing source-grounded feedback…</p>}
       {error && (
         <p role="alert" className="error">
-          {error} Your saved explanation remains available. Retry explicitly.
+          {error} Your saved response remains available. Retry explicitly.
         </p>
       )}
       {!busy && (

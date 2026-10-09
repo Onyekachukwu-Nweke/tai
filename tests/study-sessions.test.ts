@@ -53,7 +53,7 @@ describe("study sessions API", () => {
               answer: "Synthetic answer",
               selfAssessment: "partial" as const,
             }
-          : question.type === "explain"
+          : question.type === "explain" || question.type === "scenario"
             ? {
                 ...common,
                 interaction: "explain_submit" as const,

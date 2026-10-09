@@ -29,6 +29,6 @@ performance measurement is claimed.
 
 ## Deferred
 
-Live provider and AI Gateway integration, per-user AI quotas, scenario/rubric
-grading, numeric calculation policy and KaTeX, targeted follow-up,
+Live provider and AI Gateway integration, per-user AI quotas, numeric
+calculation policy and KaTeX, targeted follow-up,
 prerequisite diagnosis, and supplementary explanations remain open.

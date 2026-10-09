@@ -109,5 +109,22 @@ describe("activity-pack contracts", () => {
         context,
       ),
     ).toThrow("outside its concepts");
+    const scenario = valid.questions.find(
+      (question) => question.type === "scenario",
+    )!;
+    expect(scenario.conceptIds).toHaveLength(2);
+    expect(() =>
+      validateActivityPack(
+        {
+          ...valid,
+          questions: valid.questions.map((question) =>
+            question.id === scenario.id
+              ? { ...scenario, assumptions: [] }
+              : question,
+          ),
+        },
+        context,
+      ),
+    ).toThrow();
   });
 });

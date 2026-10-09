@@ -67,7 +67,7 @@ export type TutorContext = {
   questionId: string;
   kind: "hint" | "explain_again";
   question: {
-    type: "recall" | "mcq" | "explain";
+    type: "recall" | "mcq" | "explain" | "scenario";
     prompt: string;
     conceptIds: string[];
     sources: TutorSource[];

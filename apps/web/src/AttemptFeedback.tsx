@@ -18,7 +18,9 @@ export function AttemptFeedback({
         <strong>
           {result.supportedByMaterial
             ? "Supported by your material"
-            : "Explanation saved"}
+            : question.type === "scenario"
+              ? "Scenario response saved"
+              : "Explanation saved"}
           :
         </strong>{" "}
         {result.feedback}

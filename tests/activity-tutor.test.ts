@@ -99,7 +99,7 @@ describe("activity tutor routes", () => {
     const fixture = await createActivityFixture();
     const provider = new InspectingProvider();
     const question = fixture.pack.questions.find(
-      (item) => item.type === "mcq",
+      (item) => item.type === "scenario",
     )!;
     const requestId = crypto.randomUUID();
     const app = createApp(

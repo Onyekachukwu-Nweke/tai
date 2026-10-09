@@ -92,7 +92,9 @@ export function ActivityPack({
   useEffect(() => {
     if (
       !pack?.packId ||
-      !pack.questions.some((item) => item.type === "explain")
+      !pack.questions.some(
+        (item) => item.type === "explain" || item.type === "scenario",
+      )
     )
       return;
     const controller = new AbortController();
@@ -171,7 +173,7 @@ export function ActivityPack({
       <p className="notice">
         Development preview: these prompts and tutor responses come from
         deterministic fake providers and have not been reviewed for teaching
-        quality. Multiple choice is checked deterministically; explanation
+        quality. Multiple choice is checked deterministically; free-text
         feedback uses a bounded source-grounded rubric and does not affect
         review progress.
       </p>
