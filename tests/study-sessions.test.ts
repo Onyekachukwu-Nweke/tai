@@ -59,11 +59,18 @@ describe("study sessions API", () => {
                 interaction: "explain_submit" as const,
                 answer: "Synthetic answer",
               }
-            : {
-                ...common,
-                interaction: "mcq_submit" as const,
-                selectedOptionId: question.review.correctOptionId,
-              };
+            : question.type === "calculation"
+              ? {
+                  ...common,
+                  interaction: "calculation_submit" as const,
+                  finalAnswer: `12 ${question.review.expectedUnit}`,
+                  working: "120 divided by 10 is 12.",
+                }
+              : {
+                  ...common,
+                  interaction: "mcq_submit" as const,
+                  selectedOptionId: question.review.correctOptionId,
+                };
       finalInput = input;
       expect((await fixture.call("/activity-attempts", input)).status).toBe(
         201,

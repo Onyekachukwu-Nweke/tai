@@ -127,4 +127,50 @@ describe("activity-pack contracts", () => {
       ),
     ).toThrow();
   });
+
+  it("enforces calculation unit-policy invariants", async () => {
+    const quantitative =
+      "A cart travels 120 metres in 10 seconds. Speed equals distance divided by time.";
+    const context: ActivityContext = {
+      ...base,
+      concepts: base.concepts.map((concept) => ({
+        ...concept,
+        sources: [source("motion", quantitative)],
+      })),
+    };
+    const pack = await new FakeActivityPackProvider().generate(context);
+    const calculation = pack.questions.find(
+      (question) => question.type === "calculation",
+    );
+    if (!calculation || calculation.type !== "calculation")
+      throw new Error("fixture mismatch");
+    expect(calculation.numericKey.unitPolicy).toBe("required");
+    for (const numericKey of [
+      { ...calculation.numericKey, allowedUnits: [] },
+      {
+        ...calculation.numericKey,
+        unitPolicy: "forbidden",
+        expectedUnit: "m/s",
+        allowedUnits: [],
+      },
+      {
+        ...calculation.numericKey,
+        unitPolicy: "optional",
+        expectedUnit: null,
+      },
+    ])
+      expect(() =>
+        validateActivityPack(
+          {
+            ...pack,
+            questions: pack.questions.map((question) =>
+              question.id === calculation.id
+                ? { ...calculation, numericKey }
+                : question,
+            ),
+          },
+          context,
+        ),
+      ).toThrow();
+  });
 });

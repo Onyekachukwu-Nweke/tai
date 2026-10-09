@@ -15,6 +15,7 @@ import {
 import { questionIsFlagged } from "./activity-attempt-store";
 import type { Clock } from "../../../packages/domain/concept-progress";
 import { assistanceForQuestion } from "./activity-tutor-store";
+import { gradeNumericAnswer } from "../../../packages/domain/numeric-grading";
 
 export class AttemptFailure extends Error {
   constructor(
@@ -33,6 +34,7 @@ const digest = async (value: unknown) => {
 function review(question: ActivityQuestion) {
   if (question.type === "recall") return question.supportedAnswer;
   if (question.type === "mcq") return question.answerExplanation;
+  if (question.type === "calculation") return question.workedExplanation;
   return question.rubric.join("; ");
 }
 function result(
@@ -59,6 +61,14 @@ function result(
       409,
       "This response does not match the current question.",
     );
+  if (
+    input.interaction === "calculation_submit" &&
+    question.type !== "calculation"
+  )
+    throw new AttemptFailure(
+      409,
+      "This response does not match the current question.",
+    );
   if (input.interaction === "mcq_submit") {
     if (question.type !== "mcq")
       throw new AttemptFailure(
@@ -71,29 +81,47 @@ function result(
         "Choose an option from the current question.",
       );
   }
+  const numeric =
+    input.interaction === "calculation_submit" &&
+    question.type === "calculation"
+      ? gradeNumericAnswer(input.finalAnswer, question.numericKey)
+      : null;
+  if (numeric?.outcome === "invalid")
+    throw new AttemptFailure(400, numeric.message);
   const correctness =
     input.interaction === "mcq_submit" && question.type === "mcq"
       ? gradeMcq(input.selectedOptionId, question.correctOptionId)
-      : null;
+      : (numeric?.outcome ?? null);
   const revealed =
     input.interaction === "reveal" || input.interaction === "recall_self_check";
   const feedback =
-    input.interaction === "explain_submit"
-      ? "Your response was saved. Source-grounded rubric feedback is prepared separately."
-      : input.interaction === "skip"
-        ? "Skipped without a correctness result."
-        : input.interaction === "recall_self_check"
-          ? "Your self-check was saved without a scored correctness result."
-          : revealed
-            ? "The supported answer is shown below. Reveal does not count as correct."
-            : correctness === "correct"
-              ? "Correct. The explanation is supported by your material."
-              : "Not yet. Review the material-supported explanation below.";
+    input.interaction === "calculation_submit"
+      ? `${numeric!.message} Your working was saved for separate rubric feedback.`
+      : input.interaction === "explain_submit"
+        ? "Your response was saved. Source-grounded rubric feedback is prepared separately."
+        : input.interaction === "skip"
+          ? "Skipped without a correctness result."
+          : input.interaction === "recall_self_check"
+            ? "Your self-check was saved without a scored correctness result."
+            : revealed
+              ? "The supported answer is shown below. Reveal does not count as correct."
+              : correctness === "correct"
+                ? "Correct. The explanation is supported by your material."
+                : "Not yet. Review the material-supported explanation below.";
   return {
     schemaVersion: 1,
     attemptId: input.attemptId,
     interaction: input.interaction,
     correctness,
+    numericResult: numeric
+      ? {
+          outcome: numeric.outcome,
+          submittedValue: numeric.submittedValue,
+          submittedUnit: numeric.submittedUnit,
+          convertedValue: numeric.convertedValue,
+          tolerance: numeric.tolerance,
+        }
+      : null,
     selfAssessment:
       input.interaction === "recall_self_check" ? input.selfAssessment : null,
     confidence: input.confidence,
@@ -103,8 +131,13 @@ function result(
     excludedFromScoring: false,
     flagReason: null,
     feedback,
-    supportedByMaterial: input.interaction !== "explain_submit",
-    answer: revealed ? review(question) : null,
+    supportedByMaterial:
+      input.interaction !== "explain_submit" &&
+      input.interaction !== "calculation_submit",
+    answer:
+      revealed || input.interaction === "calculation_submit"
+        ? review(question)
+        : null,
     correctOptionId:
       (revealed || input.interaction === "mcq_submit") &&
       question.type === "mcq"
@@ -180,7 +213,13 @@ export async function recordAttempt(
   const response = result(input, question, assistance);
   const fields = {
     interaction: input.interaction,
-    answer: "answer" in input ? input.answer : undefined,
+    answer:
+      "answer" in input
+        ? input.answer
+        : "working" in input
+          ? input.working
+          : undefined,
+    finalAnswer: "finalAnswer" in input ? input.finalAnswer : undefined,
     selectedOptionId:
       "selectedOptionId" in input ? input.selectedOptionId : undefined,
     selfAssessment:
@@ -191,6 +230,7 @@ export async function recordAttempt(
     skipped: response.skipped,
     hintUsed: response.hintUsed,
     alternateExplanationUsed: response.alternateExplanationUsed,
+    numericOutcome: response.numericResult?.outcome,
   };
   const saved = await saveAttempt(
     env,

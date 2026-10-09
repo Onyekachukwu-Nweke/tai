@@ -74,7 +74,7 @@ const stillCurrent = `EXISTS(
    AND g.request_id=activity_followup_requests.grade_request_id
  WHERE a.user_id=activity_followup_requests.user_id AND a.space_id=activity_followup_requests.space_id
  AND a.id=activity_followup_requests.attempt_id AND a.pack_id=activity_followup_requests.pack_id
- AND a.question_id=activity_followup_requests.question_id AND a.interaction='explain_submit'
+ AND a.question_id=activity_followup_requests.question_id AND a.interaction IN ('explain_submit','calculation_submit')
  AND g.attempt_id=a.id AND g.state='ready'
  AND g.response_json=activity_followup_requests.grade_response_json
  AND pr.state='ready' AND s.deleted_at IS NULL AND p.document_id=pr.document_id

@@ -23,7 +23,11 @@ export function ActivityGradedFeedback({
   onFollowupSaved: (saved: ActivityFollowupResponse) => void;
   onSource: (source: ActivityRubricResponse["sources"][number]) => void;
 }) {
-  if (result?.interaction !== "explain_submit") return null;
+  if (
+    result?.interaction !== "explain_submit" &&
+    result?.interaction !== "calculation_submit"
+  )
+    return null;
   return (
     <>
       <ActivityRubricFeedback

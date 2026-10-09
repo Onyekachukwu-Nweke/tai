@@ -18,9 +18,11 @@ export function AttemptFeedback({
         <strong>
           {result.supportedByMaterial
             ? "Supported by your material"
-            : question.type === "scenario"
-              ? "Scenario response saved"
-              : "Explanation saved"}
+            : question.type === "calculation"
+              ? "Calculation saved"
+              : question.type === "scenario"
+                ? "Scenario response saved"
+                : "Explanation saved"}
           :
         </strong>{" "}
         {result.feedback}
@@ -28,6 +30,24 @@ export function AttemptFeedback({
       {result.answer && <p>{result.answer}</p>}
       {question.type === "mcq" && result.correctOptionId && (
         <p>{question.review.answerExplanation}</p>
+      )}
+      {result.numericResult && (
+        <>
+          <p>
+            Numeric result: {result.numericResult.outcome}. Submitted{" "}
+            {result.numericResult.submittedValue}{" "}
+            {result.numericResult.submittedUnit}. The Worker confirmed the
+            browser check.
+          </p>
+          {question.type === "calculation" && (
+            <p>
+              Accepted key: {question.review.expectedValue}{" "}
+              {question.review.expectedUnit ?? "(unitless)"}; tolerance max(
+              {question.review.absoluteTolerance}, relative{" "}
+              {question.review.relativeTolerance}).
+            </p>
+          )}
+        </>
       )}
       <p>
         {result.correctness

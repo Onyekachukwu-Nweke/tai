@@ -64,6 +64,13 @@ export class FakeActivityPackProvider implements ActivityPackProvider {
       firstSource.id === secondSource.id
         ? [firstSource]
         : [firstSource, secondSource];
+    const quantitative = context.concepts
+      .flatMap((concept) => concept.sources.map((item) => ({ concept, item })))
+      .find(({ item }) =>
+        item.text.includes(
+          "A cart travels 120 metres in 10 seconds. Speed equals distance divided by time.",
+        ),
+      );
     return {
       schemaVersion: 1,
       questions: [
@@ -102,6 +109,34 @@ export class FakeActivityPackProvider implements ActivityPackProvider {
             `Connects the response to ${second.label} without an unsupported claim.`,
           ],
         },
+        ...(quantitative
+          ? [
+              {
+                id: questionId(5),
+                type: "calculation" as const,
+                conceptIds: [quantitative.concept.id],
+                prompt:
+                  "Calculate the cart's speed. Give one number with a unit and show your working.",
+                notation: String.raw`v = \frac{d}{t}`,
+                givens: ["Distance d = 120 m", "Time t = 10 s"],
+                estimatedMinutes: 4,
+                sources: [quantitative.item],
+                numericKey: {
+                  unitPolicy: "required" as const,
+                  expectedValue: 12,
+                  expectedUnit: "m/s" as const,
+                  allowedUnits: ["m/s" as const, "km/h" as const],
+                  absoluteTolerance: 0.01,
+                  relativeTolerance: 0.001,
+                },
+                workedExplanation: "Divide 120 m by 10 s to obtain 12 m/s.",
+                rubric: [
+                  "Uses speed equals distance divided by time.",
+                  "Substitutes 120 m and 10 s consistently.",
+                ],
+              },
+            ]
+          : []),
       ],
     };
   }

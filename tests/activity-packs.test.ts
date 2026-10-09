@@ -12,7 +12,9 @@ import { learner, material, upload } from "./material-fixtures";
 const requestId = "55555555-5555-4555-8555-555555555555";
 async function seed() {
   const owner = await learner();
-  const preview = material("Plants use light energy. Roots absorb water.");
+  const preview = material(
+    "A cart travels 120 metres in 10 seconds. Speed equals distance divided by time.",
+  );
   await upload(owner.spaceId, owner.cookie, preview);
   const conceptRequest = crypto.randomUUID();
   const ids = [crypto.randomUUID(), crypto.randomUUID()];
@@ -83,7 +85,7 @@ describe("source-backed activity packs", () => {
     const raw = await first.text();
     expect(raw).not.toContain('"rubric"');
     const pack = learnerActivityPackSchema.parse(JSON.parse(raw));
-    expect(pack.questions).toHaveLength(4);
+    expect(pack.questions).toHaveLength(5);
     expect(pack.questions[0]).toMatchObject({
       type: "recall",
       review: { supportedAnswer: owner.preview.chunks[0]!.text },
@@ -161,7 +163,7 @@ describe("source-backed activity packs", () => {
       await (await call(owner.spaceId, owner.cookie, invalid, "")).json(),
     );
     expect(state.status).toBe("failed");
-    expect(state.questions).toHaveLength(4);
+    expect(state.questions).toHaveLength(5);
   });
 
   it("requires two selections, scopes ownership and rejects late selection changes", async () => {

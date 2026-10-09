@@ -60,7 +60,7 @@ export async function gradeExplanation(
     return existing(prior);
   }
   const attempt = await env.DB.prepare(
-    "SELECT pack_id,question_id,answer FROM activity_attempts WHERE user_id=? AND space_id=? AND id=? AND interaction='explain_submit'",
+    "SELECT pack_id,question_id,answer FROM activity_attempts WHERE user_id=? AND space_id=? AND id=? AND interaction IN ('explain_submit','calculation_submit')",
   )
     .bind(userId, spaceId, input.attemptId)
     .first<{ pack_id: string; question_id: string; answer: string }>();
@@ -74,7 +74,9 @@ export async function gradeExplanation(
   );
   if (
     !question ||
-    (question.type !== "explain" && question.type !== "scenario")
+    (question.type !== "explain" &&
+      question.type !== "scenario" &&
+      question.type !== "calculation")
   )
     throw new RubricFailure(
       404,

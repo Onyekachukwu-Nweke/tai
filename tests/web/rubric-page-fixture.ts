@@ -187,6 +187,7 @@ export async function routeRubricPage(page: Page) {
         skipped: false,
         hintUsed: false,
         alternateExplanationUsed: false,
+        numericResult: null,
         excludedFromScoring: false,
         flagReason: null,
         feedback: "Your explanation was saved before grading.",
