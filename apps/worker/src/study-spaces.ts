@@ -17,12 +17,15 @@ import { studySessionRoutes } from "./study-session-routes";
 import { recoverySessionRoutes } from "./recovery-session-routes";
 import type { ActivityTutorProvider } from "../../../packages/adapters/fake-activity-tutor";
 import { activityTutorRoutes } from "./activity-tutor-routes";
+import type { ActivityRubricProvider } from "../../../packages/adapters/fake-activity-rubric";
+import { activityRubricRoutes } from "./activity-rubric-routes";
 
 export function createStudySpaces(
   provider: ConceptProvider,
   activityProvider: ActivityPackProvider,
   clock: Clock,
   tutorProvider: ActivityTutorProvider,
+  rubricProvider: ActivityRubricProvider,
 ) {
   const studySpaces = new Hono<{ Bindings: Env; Variables: Variables }>();
 
@@ -103,5 +106,6 @@ export function createStudySpaces(
   studySpaces.route("/", studySessionRoutes(clock));
   studySpaces.route("/", recoverySessionRoutes(clock));
   studySpaces.route("/", activityTutorRoutes(tutorProvider, clock));
+  studySpaces.route("/", activityRubricRoutes(rubricProvider, clock));
   return studySpaces;
 }

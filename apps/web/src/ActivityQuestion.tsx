@@ -14,6 +14,9 @@ import {
 import type { ActivityTutorResponse } from "../../../packages/contracts/activity-tutor";
 import { AttemptFeedback } from "./AttemptFeedback";
 import { ActivityTutorActions } from "./ActivityTutorActions";
+import type { ActivityRubricResponse } from "../../../packages/contracts/activity-rubric";
+import { ActivityRubricFeedback } from "./ActivityRubricFeedback";
+import { ActivityQuestionFooter } from "./ActivityQuestionFooter";
 
 type Question = LearnerActivityPack["questions"][number];
 export function ActivityQuestion({
@@ -30,6 +33,8 @@ export function ActivityQuestion({
   sessionReason,
   initialTutor = [],
   onTutorSaved,
+  initialRubric,
+  onRubricSaved,
 }: {
   userId: string;
   spaceId: string;
@@ -44,6 +49,8 @@ export function ActivityQuestion({
   sessionReason?: string;
   initialTutor?: ActivityTutorResponse[];
   onTutorSaved: (response: ActivityTutorResponse) => void;
+  initialRubric: ActivityRubricResponse | null;
+  onRubricSaved: (response: ActivityRubricResponse) => void;
 }) {
   const loaded = loadDraft(
     userId,
@@ -62,6 +69,7 @@ export function ActivityQuestion({
     "correct" | "incorrect" | null
   >(null);
   const [checkingRecall, setCheckingRecall] = useState(false);
+  const [gradeAfterSave, setGradeAfterSave] = useState(false);
   const [busy, setBusy] = useState(false),
     [error, setError] = useState("");
   useEffect(() => {
@@ -90,9 +98,11 @@ export function ActivityQuestion({
     try {
       const saved = await saveActivityAttempt(spaceId, input);
       setResult(saved);
-      setStorageWarning(
-        clearDraft(userId, spaceId, packId, question.id, studySessionId),
-      );
+      if (input.interaction === "explain_submit") setGradeAfterSave(true);
+      else
+        setStorageWarning(
+          clearDraft(userId, spaceId, packId, question.id, studySessionId),
+        );
       onProgressChange();
       onAttemptSaved?.(saved);
     } catch (reason) {
@@ -308,40 +318,28 @@ export function ActivityQuestion({
           localCorrectness={localCorrectness}
         />
       )}
-      <div className="preview-actions">
-        <button
-          className="secondary"
-          disabled={busy}
-          onClick={() => void saveFlag("incorrect")}
-        >
-          Flag incorrect
-        </button>
-        <button
-          className="secondary"
-          disabled={busy}
-          onClick={() => void saveFlag("ambiguous")}
-        >
-          Flag ambiguous
-        </button>
-      </div>
-      {flag && (
-        <p role="status">
-          Flagged as {flag}. This question is excluded from future scoring.
-        </p>
+      {result?.interaction === "explain_submit" && (
+        <ActivityRubricFeedback
+          spaceId={spaceId}
+          attemptId={result.attemptId}
+          initial={initialRubric}
+          gradeNow={gradeAfterSave}
+          onSaved={(saved) => {
+            onRubricSaved(saved);
+            setStorageWarning(
+              clearDraft(userId, spaceId, packId, question.id, studySessionId),
+            );
+          }}
+          onSource={onSource}
+        />
       )}
-      <ul aria-label={`Sources for ${question.prompt}`}>
-        {question.sources.map((source) => (
-          <li key={source.id}>
-            <button
-              type="button"
-              className="source-link"
-              onClick={() => onSource(source)}
-            >
-              Open source section {source.location}: {source.text.slice(0, 80)}
-            </button>
-          </li>
-        ))}
-      </ul>
+      <ActivityQuestionFooter
+        question={question}
+        busy={busy}
+        flag={flag}
+        onFlag={(reason) => void saveFlag(reason)}
+        onSource={onSource}
+      />
     </li>
   );
 }
