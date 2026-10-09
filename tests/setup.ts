@@ -8,6 +8,8 @@ beforeEach(async () => {
   if (objects.objects.length)
     await env.ORIGINALS.delete(objects.objects.map((object) => object.key));
   await env.DB.batch([
+    env.DB.prepare("DELETE FROM study_session_items"),
+    env.DB.prepare("DELETE FROM study_sessions"),
     env.DB.prepare("DELETE FROM concept_progress"),
     env.DB.prepare("DELETE FROM activity_question_flags"),
     env.DB.prepare("DELETE FROM activity_attempts"),

@@ -1,11 +1,17 @@
 import {
+  activityAttemptResponseSchema,
   gradeMcq,
   type ActivityAttemptRequest,
   type ActivityAttemptResponse,
 } from "../../../packages/contracts/activity-attempts";
 import type { ActivityQuestion } from "../../../packages/contracts/activity-packs";
 import type { Env } from "./env";
-import { loadCurrentQuestion, saveAttempt } from "./activity-attempt-store";
+import {
+  loadAttempt,
+  loadCurrentQuestion,
+  saveAttempt,
+  sessionItemIsPending,
+} from "./activity-attempt-store";
 import { questionIsFlagged } from "./activity-attempt-store";
 import type { Clock } from "../../../packages/domain/concept-progress";
 
@@ -107,6 +113,16 @@ export async function recordAttempt(
   input: ActivityAttemptRequest,
   clock: Clock,
 ) {
+  const hash = await digest(input);
+  const prior = await loadAttempt(env, userId, spaceId, input.attemptId);
+  if (prior) {
+    if (prior.request_hash !== hash)
+      throw new AttemptFailure(
+        409,
+        "This attempt ID was already used for a different response.",
+      );
+    return activityAttemptResponseSchema.parse(JSON.parse(prior.response_json));
+  }
   const question = await loadCurrentQuestion(
     env,
     userId,
@@ -118,6 +134,21 @@ export async function recordAttempt(
     throw new AttemptFailure(
       404,
       "The current activity question was not found.",
+    );
+  if (
+    input.studySessionId &&
+    !(await sessionItemIsPending(
+      env,
+      userId,
+      spaceId,
+      input.studySessionId,
+      input.packId,
+      input.questionId,
+    ))
+  )
+    throw new AttemptFailure(
+      409,
+      "This question is not pending in the active study session.",
     );
   if (
     input.interaction === "mcq_submit" &&
@@ -133,8 +164,7 @@ export async function recordAttempt(
       409,
       "This flagged question is excluded from future scoring.",
     );
-  const response = result(input, question),
-    hash = await digest(input);
+  const response = result(input, question);
   const fields = {
     interaction: input.interaction,
     answer: "answer" in input ? input.answer : undefined,
@@ -155,6 +185,7 @@ export async function recordAttempt(
       packId: input.packId,
       questionId: input.questionId,
       attemptId: input.attemptId,
+      studySessionId: input.studySessionId,
     },
     hash,
     response,

@@ -15,6 +15,36 @@ import {
 
 type AttemptRow = { request_hash: string; response_json: string };
 
+export async function loadAttempt(
+  env: Env,
+  userId: string,
+  spaceId: string,
+  attemptId: string,
+) {
+  return env.DB.prepare(
+    "SELECT request_hash,response_json FROM activity_attempts WHERE user_id=? AND space_id=? AND id=?",
+  )
+    .bind(userId, spaceId, attemptId)
+    .first<AttemptRow>();
+}
+
+export async function sessionItemIsPending(
+  env: Env,
+  userId: string,
+  spaceId: string,
+  sessionId: string,
+  packId: string,
+  questionId: string,
+) {
+  return Boolean(
+    await env.DB.prepare(
+      "SELECT 1 FROM study_sessions s JOIN study_session_items i ON i.user_id=s.user_id AND i.space_id=s.space_id AND i.session_id=s.id WHERE s.user_id=? AND s.space_id=? AND s.id=? AND s.pack_id=? AND s.status='active' AND i.question_id=? AND i.completed_at IS NULL",
+    )
+      .bind(userId, spaceId, sessionId, packId, questionId)
+      .first(),
+  );
+}
+
 export async function loadCurrentQuestion(
   env: Env,
   userId: string,
@@ -42,6 +72,7 @@ export async function saveAttempt(
     packId: string;
     questionId: string;
     attemptId: string;
+    studySessionId?: string;
   },
   requestHash: string,
   response: ActivityAttemptResponse,
@@ -65,9 +96,8 @@ export async function saveAttempt(
     keys.packId,
     keys.questionId,
   );
-  const insert = env.DB.prepare(
-    "INSERT OR IGNORE INTO activity_attempts(user_id,space_id,id,pack_id,question_id,request_hash,interaction,answer,selected_option_id,self_assessment,confidence,correctness,revealed,skipped,hint_used,response_json,created_at) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
-  ).bind(
+  const now = clock.now().toISOString();
+  const values = [
     keys.userId,
     keys.spaceId,
     keys.attemptId,
@@ -84,8 +114,22 @@ export async function saveAttempt(
     Number(fields.skipped),
     0,
     responseJson,
-    clock.now().toISOString(),
-  );
+    now,
+  ];
+  const insert = keys.studySessionId
+    ? env.DB.prepare(
+        "INSERT OR IGNORE INTO activity_attempts(user_id,space_id,id,pack_id,question_id,request_hash,interaction,answer,selected_option_id,self_assessment,confidence,correctness,revealed,skipped,hint_used,response_json,created_at) SELECT ?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,? WHERE EXISTS(SELECT 1 FROM study_sessions s JOIN study_session_items i ON i.user_id=s.user_id AND i.space_id=s.space_id AND i.session_id=s.id WHERE s.user_id=? AND s.space_id=? AND s.id=? AND s.pack_id=? AND s.status='active' AND i.question_id=? AND i.completed_at IS NULL)",
+      ).bind(
+        ...values,
+        keys.userId,
+        keys.spaceId,
+        keys.studySessionId,
+        keys.packId,
+        keys.questionId,
+      )
+    : env.DB.prepare(
+        "INSERT OR IGNORE INTO activity_attempts(user_id,space_id,id,pack_id,question_id,request_hash,interaction,answer,selected_option_id,self_assessment,confidence,correctness,revealed,skipped,hint_used,response_json,created_at) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
+      ).bind(...values);
   await env.DB.batch([
     insert,
     ...(fields.correctness
@@ -93,12 +137,44 @@ export async function saveAttempt(
           recomputeProgressStatement(env, keys.userId, keys.spaceId, conceptId),
         )
       : []),
+    ...(keys.studySessionId
+      ? [
+          env.DB.prepare(
+            "UPDATE study_session_items SET completed_at=?,attempt_id=? WHERE user_id=? AND space_id=? AND session_id=? AND question_id=? AND completed_at IS NULL AND EXISTS(SELECT 1 FROM activity_attempts a WHERE a.user_id=? AND a.space_id=? AND a.id=? AND a.pack_id=? AND a.question_id=? AND a.request_hash=?)",
+          ).bind(
+            now,
+            keys.attemptId,
+            keys.userId,
+            keys.spaceId,
+            keys.studySessionId,
+            keys.questionId,
+            keys.userId,
+            keys.spaceId,
+            keys.attemptId,
+            keys.packId,
+            keys.questionId,
+            requestHash,
+          ),
+          env.DB.prepare(
+            "UPDATE study_sessions SET status='completed',completed_at=? WHERE user_id=? AND space_id=? AND id=? AND status='active' AND NOT EXISTS(SELECT 1 FROM study_session_items i WHERE i.user_id=? AND i.space_id=? AND i.session_id=? AND i.completed_at IS NULL)",
+          ).bind(
+            now,
+            keys.userId,
+            keys.spaceId,
+            keys.studySessionId,
+            keys.userId,
+            keys.spaceId,
+            keys.studySessionId,
+          ),
+        ]
+      : []),
   ]);
-  const saved = await env.DB.prepare(
-    "SELECT request_hash,response_json FROM activity_attempts WHERE user_id=? AND space_id=? AND id=?",
-  )
-    .bind(keys.userId, keys.spaceId, keys.attemptId)
-    .first<AttemptRow>();
+  const saved = await loadAttempt(
+    env,
+    keys.userId,
+    keys.spaceId,
+    keys.attemptId,
+  );
   if (!saved) throw new Error("Attempt was not saved");
   return saved.request_hash === requestHash
     ? activityAttemptResponseSchema.parse(JSON.parse(saved.response_json))

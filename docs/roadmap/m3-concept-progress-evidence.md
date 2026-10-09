@@ -10,4 +10,4 @@ Attempt insertion and projection updates run in one D1 batch. Identical attempt 
 
 Automated coverage includes UTC due boundaries, all interval steps and the cap, incorrect reset, neutral interactions, concurrent submissions, multi-concept projection, retroactive flag exclusion, authenticated ownership, reload and deletion behavior. Verification results for the final revision belong in the pull request description; no remote D1 or live provider was exercised for this slice.
 
-Still open: session budgets and choice, learner overrides, recovery sessions after inactivity, model-graded evidence, numeric evidence, live-provider validation and the complete M3 exit demonstration.
+Still open: recovery sessions after inactivity, model-graded evidence, numeric evidence, live-provider validation and the complete M3 exit demonstration. The bounded session-budget and choice work is recorded separately in [M3.1 study-session evidence](m3-study-session-evidence.md).

@@ -187,6 +187,9 @@ export function ConceptExplorer({
           userId={userId}
           spaceId={spaceId}
           selectedCount={concepts.filter((concept) => concept.selected).length}
+          concepts={concepts
+            .filter((concept) => concept.selected)
+            .map(({ id, label }) => ({ id, label }))}
           onSource={onSource}
         />
       )}

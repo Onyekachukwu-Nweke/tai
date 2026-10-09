@@ -80,6 +80,9 @@ export async function generateActivityPack(
     ];
     await env.DB.batch([
       env.DB.prepare(
+        `UPDATE study_sessions SET status='superseded' WHERE user_id=? AND space_id=? AND status='active' AND ${gate}`,
+      ).bind(userId, spaceId, ...scope),
+      env.DB.prepare(
         `INSERT INTO activity_packs(user_id,space_id,id,request_id,document_id,concept_request_id,selection_key,canonical_json,created_at) SELECT ?,?,?,?,?,?,?,?,? WHERE ${gate}`,
       ).bind(
         userId,

@@ -23,6 +23,9 @@ export function ActivityQuestion({
   initialResult,
   initialFlag,
   onProgressChange,
+  studySessionId,
+  onAttemptSaved,
+  sessionReason,
 }: {
   userId: string;
   spaceId: string;
@@ -32,6 +35,9 @@ export function ActivityQuestion({
   initialResult: ActivityAttemptResponse | null;
   initialFlag: "incorrect" | "ambiguous" | null;
   onProgressChange: () => void;
+  studySessionId?: string;
+  onAttemptSaved?: () => void;
+  sessionReason?: string;
 }) {
   const loaded = loadDraft(userId, spaceId, packId, question.id);
   const [draft, setDraft] = useState<ActivityDraft>(loaded.draft);
@@ -62,6 +68,7 @@ export function ActivityQuestion({
     packId,
     questionId: question.id,
     confidence: draft.confidence || null,
+    ...(studySessionId ? { studySessionId } : {}),
   });
   async function submit(input: ActivityAttemptRequest) {
     setBusy(true);
@@ -71,6 +78,7 @@ export function ActivityQuestion({
       setResult(saved);
       setStorageWarning(clearDraft(userId, spaceId, packId, question.id));
       onProgressChange();
+      onAttemptSaved?.();
     } catch (reason) {
       setError(
         reason instanceof Error
@@ -123,6 +131,9 @@ export function ActivityQuestion({
   );
   return (
     <li className="activity-card">
+      {sessionReason && (
+        <p className="fine-print">Why this activity: {sessionReason}</p>
+      )}
       <p>
         <strong>
           {question.type === "mcq"

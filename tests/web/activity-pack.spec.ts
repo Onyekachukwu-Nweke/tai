@@ -1,14 +1,13 @@
 import { expect, test } from "@playwright/test";
+import {
+  activeStudySession,
+  browserSource,
+  emptyActivityPack as empty,
+} from "./study-session-fixture";
 
 const spaceId = "11111111-1111-4111-8111-111111111111",
   documentId = "22222222-2222-4222-8222-222222222222";
-const source = {
-  id: `${documentId}:1:0`,
-  location: 1,
-  start: 0,
-  end: 12,
-  text: "Plants grow.",
-};
+const source = browserSource(documentId);
 const concepts = {
   schemaVersion: 1,
   status: "ready",
@@ -25,15 +24,6 @@ const concepts = {
     selected: true,
     sources: [source],
   })),
-};
-const empty = {
-  schemaVersion: 1,
-  status: "empty",
-  requestId: null,
-  packId: null,
-  provider: "fake",
-  error: null,
-  questions: [],
 };
 const ready = {
   ...empty,
@@ -69,6 +59,7 @@ const ready = {
     },
   ],
 };
+const studySession = activeStudySession(ready.packId, ready.questions);
 
 test("prepares an ID-only learner-safe pack, reloads it and opens exact evidence", async ({
   page,
@@ -137,6 +128,9 @@ test("prepares an ID-only learner-safe pack, reloads it and opens exact evidence
   );
   await page.route(`**/api/study-spaces/${spaceId}/activity-pack`, (route) =>
     route.fulfill({ json: state }),
+  );
+  await page.route(`**/api/study-spaces/${spaceId}/study-session`, (route) =>
+    route.fulfill({ json: studySession }),
   );
   await page.route(
     `**/api/study-spaces/${spaceId}/activity-pack/generate`,
@@ -253,6 +247,9 @@ test("keeps an unacknowledged draft for explicit retry and hides review keys in 
   );
   await page.route(`**/api/study-spaces/${spaceId}/activity-pack`, (route) =>
     route.fulfill({ json: ready }),
+  );
+  await page.route(`**/api/study-spaces/${spaceId}/study-session`, (route) =>
+    route.fulfill({ json: studySession }),
   );
   await page.route(
     `**/api/study-spaces/${spaceId}/activity-attempts`,

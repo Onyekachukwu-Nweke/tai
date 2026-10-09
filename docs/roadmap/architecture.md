@@ -24,7 +24,7 @@ One deployable Worker, one database, one bucket. No queue, no job workers, no ou
 | Browser | Sign-in UI; local PDF/TXT validation (10 MB, 50 pages) and PDF.js extraction into page-aware chunks; rendering with safe KaTeX; local MCQ and numeric checks for instant feedback; unsent answer draft kept in local storage until the server acknowledges it |
 | Worker API | Session check on every route; ownership-scoped CRUD; request validation (Zod); per-user AI quotas; server-side re-check of MCQ and numeric outcomes before recording evidence; review dates and session selection via the shared domain module |
 | Domain module (shared) | Exact MCQ grading, numeric tolerance/unit checks, evidence labels, review intervals, session budgets, return flow. Pure TypeScript used by both browser and Worker |
-| D1 | Canonical store for all PRD entities plus users, sessions and quota counters |
+| D1 | Canonical store for all PRD entities plus users, authentication sessions, persisted study sessions and quota counters |
 | R2 | Original PDF/TXT files under owner-scoped keys; never public; served only through the Worker after an ownership check |
 | AI adapter | Task kinds `concepts`, `pack`, `grade`, `followup`, `hint`, `explain_again`, `practical_task`; server-owned prompts; output schema and citation validation; provider routing per task |
 | Resource catalog | Bundled checked links matched by concept tags |

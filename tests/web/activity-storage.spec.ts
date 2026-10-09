@@ -1,4 +1,5 @@
 import { expect, test } from "@playwright/test";
+import { activeStudySession } from "./study-session-fixture";
 
 const space = "11111111-1111-4111-8111-111111111111";
 const pack = "77777777-7777-4777-8777-777777777777";
@@ -7,6 +8,7 @@ const documentId = "22222222-2222-4222-8222-222222222222";
 test("keeps the in-memory draft when browser storage rejects writes", async ({
   page,
 }) => {
+  const sessionBodies: Array<Record<string, unknown>> = [];
   await page.addInitScript(() => {
     Storage.prototype.setItem = () => {
       throw new DOMException("blocked");
@@ -112,6 +114,33 @@ test("keeps the in-memory draft when browser storage rejects writes", async ({
       },
     }),
   );
+  const active = activeStudySession(pack, [
+    { id: question, estimatedMinutes: 2 },
+  ]);
+  await page.route(
+    `**/api/study-spaces/${space}/study-session`,
+    async (route) => {
+      if (route.request().method() === "POST") {
+        sessionBodies.push(route.request().postDataJSON());
+        if (sessionBodies.length === 1) {
+          await route.abort("failed");
+          return;
+        }
+        await route.fulfill({
+          json:
+            sessionBodies.length === 2
+              ? {
+                  ...active,
+                  status: "completed",
+                  completedAt: "2026-10-09T00:05:00.000Z",
+                }
+              : active,
+        });
+        return;
+      }
+      await route.fulfill({ json: active });
+    },
+  );
   await page.route(
     `**/api/study-spaces/${space}/activity-attempts?packId=*`,
     (route) =>
@@ -127,4 +156,30 @@ test("keeps the in-memory draft when browser storage rejects writes", async ({
   await expect(
     page.getByText(/could not persist your draft/).first(),
   ).toBeVisible();
+  await page.getByLabel("Time available").selectOption("30");
+  await page.getByLabel("What would you like to do?").selectOption("review");
+  await page
+    .getByLabel("Concept (optional)")
+    .selectOption("54444444-4444-4444-8444-444444444444");
+  await page
+    .getByRole("button", { name: "Replace with these settings" })
+    .click();
+  await expect(page.getByText("Failed to fetch")).toBeVisible();
+  await page
+    .getByRole("button", { name: "Replace with these settings" })
+    .click();
+  await expect(
+    page.getByRole("heading", { name: "Session saved" }),
+  ).toBeVisible();
+  await expect(page.getByLabel("Time available")).toBeVisible();
+  expect(sessionBodies[1]).toMatchObject({
+    budgetMinutes: 30,
+    mode: "review",
+    conceptId: "54444444-4444-4444-8444-444444444444",
+    replaceActive: true,
+  });
+  expect(sessionBodies[1]?.sessionId).toBe(sessionBodies[0]?.sessionId);
+  await page.getByRole("button", { name: "Prepare today’s session" }).click();
+  expect(sessionBodies[2]?.replaceActive).toBe(false);
+  expect(sessionBodies[2]?.sessionId).not.toBe(sessionBodies[1]?.sessionId);
 });
