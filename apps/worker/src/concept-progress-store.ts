@@ -9,7 +9,8 @@ JOIN concept_requests cr ON cr.user_id=p.user_id AND cr.space_id=p.space_id AND 
 JOIN material_imports m ON m.user_id=p.user_id AND m.space_id=p.space_id AND m.document_id=p.document_id
 LEFT JOIN activity_question_flags f ON f.user_id=a.user_id AND f.space_id=a.space_id AND f.pack_id=a.pack_id AND f.question_id=a.question_id
 WHERE a.user_id=? AND a.space_id=? AND qc.concept_id=? AND a.interaction='mcq_submit' AND a.correctness IS NOT NULL
-AND f.question_id IS NULL AND cr.state='ready' AND m.state='ready'`;
+AND f.question_id IS NULL AND a.hint_used=0 AND a.alternate_explanation_used=0
+AND cr.state='ready' AND m.state='ready'`;
 
 export const recomputeProgressStatement = (
   env: Env,

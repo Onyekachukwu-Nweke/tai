@@ -15,11 +15,14 @@ import type { Clock } from "../../../packages/domain/concept-progress";
 import { conceptProgressRoutes } from "./concept-progress-routes";
 import { studySessionRoutes } from "./study-session-routes";
 import { recoverySessionRoutes } from "./recovery-session-routes";
+import type { ActivityTutorProvider } from "../../../packages/adapters/fake-activity-tutor";
+import { activityTutorRoutes } from "./activity-tutor-routes";
 
 export function createStudySpaces(
   provider: ConceptProvider,
   activityProvider: ActivityPackProvider,
   clock: Clock,
+  tutorProvider: ActivityTutorProvider,
 ) {
   const studySpaces = new Hono<{ Bindings: Env; Variables: Variables }>();
 
@@ -99,5 +102,6 @@ export function createStudySpaces(
   studySpaces.route("/", conceptProgressRoutes(clock));
   studySpaces.route("/", studySessionRoutes(clock));
   studySpaces.route("/", recoverySessionRoutes(clock));
+  studySpaces.route("/", activityTutorRoutes(tutorProvider, clock));
   return studySpaces;
 }

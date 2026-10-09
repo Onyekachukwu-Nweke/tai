@@ -11,6 +11,8 @@ import { StudySession } from "./StudySession";
 import type { RecoveryOffer } from "../../../packages/contracts/study-sessions";
 import { loadRecoveryOffer } from "./recovery-session-api";
 import { RecoveryReturn } from "./RecoveryReturn";
+import type { ActivityTutorResponse } from "../../../packages/contracts/activity-tutor";
+import { loadTutorState } from "./activity-tutor-api";
 
 type Source = LearnerActivityPack["questions"][number]["sources"][number];
 export function ActivityPack({
@@ -51,6 +53,7 @@ export function ActivityPack({
     completedAt: null,
   });
   const [recovery, setRecovery] = useState<RecoveryOffer | null>(null);
+  const [tutor, setTutor] = useState<ActivityTutorResponse[]>([]);
   useEffect(() => {
     const controller = new AbortController();
     loadActivityPack(spaceId, controller.signal)
@@ -79,6 +82,18 @@ export function ActivityPack({
       .catch(() =>
         setError(
           "Saved practice state could not be loaded. Retry by reopening this material.",
+        ),
+      );
+    return () => controller.abort();
+  }, [pack?.packId, spaceId]);
+  useEffect(() => {
+    if (!pack?.packId) return;
+    const controller = new AbortController();
+    loadTutorState(spaceId, pack.packId, controller.signal)
+      .then((state) => setTutor(state.interactions))
+      .catch(() =>
+        setError(
+          "Saved tutor help could not be loaded. Retry by reopening this material.",
         ),
       );
     return () => controller.abort();
@@ -135,9 +150,10 @@ export function ActivityPack({
       <ConceptProgress spaceId={spaceId} revision={progressRevision} />
       <h3 id="activity-heading">Practice activities</h3>
       <p className="notice">
-        Development preview: these prompts come from a deterministic fake
-        provider and have not been reviewed for teaching quality. Multiple
-        choice is checked deterministically; explanations are saved ungraded.
+        Development preview: these prompts and tutor responses come from
+        deterministic fake providers and have not been reviewed for teaching
+        quality. Multiple choice is checked deterministically; explanations are
+        saved ungraded.
       </p>
       <button
         type="button"
@@ -242,6 +258,19 @@ export function ActivityPack({
                       void refreshSession();
                     }}
                     sessionReason={item.reason}
+                    initialTutor={tutor.filter(
+                      (interaction) => interaction.questionId === question.id,
+                    )}
+                    onTutorSaved={(saved) =>
+                      setTutor((current) => [
+                        ...current.filter(
+                          (item) =>
+                            item.questionId !== saved.questionId ||
+                            item.kind !== saved.kind,
+                        ),
+                        saved,
+                      ])
+                    }
                   />
                 );
               })}

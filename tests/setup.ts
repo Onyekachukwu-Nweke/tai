@@ -11,6 +11,7 @@ beforeEach(async () => {
     env.DB.prepare("DELETE FROM study_session_items"),
     env.DB.prepare("DELETE FROM study_sessions"),
     env.DB.prepare("DELETE FROM concept_progress"),
+    env.DB.prepare("DELETE FROM activity_tutor_requests"),
     env.DB.prepare("DELETE FROM activity_question_flags"),
     env.DB.prepare("DELETE FROM activity_attempts"),
     env.DB.prepare("DELETE FROM activity_question_concepts"),
