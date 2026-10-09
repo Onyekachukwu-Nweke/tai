@@ -27,15 +27,31 @@ export const studySessionSchema = z
     sessionId: uuid.nullable(),
     packId: uuid.nullable(),
     budgetMinutes: z
-      .union([z.literal(5), z.literal(15), z.literal(30)])
+      .union([z.literal(5), z.literal(10), z.literal(15), z.literal(30)])
       .nullable(),
     estimatedMinutes: z.number().int().nonnegative(),
     mode: z.enum(["learn", "review", "practise"]).nullable(),
+    kind: z.enum(["standard", "recovery"]).nullable(),
     conceptId: uuid.nullable(),
     items: z.array(sessionItem).max(5),
     createdAt: z.string().datetime().nullable(),
     completedAt: z.string().datetime().nullable(),
   })
   .strict();
+export const createRecoverySessionSchema = z
+  .object({ schemaVersion: z.literal(1), sessionId: uuid })
+  .strict();
+export const recoveryOfferSchema = z
+  .object({
+    schemaVersion: z.literal(1),
+    offered: z.boolean(),
+    inactiveSince: z.string().datetime().nullable(),
+    thresholdDays: z.number().int().min(1).max(30),
+    budgetMinutes: z.literal(10),
+    canResume: z.boolean(),
+    activeSession: studySessionSchema.nullable(),
+  })
+  .strict();
 export type CreateStudySession = z.infer<typeof createStudySessionSchema>;
 export type StudySession = z.infer<typeof studySessionSchema>;
+export type RecoveryOffer = z.infer<typeof recoveryOfferSchema>;

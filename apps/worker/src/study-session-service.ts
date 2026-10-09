@@ -87,6 +87,7 @@ export async function prepareStudySession(
     },
     {
       ...input,
+      kind: "standard",
       estimatedMinutes: selected.estimatedMinutes,
       items: selected.items.map((item) => ({
         questionId: item.questionId,

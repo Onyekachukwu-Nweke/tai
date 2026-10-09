@@ -78,3 +78,54 @@ export function sessionReason(
   if (mode === "review") return "You asked to review recent learning.";
   return "You asked to learn from your current material.";
 }
+
+const recoveryPriority = (item: SessionCandidate) =>
+  item.labels.includes("Review due")
+    ? 0
+    : item.labels.includes("Needs practice")
+      ? 1
+      : 2;
+
+export function selectRecoveryItems(candidates: SessionCandidate[]) {
+  const ordered = candidates
+    .map((item, index) => ({ item, index }))
+    .filter(
+      ({ item }) =>
+        !item.flagged &&
+        !item.labels.includes("Recall successful") &&
+        item.labels.some((label) =>
+          ["Review due", "Needs practice", "Not checked"].includes(label),
+        ),
+    )
+    .sort(
+      (a, b) =>
+        recoveryPriority(a.item) - recoveryPriority(b.item) ||
+        a.index - b.index,
+    );
+  const selected: SessionCandidate[] = [];
+  let estimatedMinutes = 0;
+  while (ordered.length && selected.length < 3) {
+    if (selected.length) {
+      const focus = new Set(selected.at(-1)!.conceptIds);
+      ordered.sort(
+        (a, b) =>
+          Number(!a.item.conceptIds.some((id) => focus.has(id))) -
+            Number(!b.item.conceptIds.some((id) => focus.has(id))) ||
+          recoveryPriority(a.item) - recoveryPriority(b.item) ||
+          a.index - b.index,
+      );
+    }
+    const next = ordered.shift()!.item;
+    if (estimatedMinutes + next.estimatedMinutes > 10) continue;
+    selected.push(next);
+    estimatedMinutes += next.estimatedMinutes;
+  }
+  return { items: selected, estimatedMinutes };
+}
+
+export const recoveryReason = (item: SessionCandidate) =>
+  item.labels.includes("Review due")
+    ? "This concept is due for a review check."
+    : item.labels.includes("Needs practice")
+      ? "A recent check suggests another short practice."
+      : "This concept has not been checked yet.";

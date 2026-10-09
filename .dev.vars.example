@@ -3,3 +3,5 @@
 BETTER_AUTH_SECRET=
 GOOGLE_CLIENT_ID=
 GOOGLE_CLIENT_SECRET=
+# Optional. Whole days from 1 through 30; defaults to 3.
+RETURN_GAP_DAYS=3
