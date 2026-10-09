@@ -15,9 +15,10 @@ import type { ActivityTutorResponse } from "../../../packages/contracts/activity
 import { AttemptFeedback } from "./AttemptFeedback";
 import { ActivityTutorActions } from "./ActivityTutorActions";
 import type { ActivityRubricResponse } from "../../../packages/contracts/activity-rubric";
-import { ActivityRubricFeedback } from "./ActivityRubricFeedback";
 import { ActivityQuestionFooter } from "./ActivityQuestionFooter";
 import { ActivityQuestionPrompt } from "./ActivityQuestionPrompt";
+import type { ActivityFollowupResponse } from "../../../packages/contracts/activity-followup";
+import { ActivityGradedFeedback } from "./ActivityGradedFeedback";
 
 type Question = LearnerActivityPack["questions"][number];
 export function ActivityQuestion({
@@ -36,6 +37,8 @@ export function ActivityQuestion({
   onTutorSaved,
   initialRubric,
   onRubricSaved,
+  initialFollowup,
+  onFollowupSaved,
 }: {
   userId: string;
   spaceId: string;
@@ -52,6 +55,8 @@ export function ActivityQuestion({
   onTutorSaved: (response: ActivityTutorResponse) => void;
   initialRubric: ActivityRubricResponse | null;
   onRubricSaved: (response: ActivityRubricResponse) => void;
+  initialFollowup: ActivityFollowupResponse | null;
+  onFollowupSaved: (response: ActivityFollowupResponse) => void;
 }) {
   const loaded = loadDraft(
     userId,
@@ -311,21 +316,21 @@ export function ActivityQuestion({
           localCorrectness={localCorrectness}
         />
       )}
-      {result?.interaction === "explain_submit" && (
-        <ActivityRubricFeedback
-          spaceId={spaceId}
-          attemptId={result.attemptId}
-          initial={initialRubric}
-          gradeNow={gradeAfterSave}
-          onSaved={(saved) => {
-            onRubricSaved(saved);
-            setStorageWarning(
-              clearDraft(userId, spaceId, packId, question.id, studySessionId),
-            );
-          }}
-          onSource={onSource}
-        />
-      )}
+      <ActivityGradedFeedback
+        spaceId={spaceId}
+        result={result}
+        rubric={initialRubric}
+        followup={initialFollowup}
+        gradeNow={gradeAfterSave}
+        onRubricSaved={(saved) => {
+          onRubricSaved(saved);
+          setStorageWarning(
+            clearDraft(userId, spaceId, packId, question.id, studySessionId),
+          );
+        }}
+        onFollowupSaved={onFollowupSaved}
+        onSource={onSource}
+      />
       <ActivityQuestionFooter
         question={question}
         busy={busy}

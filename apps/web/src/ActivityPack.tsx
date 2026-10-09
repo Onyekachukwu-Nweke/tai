@@ -15,6 +15,7 @@ import type { ActivityTutorResponse } from "../../../packages/contracts/activity
 import { loadTutorState } from "./activity-tutor-api";
 import type { ActivityRubricResponse } from "../../../packages/contracts/activity-rubric";
 import { loadRubricState } from "./activity-rubric-api";
+import { useActivityFollowups } from "./use-activity-followups";
 
 type Source = LearnerActivityPack["questions"][number]["sources"][number];
 export function ActivityPack({
@@ -57,6 +58,11 @@ export function ActivityPack({
   const [recovery, setRecovery] = useState<RecoveryOffer | null>(null);
   const [tutor, setTutor] = useState<ActivityTutorResponse[]>([]);
   const [rubric, setRubric] = useState<ActivityRubricResponse[]>([]);
+  const [followups, setFollowups] = useActivityFollowups(
+    spaceId,
+    pack,
+    setError,
+  );
   useEffect(() => {
     const controller = new AbortController();
     loadActivityPack(spaceId, controller.signal)
@@ -303,6 +309,21 @@ export function ActivityPack({
                       setRubric((current) => [
                         ...current.filter(
                           (grade) => grade.attemptId !== saved.attemptId,
+                        ),
+                        saved,
+                      ])
+                    }
+                    initialFollowup={
+                      followups.find(
+                        (followup) =>
+                          followup.attemptId ===
+                          attempts[question.id]?.attemptId,
+                      ) ?? null
+                    }
+                    onFollowupSaved={(saved) =>
+                      setFollowups((current) => [
+                        ...current.filter(
+                          (followup) => followup.attemptId !== saved.attemptId,
                         ),
                         saved,
                       ])

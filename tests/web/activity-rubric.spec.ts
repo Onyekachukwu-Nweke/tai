@@ -23,6 +23,16 @@ test("preserves an explanation across grading failure and restores rubric feedba
   await expect(
     page.getByText(/Source-supported rubric outcome: partial/),
   ).toBeVisible();
+  await page.getByRole("button", { name: "Practise this gap" }).click();
+  await expect(
+    page.getByText(/Follow-up interrupted.*saved response and feedback/),
+  ).toBeVisible();
+  await page.getByRole("button", { name: "Retry targeted follow-up" }).click();
+  await expect(
+    page.getByText(
+      "How would added light affect growth under these assumptions?",
+    ),
+  ).toBeVisible();
   expect(await page.evaluate(() => JSON.stringify(localStorage))).not.toContain(
     "Light supplies energy.",
   );
@@ -31,7 +41,15 @@ test("preserves an explanation across grading failure and restores rubric feedba
   await expect(
     page.getByText("Add the role described in the cited source."),
   ).toBeVisible();
-  await page.getByRole("button", { name: "Open supporting section 1" }).click();
+  await expect(
+    page.getByText(
+      "How would added light affect growth under these assumptions?",
+    ),
+  ).toBeVisible();
+  await page
+    .getByRole("region", { name: "Targeted follow-up" })
+    .getByRole("button", { name: "Open supporting section 1" })
+    .click();
   await expect(page.locator("mark")).toHaveText(
     "Light supplies energy to plants.",
   );

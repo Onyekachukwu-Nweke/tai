@@ -22,6 +22,10 @@ import {
   FakeActivityRubricProvider,
   type ActivityRubricProvider,
 } from "../../../packages/adapters/fake-activity-rubric";
+import {
+  FakeActivityFollowupProvider,
+  type ActivityFollowupProvider,
+} from "../../../packages/adapters/fake-activity-followup";
 
 export function createApp(
   provider: ConceptProvider = new FakeConceptProvider(),
@@ -29,6 +33,7 @@ export function createApp(
   clock: Clock = systemClock,
   tutorProvider: ActivityTutorProvider = new FakeActivityTutorProvider(),
   rubricProvider: ActivityRubricProvider = new FakeActivityRubricProvider(),
+  followupProvider: ActivityFollowupProvider = new FakeActivityFollowupProvider(),
 ) {
   const app = new Hono<{ Bindings: Env; Variables: Variables }>();
 
@@ -87,6 +92,7 @@ export function createApp(
       clock,
       tutorProvider,
       rubricProvider,
+      followupProvider,
     ),
   );
 
