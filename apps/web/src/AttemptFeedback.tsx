@@ -18,7 +18,7 @@ export function AttemptFeedback({
         <strong>
           {result.supportedByMaterial
             ? "Supported by your material"
-            : "Saved without grading"}
+            : "Explanation saved"}
           :
         </strong>{" "}
         {result.feedback}

@@ -13,6 +13,8 @@ import { loadRecoveryOffer } from "./recovery-session-api";
 import { RecoveryReturn } from "./RecoveryReturn";
 import type { ActivityTutorResponse } from "../../../packages/contracts/activity-tutor";
 import { loadTutorState } from "./activity-tutor-api";
+import type { ActivityRubricResponse } from "../../../packages/contracts/activity-rubric";
+import { loadRubricState } from "./activity-rubric-api";
 
 type Source = LearnerActivityPack["questions"][number]["sources"][number];
 export function ActivityPack({
@@ -54,6 +56,7 @@ export function ActivityPack({
   });
   const [recovery, setRecovery] = useState<RecoveryOffer | null>(null);
   const [tutor, setTutor] = useState<ActivityTutorResponse[]>([]);
+  const [rubric, setRubric] = useState<ActivityRubricResponse[]>([]);
   useEffect(() => {
     const controller = new AbortController();
     loadActivityPack(spaceId, controller.signal)
@@ -82,6 +85,22 @@ export function ActivityPack({
       .catch(() =>
         setError(
           "Saved practice state could not be loaded. Retry by reopening this material.",
+        ),
+      );
+    return () => controller.abort();
+  }, [pack?.packId, spaceId]);
+  useEffect(() => {
+    if (
+      !pack?.packId ||
+      !pack.questions.some((item) => item.type === "explain")
+    )
+      return;
+    const controller = new AbortController();
+    loadRubricState(spaceId, pack.packId, controller.signal)
+      .then((state) => setRubric(state.grades))
+      .catch(() =>
+        setError(
+          "Saved rubric feedback could not be loaded. Retry by reopening this material.",
         ),
       );
     return () => controller.abort();
@@ -152,8 +171,9 @@ export function ActivityPack({
       <p className="notice">
         Development preview: these prompts and tutor responses come from
         deterministic fake providers and have not been reviewed for teaching
-        quality. Multiple choice is checked deterministically; explanations are
-        saved ungraded.
+        quality. Multiple choice is checked deterministically; explanation
+        feedback uses a bounded source-grounded rubric and does not affect
+        review progress.
       </p>
       <button
         type="button"
@@ -267,6 +287,20 @@ export function ActivityPack({
                           (item) =>
                             item.questionId !== saved.questionId ||
                             item.kind !== saved.kind,
+                        ),
+                        saved,
+                      ])
+                    }
+                    initialRubric={
+                      rubric.find(
+                        (grade) =>
+                          grade.attemptId === attempts[question.id]?.attemptId,
+                      ) ?? null
+                    }
+                    onRubricSaved={(saved) =>
+                      setRubric((current) => [
+                        ...current.filter(
+                          (grade) => grade.attemptId !== saved.attemptId,
                         ),
                         saved,
                       ])

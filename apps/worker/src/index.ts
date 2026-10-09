@@ -18,12 +18,17 @@ import {
   FakeActivityTutorProvider,
   type ActivityTutorProvider,
 } from "../../../packages/adapters/fake-activity-tutor";
+import {
+  FakeActivityRubricProvider,
+  type ActivityRubricProvider,
+} from "../../../packages/adapters/fake-activity-rubric";
 
 export function createApp(
   provider: ConceptProvider = new FakeConceptProvider(),
   activityProvider: ActivityPackProvider = new FakeActivityPackProvider(),
   clock: Clock = systemClock,
   tutorProvider: ActivityTutorProvider = new FakeActivityTutorProvider(),
+  rubricProvider: ActivityRubricProvider = new FakeActivityRubricProvider(),
 ) {
   const app = new Hono<{ Bindings: Env; Variables: Variables }>();
 
@@ -76,7 +81,13 @@ export function createApp(
   });
   app.route(
     "/api/study-spaces",
-    createStudySpaces(provider, activityProvider, clock, tutorProvider),
+    createStudySpaces(
+      provider,
+      activityProvider,
+      clock,
+      tutorProvider,
+      rubricProvider,
+    ),
   );
 
   app.notFound((c) => c.json({ error: "Not found." }, 404));
