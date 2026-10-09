@@ -39,7 +39,10 @@ const pack = {
   questions: [question],
 };
 
-export async function routeRubricPage(page: Page) {
+export async function routeRubricPage(
+  page: Page,
+  options: { flagged?: boolean } = {},
+) {
   let attempt: Record<string, unknown> | null = null;
   let grade: Record<string, unknown> | null = null;
   let followup: Record<string, unknown> | null = null;
@@ -146,7 +149,9 @@ export async function routeRubricPage(page: Page) {
           attempts: attempt
             ? [{ questionId: rubricIds.question, result: attempt }]
             : [],
-          flags: [],
+          flags: options.flagged
+            ? [{ questionId: rubricIds.question, reason: "ambiguous" }]
+            : [],
         },
       }),
   );

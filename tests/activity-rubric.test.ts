@@ -246,4 +246,82 @@ describe("activity rubric routes", () => {
         .first("count"),
     ).toBe(0);
   });
+
+  it("atomically permits only one active grade per attempt", async () => {
+    const fixture = await createActivityFixture();
+    const question = fixture.pack.questions.find(
+      (item) => item.type === "explain",
+    )!;
+    const attemptId = crypto.randomUUID();
+    await fixture.call("/activity-attempts", {
+      ...fixture.base(question.id, attemptId),
+      interaction: "explain_submit",
+      answer: "One answer",
+    });
+    const provider = new InspectingProvider();
+    const app = createApp(undefined, undefined, undefined, undefined, provider);
+    const post = (requestId: string) =>
+      app.request(
+        `http://localhost:8787/api/study-spaces/${fixture.owner.spaceId}/activity-rubric`,
+        {
+          method: "POST",
+          body: JSON.stringify({ schemaVersion: 1, requestId, attemptId }),
+          headers: {
+            cookie: fixture.owner.cookie,
+            origin: env.APP_ORIGIN,
+            "content-type": "application/json",
+          },
+        },
+        env,
+      );
+    const responses = await Promise.all([
+      post(crypto.randomUUID()),
+      post(crypto.randomUUID()),
+    ]);
+    expect(responses.map((response) => response.status).sort()).toEqual([
+      201, 409,
+    ]);
+    expect(provider.calls).toHaveLength(1);
+    expect(
+      await env.DB.prepare(
+        "SELECT count(*) AS count FROM activity_rubric_requests WHERE user_id=? AND space_id=? AND attempt_id=? AND state IN ('pending','ready')",
+      )
+        .bind(fixture.owner.userId, fixture.owner.spaceId, attemptId)
+        .first("count"),
+    ).toBe(1);
+  });
+
+  it("releases a failed reservation for an explicit new-ID retry", async () => {
+    const fixture = await createActivityFixture();
+    const question = fixture.pack.questions.find(
+      (item) => item.type === "scenario",
+    )!;
+    const attemptId = crypto.randomUUID();
+    await fixture.call("/activity-attempts", {
+      ...fixture.base(question.id, attemptId),
+      interaction: "explain_submit",
+      answer: "Retry this answer",
+    });
+    const provider = new InspectingProvider();
+    provider.fail = true;
+    const app = createApp(undefined, undefined, undefined, undefined, provider);
+    const post = (requestId: string) =>
+      app.request(
+        `http://localhost:8787/api/study-spaces/${fixture.owner.spaceId}/activity-rubric`,
+        {
+          method: "POST",
+          body: JSON.stringify({ schemaVersion: 1, requestId, attemptId }),
+          headers: {
+            cookie: fixture.owner.cookie,
+            origin: env.APP_ORIGIN,
+            "content-type": "application/json",
+          },
+        },
+        env,
+      );
+    expect((await post(crypto.randomUUID())).status).toBe(503);
+    provider.fail = false;
+    expect((await post(crypto.randomUUID())).status).toBe(201);
+    expect(provider.calls).toHaveLength(2);
+  });
 });

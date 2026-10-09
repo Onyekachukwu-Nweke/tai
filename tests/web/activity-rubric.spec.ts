@@ -54,3 +54,21 @@ test("preserves an explanation across grading failure and restores rubric feedba
     "Light supplies energy to plants.",
   );
 });
+
+test("keeps a flagged scenario draft while disabling rubric submission", async ({
+  page,
+}) => {
+  await routeRubricPage(page, { flagged: true });
+  await page.goto("/");
+  await page.getByRole("button", { name: "Preview material" }).click();
+  await page.getByLabel("Your response").fill("My retained scenario draft");
+  await expect(
+    page.getByText(/cannot be submitted for rubric feedback/),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("button", { name: "Save scenario response" }),
+  ).toBeDisabled();
+  expect(await page.evaluate(() => JSON.stringify(localStorage))).toContain(
+    "My retained scenario draft",
+  );
+});
