@@ -1,10 +1,9 @@
 import { useEffect, useState } from "react";
 import type { LearnerActivityPack } from "../../../packages/contracts/activity-packs";
-import type {
-  ActivityAttemptRequest,
-  ActivityAttemptResponse,
+import {
+  gradeMcq,
+  type ActivityAttemptResponse,
 } from "../../../packages/contracts/activity-attempts";
-import { gradeMcq } from "../../../packages/contracts/activity-attempts";
 import { saveActivityAttempt, saveActivityFlag } from "./activity-attempt-api";
 import {
   clearDraft,
@@ -12,6 +11,9 @@ import {
   saveDraft,
   type ActivityDraft,
 } from "./activity-drafts";
+import type { ActivityTutorResponse } from "../../../packages/contracts/activity-tutor";
+import { AttemptFeedback } from "./AttemptFeedback";
+import { ActivityTutorActions } from "./ActivityTutorActions";
 
 type Question = LearnerActivityPack["questions"][number];
 export function ActivityQuestion({
@@ -26,6 +28,8 @@ export function ActivityQuestion({
   studySessionId,
   onAttemptSaved,
   sessionReason,
+  initialTutor = [],
+  onTutorSaved,
 }: {
   userId: string;
   spaceId: string;
@@ -38,6 +42,8 @@ export function ActivityQuestion({
   studySessionId?: string;
   onAttemptSaved?: (result: ActivityAttemptResponse) => void;
   sessionReason?: string;
+  initialTutor?: ActivityTutorResponse[];
+  onTutorSaved: (response: ActivityTutorResponse) => void;
 }) {
   const loaded = loadDraft(
     userId,
@@ -78,7 +84,7 @@ export function ActivityQuestion({
     confidence: draft.confidence || null,
     ...(studySessionId ? { studySessionId } : {}),
   });
-  async function submit(input: ActivityAttemptRequest) {
+  async function submit(input: Parameters<typeof saveActivityAttempt>[1]) {
     setBusy(true);
     setError("");
     try {
@@ -183,6 +189,16 @@ export function ActivityQuestion({
         </label>
       )}
       {!result && confidence}
+      {!result && (
+        <ActivityTutorActions
+          spaceId={spaceId}
+          packId={packId}
+          questionId={question.id}
+          initial={initialTutor}
+          onSource={onSource}
+          onSaved={onTutorSaved}
+        />
+      )}
       {!result && question.type === "mcq" && (
         <button
           disabled={busy || Boolean(flag) || !draft.selectedOptionId}
@@ -286,30 +302,11 @@ export function ActivityQuestion({
         </p>
       )}
       {result && (
-        <div className="notice">
-          <p>
-            <strong>
-              {result.supportedByMaterial
-                ? "Supported by your material"
-                : "Saved without grading"}
-              :
-            </strong>{" "}
-            {result.feedback}
-          </p>
-          {result.answer && <p>{result.answer}</p>}
-          {question.type === "mcq" && result.correctOptionId && (
-            <p>{question.review.answerExplanation}</p>
-          )}
-          <p>
-            {result.correctness
-              ? `Result: ${result.correctness}.`
-              : "No scored correctness result."}{" "}
-            Hint used: no. Confidence: {result.confidence ?? "not set"}.
-          </p>
-          {result.correctness && localCorrectness === result.correctness && (
-            <p>The instant browser check was confirmed by the server.</p>
-          )}
-        </div>
+        <AttemptFeedback
+          result={result}
+          question={question}
+          localCorrectness={localCorrectness}
+        />
       )}
       <div className="preview-actions">
         <button

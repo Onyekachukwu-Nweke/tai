@@ -14,6 +14,7 @@ import {
 } from "./activity-attempt-store";
 import { questionIsFlagged } from "./activity-attempt-store";
 import type { Clock } from "../../../packages/domain/concept-progress";
+import { assistanceForQuestion } from "./activity-tutor-store";
 
 export class AttemptFailure extends Error {
   constructor(
@@ -37,6 +38,7 @@ function review(question: ActivityQuestion) {
 function result(
   input: ActivityAttemptRequest,
   question: ActivityQuestion,
+  assistance: { hintUsed: boolean; alternateExplanationUsed: boolean },
 ): ActivityAttemptResponse {
   if (input.interaction === "mcq_submit" && question.type !== "mcq")
     throw new AttemptFailure(
@@ -93,7 +95,7 @@ function result(
     confidence: input.confidence,
     revealed,
     skipped: input.interaction === "skip",
-    hintUsed: false,
+    ...assistance,
     excludedFromScoring: false,
     flagReason: null,
     feedback,
@@ -164,7 +166,14 @@ export async function recordAttempt(
       409,
       "This flagged question is excluded from future scoring.",
     );
-  const response = result(input, question);
+  const assistance = await assistanceForQuestion(
+    env,
+    userId,
+    spaceId,
+    input.packId,
+    input.questionId,
+  );
+  const response = result(input, question, assistance);
   const fields = {
     interaction: input.interaction,
     answer: "answer" in input ? input.answer : undefined,
@@ -176,6 +185,8 @@ export async function recordAttempt(
     correctness: response.correctness,
     revealed: response.revealed,
     skipped: response.skipped,
+    hintUsed: response.hintUsed,
+    alternateExplanationUsed: response.alternateExplanationUsed,
   };
   const saved = await saveAttempt(
     env,

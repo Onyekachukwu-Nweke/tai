@@ -1,72 +1,24 @@
 import { expect, test } from "@playwright/test";
+import { routeRecoveryOffer } from "./study-session-fixture";
 import {
-  activeStudySession,
-  browserSource,
-  emptyActivityPack as empty,
-  routeRecoveryOffer,
-} from "./study-session-fixture";
-
-const spaceId = "11111111-1111-4111-8111-111111111111",
-  documentId = "22222222-2222-4222-8222-222222222222";
-const source = browserSource(documentId);
-const concepts = {
-  schemaVersion: 1,
-  status: "ready",
-  requestId: "33333333-3333-4333-8333-333333333333",
-  location: 1,
-  error: null,
-  provider: "fake",
-  relations: [],
-  concepts: ["Light", "Growth"].map((label, index) => ({
-    id: `${index + 4}4444444-4444-4444-8444-444444444444`,
-    title: label,
-    label,
-    description: `${label} concept`,
-    selected: true,
-    sources: [source],
-  })),
-};
-const ready = {
-  ...empty,
-  status: "ready",
-  requestId: "66666666-6666-4666-8666-666666666666",
-  packId: "77777777-7777-4777-8777-777777777777",
-  questions: [
-    {
-      id: "88888888-8888-4888-8888-888888888888",
-      type: "recall",
-      conceptIds: concepts.concepts.map((item) => item.id),
-      prompt: "Recall how plants grow.",
-      estimatedMinutes: 2,
-      sources: [source],
-      review: { supportedAnswer: "Plants need light and water." },
-    },
-    {
-      id: "99999999-9999-4999-8999-999999999999",
-      type: "mcq",
-      conceptIds: concepts.concepts.map((item) => item.id),
-      prompt: "What helps plants grow?",
-      estimatedMinutes: 1,
-      sources: [source],
-      options: [
-        { id: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa", text: "Light" },
-        { id: "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb", text: "Stone" },
-        { id: "cccccccc-cccc-4ccc-8ccc-cccccccccccc", text: "Metal" },
-      ],
-      review: {
-        correctOptionId: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
-        answerExplanation: "The material says plants use light.",
-      },
-    },
-  ],
-};
-const studySession = activeStudySession(ready.packId, ready.questions);
+  concepts,
+  documentId,
+  empty,
+  ready,
+  restoredHint,
+  source,
+  spaceId,
+  studySession,
+} from "./activity-pack-fixture";
 
 test("prepares an ID-only learner-safe pack, reloads it and opens exact evidence", async ({
   page,
 }) => {
   let state: typeof empty | typeof ready = empty,
     body: Record<string, unknown> = {};
+  let currentSession = studySession;
+  let releaseTutor!: () => void;
+  const tutorGate = new Promise<void>((resolve) => (releaseTutor = resolve));
   await page.route("**/api/session", (route) =>
     route.fulfill({
       json: {
@@ -130,8 +82,44 @@ test("prepares an ID-only learner-safe pack, reloads it and opens exact evidence
   await page.route(`**/api/study-spaces/${spaceId}/activity-pack`, (route) =>
     route.fulfill({ json: state }),
   );
-  await page.route(`**/api/study-spaces/${spaceId}/study-session`, (route) =>
-    route.fulfill({ json: studySession }),
+  await page.route(
+    `**/api/study-spaces/${spaceId}/study-session`,
+    async (route) => {
+      if (route.request().method() === "POST")
+        currentSession = {
+          ...currentSession,
+          sessionId: "13131313-1313-4313-8313-131313131313",
+        };
+      await route.fulfill({ json: currentSession });
+    },
+  );
+  await page.route(
+    `**/api/study-spaces/${spaceId}/activity-tutor?packId=*`,
+    async (route) => {
+      await tutorGate;
+      await route.fulfill({
+        json: {
+          schemaVersion: 1,
+          packId: ready.packId,
+          interactions: [restoredHint],
+        },
+      });
+    },
+  );
+  await page.route(
+    `**/api/study-spaces/${spaceId}/activity-tutor`,
+    async (route) => {
+      const request = route.request().postDataJSON();
+      await route.fulfill({
+        status: 201,
+        json: {
+          ...restoredHint,
+          requestId: request.requestId,
+          kind: request.kind,
+          text: "Saved alternate explanation.",
+        },
+      });
+    },
   );
   await routeRecoveryOffer(page, spaceId, { offered: false });
   await page.route(
@@ -162,6 +150,18 @@ test("prepares an ID-only learner-safe pack, reloads it and opens exact evidence
   await expect(
     page.getByRole("list", { name: "Saved activity pack" }),
   ).toContainText("Recall how plants grow.");
+  releaseTutor();
+  await expect(page.getByText(restoredHint.text)).toBeVisible();
+  await page
+    .getByRole("button", { name: "Explain another way" })
+    .first()
+    .click();
+  await expect(page.getByText("Saved alternate explanation.")).toBeVisible();
+  await page
+    .getByRole("button", { name: "Replace with these settings" })
+    .click();
+  await expect(page.getByText(restoredHint.text)).toBeVisible();
+  await expect(page.getByText("Saved alternate explanation.")).toBeVisible();
   const html = await page
     .getByRole("list", { name: "Saved activity pack" })
     .textContent();
@@ -188,7 +188,6 @@ test("prepares an ID-only learner-safe pack, reloads it and opens exact evidence
   await expect(page.locator("mark")).toHaveText(source.text);
   await expect(page.locator(".source-text")).toBeFocused();
 });
-
 test("keeps an unacknowledged draft for explicit retry and hides review keys in storage", async ({
   page,
 }) => {
@@ -273,6 +272,7 @@ test("keeps an unacknowledged draft for explicit retry and hides review keys in 
         revealed: true,
         skipped: false,
         hintUsed: false,
+        alternateExplanationUsed: false,
         excludedFromScoring: false,
         flagReason: null,
         feedback: "Saved.",
