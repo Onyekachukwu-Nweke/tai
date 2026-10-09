@@ -12,7 +12,9 @@ import { learner, material, upload } from "./material-fixtures";
 let owner: Awaited<ReturnType<typeof learner>>, pack: LearnerActivityPack;
 async function seed() {
   owner = await learner();
-  const preview = material("Plants use light energy. Roots absorb water.");
+  const preview = material(
+    "A cart travels 120 metres in 10 seconds. Speed equals distance divided by time.",
+  );
   await upload(owner.spaceId, owner.cookie, preview);
   const request = crypto.randomUUID(),
     ids = [crypto.randomUUID(), crypto.randomUUID()];

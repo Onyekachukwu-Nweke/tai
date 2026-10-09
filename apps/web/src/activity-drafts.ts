@@ -1,6 +1,7 @@
 export type ActivityDraft = {
   attemptId: string;
   answer: string;
+  finalAnswer: string;
   selectedOptionId: string;
   confidence: "" | "low" | "medium" | "high";
 };
@@ -48,15 +49,17 @@ function validDraft(raw: string): ActivityDraft | null {
   const value = JSON.parse(raw) as Partial<ActivityDraft>;
   return typeof value.attemptId === "string" &&
     typeof value.answer === "string" &&
+    typeof (value.finalAnswer ?? "") === "string" &&
     typeof value.selectedOptionId === "string" &&
     ["", "low", "medium", "high"].includes(value.confidence ?? "")
-    ? (value as ActivityDraft)
+    ? ({ ...value, finalAnswer: value.finalAnswer ?? "" } as ActivityDraft)
     : null;
 }
 function fresh(): ActivityDraft {
   return {
     attemptId: crypto.randomUUID(),
     answer: "",
+    finalAnswer: "",
     selectedOptionId: "",
     confidence: "",
   };

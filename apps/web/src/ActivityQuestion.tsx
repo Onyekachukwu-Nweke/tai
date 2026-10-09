@@ -19,6 +19,9 @@ import { ActivityQuestionFooter } from "./ActivityQuestionFooter";
 import { ActivityQuestionPrompt } from "./ActivityQuestionPrompt";
 import type { ActivityFollowupResponse } from "../../../packages/contracts/activity-followup";
 import { ActivityGradedFeedback } from "./ActivityGradedFeedback";
+import { CalculationAnswer } from "./CalculationAnswer";
+import { MultipleChoiceAnswer } from "./MultipleChoiceAnswer";
+import { ActivityConfidence } from "./ActivityConfidence";
 
 type Question = LearnerActivityPack["questions"][number];
 export function ActivityQuestion({
@@ -104,7 +107,11 @@ export function ActivityQuestion({
     try {
       const saved = await saveActivityAttempt(spaceId, input);
       setResult(saved);
-      if (input.interaction === "explain_submit") setGradeAfterSave(true);
+      if (
+        input.interaction === "explain_submit" ||
+        input.interaction === "calculation_submit"
+      )
+        setGradeAfterSave(true);
       else
         setStorageWarning(
           clearDraft(userId, spaceId, packId, question.id, studySessionId),
@@ -144,23 +151,6 @@ export function ActivityQuestion({
   function update(update: Partial<ActivityDraft>) {
     setDraft((value) => ({ ...value, ...update }));
   }
-  const confidence = (
-    <label>
-      Confidence (optional)
-      <select
-        value={draft.confidence}
-        disabled={busy || Boolean(result)}
-        onChange={(e) =>
-          update({ confidence: e.target.value as ActivityDraft["confidence"] })
-        }
-      >
-        <option value="">Not set</option>
-        <option value="low">Low</option>
-        <option value="medium">Medium</option>
-        <option value="high">High</option>
-      </select>
-    </label>
-  );
   return (
     <li className="activity-card">
       {sessionReason && (
@@ -168,33 +158,44 @@ export function ActivityQuestion({
       )}
       <ActivityQuestionPrompt question={question} />
       {!result && question.type === "mcq" && (
-        <fieldset disabled={busy}>
-          <legend>Choose one answer</legend>
-          {question.options.map((option) => (
-            <label key={option.id}>
-              <input
-                type="radio"
-                name={`option-${question.id}`}
-                checked={draft.selectedOptionId === option.id}
-                onChange={() => update({ selectedOptionId: option.id })}
-              />
-              {option.text}
-            </label>
-          ))}
-        </fieldset>
+        <MultipleChoiceAnswer
+          question={question}
+          selected={draft.selectedOptionId}
+          busy={busy}
+          flagged={Boolean(flag)}
+          onSelect={(selectedOptionId) => update({ selectedOptionId })}
+          onSubmit={() => {
+            setLocalCorrectness(
+              gradeMcq(draft.selectedOptionId, question.review.correctOptionId),
+            );
+            void submit({
+              ...base(),
+              interaction: "mcq_submit",
+              selectedOptionId: draft.selectedOptionId,
+            });
+          }}
+        />
       )}
-      {!result && question.type !== "mcq" && (
-        <label>
-          Your response
-          <textarea
-            value={draft.answer}
-            disabled={busy}
-            maxLength={8000}
-            onChange={(e) => update({ answer: e.target.value })}
-          />
-        </label>
+      {!result &&
+        question.type !== "mcq" &&
+        question.type !== "calculation" && (
+          <label>
+            Your response
+            <textarea
+              value={draft.answer}
+              disabled={busy}
+              maxLength={8000}
+              onChange={(e) => update({ answer: e.target.value })}
+            />
+          </label>
+        )}
+      {!result && (
+        <ActivityConfidence
+          value={draft.confidence}
+          disabled={busy}
+          onChange={(confidence) => update({ confidence })}
+        />
       )}
-      {!result && confidence}
       {!result && (
         <ActivityTutorActions
           spaceId={spaceId}
@@ -205,28 +206,25 @@ export function ActivityQuestion({
           onSaved={onTutorSaved}
         />
       )}
-      {!result && question.type === "mcq" && (
-        <button
-          disabled={busy || Boolean(flag) || !draft.selectedOptionId}
-          onClick={() => (
-            setLocalCorrectness(
-              gradeMcq(draft.selectedOptionId, question.review.correctOptionId),
-            ),
+      {!result && question.type === "calculation" && (
+        <CalculationAnswer
+          question={question}
+          finalAnswer={draft.finalAnswer}
+          working={draft.answer}
+          busy={busy}
+          flagged={Boolean(flag)}
+          onChange={update}
+          onInvalid={setError}
+          onSubmit={(checked) => {
+            setLocalCorrectness(checked);
             void submit({
               ...base(),
-              interaction: "mcq_submit",
-              selectedOptionId: draft.selectedOptionId,
-            })
-          )}
-        >
-          Submit answer
-        </button>
-      )}
-      {!result && question.type === "mcq" && flag && (
-        <p>
-          This flagged question cannot be submitted for a scored result because
-          it is excluded from future scoring.
-        </p>
+              interaction: "calculation_submit",
+              finalAnswer: draft.finalAnswer,
+              working: draft.answer,
+            });
+          }}
+        />
       )}
       {!result &&
         (question.type === "explain" || question.type === "scenario") && (

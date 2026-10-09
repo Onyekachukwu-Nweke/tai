@@ -31,6 +31,49 @@ const baseQuestion = {
 };
 const assumptions = z.array(z.string().trim().min(1).max(300)).min(1).max(5);
 const rubric = z.array(z.string().trim().min(1).max(500)).min(1).max(5);
+const supportedUnit = z.enum([
+  "m",
+  "cm",
+  "km",
+  "s",
+  "min",
+  "h",
+  "m/s",
+  "km/h",
+  "g",
+  "kg",
+]);
+const numericTolerance = {
+  expectedValue: z.number().finite(),
+  absoluteTolerance: z.number().finite().min(0),
+  relativeTolerance: z.number().finite().min(0).max(1),
+};
+const numericKey = z.discriminatedUnion("unitPolicy", [
+  z
+    .object({
+      ...numericTolerance,
+      unitPolicy: z.literal("required"),
+      expectedUnit: supportedUnit,
+      allowedUnits: z.array(supportedUnit).min(1).max(4),
+    })
+    .strict(),
+  z
+    .object({
+      ...numericTolerance,
+      unitPolicy: z.literal("optional"),
+      expectedUnit: supportedUnit,
+      allowedUnits: z.array(supportedUnit).min(1).max(4),
+    })
+    .strict(),
+  z
+    .object({
+      ...numericTolerance,
+      unitPolicy: z.literal("forbidden"),
+      expectedUnit: z.null(),
+      allowedUnits: z.tuple([]),
+    })
+    .strict(),
+]);
 const learnerQuestion = z.discriminatedUnion("type", [
   z
     .object({
@@ -39,6 +82,15 @@ const learnerQuestion = z.discriminatedUnion("type", [
       review: z
         .object({ supportedAnswer: z.string().min(1).max(2_000) })
         .strict(),
+    })
+    .strict(),
+  z
+    .object({
+      ...baseQuestion,
+      type: z.literal("calculation"),
+      notation: z.string().trim().min(1).max(500),
+      givens: z.array(z.string().trim().min(1).max(300)).min(1).max(6),
+      review: numericKey,
     })
     .strict(),
   z.object({ ...baseQuestion, type: z.literal("explain") }).strict(),
@@ -97,6 +149,17 @@ const canonicalQuestion = z.discriminatedUnion("type", [
       ...baseQuestion,
       type: z.literal("scenario"),
       assumptions,
+      rubric,
+    })
+    .strict(),
+  z
+    .object({
+      ...baseQuestion,
+      type: z.literal("calculation"),
+      notation: z.string().trim().min(1).max(500),
+      givens: z.array(z.string().trim().min(1).max(300)).min(1).max(6),
+      numericKey,
+      workedExplanation: z.string().trim().min(1).max(2_000),
       rubric,
     })
     .strict(),
@@ -183,6 +246,19 @@ export function validateActivityPack(
       )
         throw new Error("Invalid MCQ answer");
     }
+    if (
+      question.type === "calculation" &&
+      question.numericKey.unitPolicy !== "forbidden"
+    ) {
+      if (
+        !question.numericKey.allowedUnits.includes(
+          question.numericKey.expectedUnit,
+        )
+      )
+        throw new Error("Expected calculation unit must be allowed");
+      if (!Number.isFinite(question.numericKey.expectedValue))
+        throw new Error("Invalid calculation key");
+    }
   }
   if (covered.size < 2) throw new Error("Activity pack needs two concepts");
   return pack;
@@ -214,7 +290,7 @@ export function toLearnerActivityPack(pack: CanonicalActivityPack) {
             sources: question.sources,
             review: { supportedAnswer: question.supportedAnswer },
           }
-        : question.type === "scenario"
+        : question.type === "calculation"
           ? {
               id: question.id,
               type: question.type,
@@ -222,15 +298,27 @@ export function toLearnerActivityPack(pack: CanonicalActivityPack) {
               prompt: question.prompt,
               estimatedMinutes: question.estimatedMinutes,
               sources: question.sources,
-              assumptions: question.assumptions,
+              notation: question.notation,
+              givens: question.givens,
+              review: question.numericKey,
             }
-          : {
-              id: question.id,
-              type: question.type,
-              conceptIds: question.conceptIds,
-              prompt: question.prompt,
-              estimatedMinutes: question.estimatedMinutes,
-              sources: question.sources,
-            },
+          : question.type === "scenario"
+            ? {
+                id: question.id,
+                type: question.type,
+                conceptIds: question.conceptIds,
+                prompt: question.prompt,
+                estimatedMinutes: question.estimatedMinutes,
+                sources: question.sources,
+                assumptions: question.assumptions,
+              }
+            : {
+                id: question.id,
+                type: question.type,
+                conceptIds: question.conceptIds,
+                prompt: question.prompt,
+                estimatedMinutes: question.estimatedMinutes,
+                sources: question.sources,
+              },
   );
 }

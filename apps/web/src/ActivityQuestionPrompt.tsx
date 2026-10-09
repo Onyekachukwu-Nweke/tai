@@ -1,4 +1,5 @@
 import type { LearnerActivityPack } from "../../../packages/contracts/activity-packs";
+import { SafeMath } from "./SafeMath";
 
 type Question = LearnerActivityPack["questions"][number];
 
@@ -7,6 +8,7 @@ const labels: Record<Question["type"], string> = {
   mcq: "Multiple choice",
   explain: "Explain",
   scenario: "Scenario",
+  calculation: "Calculation",
 };
 
 export function ActivityQuestionPrompt({ question }: { question: Question }) {
@@ -27,6 +29,16 @@ export function ActivityQuestionPrompt({ question }: { question: Question }) {
               <li key={assumption}>{assumption}</li>
             ))}
           </ul>
+        </div>
+      )}
+      {question.type === "calculation" && (
+        <div className="notice">
+          <p>
+            <strong>Given:</strong> {question.givens.join("; ")}
+          </p>
+          <p>
+            <SafeMath value={question.notation} />
+          </p>
         </div>
       )}
     </>

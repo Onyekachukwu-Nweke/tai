@@ -62,7 +62,7 @@ const currentAttempt = `EXISTS(
  JOIN study_spaces s ON s.user_id=p.user_id AND s.id=p.space_id
  WHERE a.user_id=activity_rubric_requests.user_id AND a.space_id=activity_rubric_requests.space_id
  AND a.id=activity_rubric_requests.attempt_id AND a.pack_id=activity_rubric_requests.pack_id
- AND a.question_id=activity_rubric_requests.question_id AND a.interaction='explain_submit'
+ AND a.question_id=activity_rubric_requests.question_id AND a.interaction IN ('explain_submit','calculation_submit')
  AND r.state='ready' AND s.deleted_at IS NULL AND p.document_id=r.document_id
  AND p.concept_request_id=r.concept_request_id AND p.selection_key=r.selection_key
  AND NOT EXISTS(SELECT 1 FROM activity_question_flags f WHERE f.user_id=a.user_id

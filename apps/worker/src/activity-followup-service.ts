@@ -88,7 +88,7 @@ export async function generateFollowup(
     `SELECT a.pack_id,a.question_id,a.answer,g.request_id AS grade_request_id,g.response_json
      FROM activity_attempts a JOIN activity_rubric_requests g
        ON g.user_id=a.user_id AND g.space_id=a.space_id AND g.attempt_id=a.id
-     WHERE a.user_id=? AND a.space_id=? AND a.id=? AND a.interaction='explain_submit'
+     WHERE a.user_id=? AND a.space_id=? AND a.id=? AND a.interaction IN ('explain_submit','calculation_submit')
        AND g.state='ready' ORDER BY g.created_at DESC,g.rowid DESC LIMIT 1`,
   )
     .bind(userId, spaceId, input.attemptId)
@@ -110,7 +110,9 @@ export async function generateFollowup(
   );
   if (
     !question ||
-    (question.type !== "explain" && question.type !== "scenario")
+    (question.type !== "explain" &&
+      question.type !== "scenario" &&
+      question.type !== "calculation")
   )
     throw new FollowupFailure(
       404,

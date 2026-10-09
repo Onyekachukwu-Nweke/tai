@@ -87,10 +87,16 @@ export async function saveAttempt(
     skipped: boolean;
     hintUsed: boolean;
     alternateExplanationUsed: boolean;
+    finalAnswer?: string;
+    numericOutcome?: string;
   },
   clock: Clock,
 ) {
   const responseJson = JSON.stringify(response);
+  const storedInteraction =
+    fields.interaction === "calculation_submit"
+      ? "explain_submit"
+      : fields.interaction;
   const concepts = await questionConceptIds(
     env,
     keys.userId,
@@ -106,22 +112,24 @@ export async function saveAttempt(
     keys.packId,
     keys.questionId,
     requestHash,
-    fields.interaction,
+    storedInteraction,
     fields.answer ?? null,
     fields.selectedOptionId ?? null,
     fields.selfAssessment ?? null,
     fields.confidence,
-    fields.correctness,
+    fields.interaction === "calculation_submit" ? null : fields.correctness,
     Number(fields.revealed),
     Number(fields.skipped),
     Number(fields.hintUsed),
     Number(fields.alternateExplanationUsed),
+    fields.finalAnswer ?? null,
+    fields.numericOutcome ?? null,
     responseJson,
     now,
   ];
   const insert = keys.studySessionId
     ? env.DB.prepare(
-        "INSERT OR IGNORE INTO activity_attempts(user_id,space_id,id,pack_id,question_id,request_hash,interaction,answer,selected_option_id,self_assessment,confidence,correctness,revealed,skipped,hint_used,alternate_explanation_used,response_json,created_at) SELECT ?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,? WHERE EXISTS(SELECT 1 FROM study_sessions s JOIN study_session_items i ON i.user_id=s.user_id AND i.space_id=s.space_id AND i.session_id=s.id WHERE s.user_id=? AND s.space_id=? AND s.id=? AND s.pack_id=? AND s.status='active' AND i.question_id=? AND i.completed_at IS NULL)",
+        "INSERT OR IGNORE INTO activity_attempts(user_id,space_id,id,pack_id,question_id,request_hash,interaction,answer,selected_option_id,self_assessment,confidence,correctness,revealed,skipped,hint_used,alternate_explanation_used,final_answer,numeric_outcome,response_json,created_at) SELECT ?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,? WHERE EXISTS(SELECT 1 FROM study_sessions s JOIN study_session_items i ON i.user_id=s.user_id AND i.space_id=s.space_id AND i.session_id=s.id WHERE s.user_id=? AND s.space_id=? AND s.id=? AND s.pack_id=? AND s.status='active' AND i.question_id=? AND i.completed_at IS NULL)",
       ).bind(
         ...values,
         keys.userId,
@@ -131,7 +139,7 @@ export async function saveAttempt(
         keys.questionId,
       )
     : env.DB.prepare(
-        "INSERT OR IGNORE INTO activity_attempts(user_id,space_id,id,pack_id,question_id,request_hash,interaction,answer,selected_option_id,self_assessment,confidence,correctness,revealed,skipped,hint_used,alternate_explanation_used,response_json,created_at) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
+        "INSERT OR IGNORE INTO activity_attempts(user_id,space_id,id,pack_id,question_id,request_hash,interaction,answer,selected_option_id,self_assessment,confidence,correctness,revealed,skipped,hint_used,alternate_explanation_used,final_answer,numeric_outcome,response_json,created_at) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
       ).bind(...values);
   await env.DB.batch([
     insert,

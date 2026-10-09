@@ -23,6 +23,14 @@ export const activityAttemptRequestSchema = z.discriminatedUnion(
     z
       .object({
         ...common,
+        interaction: z.literal("calculation_submit"),
+        finalAnswer: z.string().trim().min(1).max(100),
+        working: z.string().trim().min(1).max(8_000),
+      })
+      .strict(),
+    z
+      .object({
+        ...common,
         interaction: z.literal("recall_self_check"),
         answer: z.string().trim().min(1).max(8_000),
         selfAssessment: z.enum(["remembered", "partial", "not_yet"]),
@@ -47,10 +55,21 @@ export const activityAttemptResponseSchema = z
       "mcq_submit",
       "recall_self_check",
       "explain_submit",
+      "calculation_submit",
       "reveal",
       "skip",
     ]),
     correctness: z.enum(["correct", "incorrect"]).nullable(),
+    numericResult: z
+      .object({
+        outcome: z.enum(["correct", "incorrect"]),
+        submittedValue: z.number().finite(),
+        submittedUnit: z.string().min(1).max(16).nullable(),
+        convertedValue: z.number().finite(),
+        tolerance: z.number().finite().min(0),
+      })
+      .strict()
+      .nullable(),
     selfAssessment: z.enum(["remembered", "partial", "not_yet"]).nullable(),
     confidence,
     revealed: z.boolean(),

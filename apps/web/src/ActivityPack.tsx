@@ -99,7 +99,10 @@ export function ActivityPack({
     if (
       !pack?.packId ||
       !pack.questions.some(
-        (item) => item.type === "explain" || item.type === "scenario",
+        (item) =>
+          item.type === "explain" ||
+          item.type === "scenario" ||
+          item.type === "calculation",
       )
     )
       return;
