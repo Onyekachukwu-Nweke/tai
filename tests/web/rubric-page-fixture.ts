@@ -42,7 +42,9 @@ const pack = {
 export async function routeRubricPage(page: Page) {
   let attempt: Record<string, unknown> | null = null;
   let grade: Record<string, unknown> | null = null;
+  let followup: Record<string, unknown> | null = null;
   let failures = 1;
+  let followupFailures = 1;
   await page.route("**/api/session", (route) =>
     route.fulfill({
       json: {
@@ -160,6 +162,17 @@ export async function routeRubricPage(page: Page) {
       }),
   );
   await page.route(
+    `**/api/study-spaces/${rubricIds.space}/activity-followup?packId=*`,
+    (route) =>
+      route.fulfill({
+        json: {
+          schemaVersion: 1,
+          packId: rubricIds.pack,
+          followups: followup ? [followup] : [],
+        },
+      }),
+  );
+  await page.route(
     `**/api/study-spaces/${rubricIds.space}/activity-attempts`,
     async (route) => {
       const input = route.request().postDataJSON();
@@ -211,6 +224,30 @@ export async function routeRubricPage(page: Page) {
         sources: [source],
       };
       await route.fulfill({ status: 201, json: grade });
+    },
+  );
+  await page.route(
+    `**/api/study-spaces/${rubricIds.space}/activity-followup`,
+    async (route) => {
+      if (followupFailures--)
+        return route.fulfill({
+          status: 503,
+          json: { error: "Follow-up interrupted." },
+        });
+      const input = route.request().postDataJSON();
+      followup = {
+        schemaVersion: 1,
+        requestId: input.requestId,
+        attemptId: input.attemptId,
+        packId: rubricIds.pack,
+        questionId: rubricIds.question,
+        targetedCriterion: "Connect light to growth",
+        gapOutcome: "partial",
+        conceptIds: question.conceptIds,
+        prompt: "How would added light affect growth under these assumptions?",
+        sources: [source],
+      };
+      await route.fulfill({ status: 201, json: followup });
     },
   );
 }
