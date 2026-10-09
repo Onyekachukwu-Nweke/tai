@@ -10,10 +10,15 @@ import {
   FakeActivityPackProvider,
   type ActivityPackProvider,
 } from "../../../packages/adapters/fake-activity-packs";
+import {
+  systemClock,
+  type Clock,
+} from "../../../packages/domain/concept-progress";
 
 export function createApp(
   provider: ConceptProvider = new FakeConceptProvider(),
   activityProvider: ActivityPackProvider = new FakeActivityPackProvider(),
+  clock: Clock = systemClock,
 ) {
   const app = new Hono<{ Bindings: Env; Variables: Variables }>();
 
@@ -64,7 +69,10 @@ export function createApp(
     });
     await next();
   });
-  app.route("/api/study-spaces", createStudySpaces(provider, activityProvider));
+  app.route(
+    "/api/study-spaces",
+    createStudySpaces(provider, activityProvider, clock),
+  );
 
   app.notFound((c) => c.json({ error: "Not found." }, 404));
   app.onError((_error, c) =>

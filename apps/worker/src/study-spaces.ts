@@ -11,10 +11,13 @@ import { conceptRoutes } from "./concept-routes";
 import type { ActivityPackProvider } from "../../../packages/adapters/fake-activity-packs";
 import { activityPackRoutes } from "./activity-pack-routes";
 import { activityAttemptRoutes } from "./activity-attempt-routes";
+import type { Clock } from "../../../packages/domain/concept-progress";
+import { conceptProgressRoutes } from "./concept-progress-routes";
 
 export function createStudySpaces(
   provider: ConceptProvider,
   activityProvider: ActivityPackProvider,
+  clock: Clock,
 ) {
   const studySpaces = new Hono<{ Bindings: Env; Variables: Variables }>();
 
@@ -90,6 +93,7 @@ export function createStudySpaces(
   studySpaces.route("/", materialRoutes);
   studySpaces.route("/", conceptRoutes(provider));
   studySpaces.route("/", activityPackRoutes(activityProvider));
-  studySpaces.route("/", activityAttemptRoutes);
+  studySpaces.route("/", activityAttemptRoutes(clock));
+  studySpaces.route("/", conceptProgressRoutes(clock));
   return studySpaces;
 }

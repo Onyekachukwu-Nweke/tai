@@ -30,7 +30,7 @@ M0 Foundation, sign-in, and provider feasibility
 
 M0 establishes development tooling and validates deployment assumptions. M1–M5 implement the PRD's five milestones. Accessibility, privacy, source traceability, and error handling start with their owning feature; they are not deferred to a final polish phase.
 
-No calendar deadline or team capacity has been supplied. Sequence by exit criteria rather than invented dates. Re-estimate after M0 and each completed milestone. M0 is **in progress**; M1 is **in progress** with material persistence; M2 is **in progress** with a fake-provider concept explorer and learner-safe saved activity-pack preview; M3–M5 are **not started**. See [local setup](../developer-guide/setup.md) for the current implementation scope. Live provider and device readiness gates remain open.
+No calendar deadline or team capacity has been supplied. Sequence by exit criteria rather than invented dates. Re-estimate after M0 and each completed milestone. M0 and M1 remain **in progress**; M2 is **in progress** with deterministic concepts and activities; M3 is **in progress** with saved attempts and concept review projections; M4–M5 are **not started**. See [local setup](../developer-guide/setup.md) for the current implementation scope. Live provider and device readiness gates remain open.
 
 ## Working agreement
 

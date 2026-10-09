@@ -4,6 +4,7 @@ import { generateActivityPack, loadActivityPack } from "./activity-pack-api";
 import { ActivityQuestion } from "./ActivityQuestion";
 import { loadActivityState } from "./activity-attempt-api";
 import type { ActivityAttemptResponse } from "../../../packages/contracts/activity-attempts";
+import { ConceptProgress } from "./ConceptProgress";
 
 type Source = LearnerActivityPack["questions"][number]["sources"][number];
 export function ActivityPack({
@@ -26,6 +27,7 @@ export function ActivityPack({
   );
   const [busy, setBusy] = useState(false),
     [error, setError] = useState("");
+  const [progressRevision, setProgressRevision] = useState(0);
   useEffect(() => {
     const controller = new AbortController();
     loadActivityPack(spaceId, controller.signal)
@@ -75,6 +77,7 @@ export function ActivityPack({
   }
   return (
     <section className="activity-pack" aria-labelledby="activity-heading">
+      <ConceptProgress spaceId={spaceId} revision={progressRevision} />
       <h3 id="activity-heading">Practice activities</h3>
       <p className="notice">
         Development preview: these prompts come from a deterministic fake
@@ -118,6 +121,7 @@ export function ActivityPack({
               onSource={onSource}
               initialResult={attempts[question.id] ?? null}
               initialFlag={flags[question.id] ?? null}
+              onProgressChange={() => setProgressRevision((value) => value + 1)}
             />
           ))}
         </ol>

@@ -7,6 +7,11 @@ import {
   type ActivityAttemptResponse,
 } from "../../../packages/contracts/activity-attempts";
 import type { Env } from "./env";
+import type { Clock } from "../../../packages/domain/concept-progress";
+import {
+  questionConceptIds,
+  recomputeProgressStatement,
+} from "./concept-progress-store";
 
 type AttemptRow = { request_hash: string; response_json: string };
 
@@ -50,31 +55,45 @@ export async function saveAttempt(
     revealed: boolean;
     skipped: boolean;
   },
+  clock: Clock,
 ) {
   const responseJson = JSON.stringify(response);
-  await env.DB.prepare(
+  const concepts = await questionConceptIds(
+    env,
+    keys.userId,
+    keys.spaceId,
+    keys.packId,
+    keys.questionId,
+  );
+  const insert = env.DB.prepare(
     "INSERT OR IGNORE INTO activity_attempts(user_id,space_id,id,pack_id,question_id,request_hash,interaction,answer,selected_option_id,self_assessment,confidence,correctness,revealed,skipped,hint_used,response_json,created_at) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
-  )
-    .bind(
-      keys.userId,
-      keys.spaceId,
-      keys.attemptId,
-      keys.packId,
-      keys.questionId,
-      requestHash,
-      fields.interaction,
-      fields.answer ?? null,
-      fields.selectedOptionId ?? null,
-      fields.selfAssessment ?? null,
-      fields.confidence,
-      fields.correctness,
-      Number(fields.revealed),
-      Number(fields.skipped),
-      0,
-      responseJson,
-      new Date().toISOString(),
-    )
-    .run();
+  ).bind(
+    keys.userId,
+    keys.spaceId,
+    keys.attemptId,
+    keys.packId,
+    keys.questionId,
+    requestHash,
+    fields.interaction,
+    fields.answer ?? null,
+    fields.selectedOptionId ?? null,
+    fields.selfAssessment ?? null,
+    fields.confidence,
+    fields.correctness,
+    Number(fields.revealed),
+    Number(fields.skipped),
+    0,
+    responseJson,
+    clock.now().toISOString(),
+  );
+  await env.DB.batch([
+    insert,
+    ...(fields.correctness
+      ? concepts.map((conceptId) =>
+          recomputeProgressStatement(env, keys.userId, keys.spaceId, conceptId),
+        )
+      : []),
+  ]);
   const saved = await env.DB.prepare(
     "SELECT request_hash,response_json FROM activity_attempts WHERE user_id=? AND space_id=? AND id=?",
   )
@@ -145,13 +164,28 @@ export async function saveQuestionFlag(
   packId: string,
   questionId: string,
   reason: "incorrect" | "ambiguous",
+  clock: Clock,
 ) {
-  const now = new Date().toISOString();
-  await env.DB.prepare(
+  const now = clock.now().toISOString();
+  const concepts = await questionConceptIds(
+    env,
+    userId,
+    spaceId,
+    packId,
+    questionId,
+  );
+  const flag = env.DB.prepare(
     "INSERT INTO activity_question_flags(user_id,space_id,pack_id,question_id,reason,created_at,updated_at) VALUES(?,?,?,?,?,?,?) ON CONFLICT(user_id,space_id,pack_id,question_id) DO UPDATE SET reason=excluded.reason,updated_at=excluded.updated_at",
-  )
-    .bind(userId, spaceId, packId, questionId, reason, now, now)
-    .run();
+  ).bind(userId, spaceId, packId, questionId, reason, now, now);
+  await env.DB.batch([
+    flag,
+    ...concepts.flatMap((conceptId) => [
+      env.DB.prepare(
+        "DELETE FROM concept_progress WHERE user_id=? AND space_id=? AND concept_id=?",
+      ).bind(userId, spaceId, conceptId),
+      recomputeProgressStatement(env, userId, spaceId, conceptId),
+    ]),
+  ]);
   return { questionId, reason };
 }
 
