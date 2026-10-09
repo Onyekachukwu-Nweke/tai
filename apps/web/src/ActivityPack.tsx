@@ -5,17 +5,22 @@ import { ActivityQuestion } from "./ActivityQuestion";
 import { loadActivityState } from "./activity-attempt-api";
 import type { ActivityAttemptResponse } from "../../../packages/contracts/activity-attempts";
 import { ConceptProgress } from "./ConceptProgress";
+import type { StudySession as SavedSession } from "../../../packages/contracts/study-sessions";
+import { loadStudySession } from "./study-session-api";
+import { StudySession } from "./StudySession";
 
 type Source = LearnerActivityPack["questions"][number]["sources"][number];
 export function ActivityPack({
   spaceId,
   userId,
   selectedCount,
+  concepts,
   onSource,
 }: {
   spaceId: string;
   userId: string;
   selectedCount: number;
+  concepts: Array<{ id: string; label: string }>;
   onSource: (source: Source) => void;
 }) {
   const [pack, setPack] = useState<LearnerActivityPack | null>(null);
@@ -28,6 +33,19 @@ export function ActivityPack({
   const [busy, setBusy] = useState(false),
     [error, setError] = useState("");
   const [progressRevision, setProgressRevision] = useState(0);
+  const [session, setSession] = useState<SavedSession>({
+    schemaVersion: 1,
+    status: "empty",
+    sessionId: null,
+    packId: null,
+    budgetMinutes: null,
+    estimatedMinutes: 0,
+    mode: null,
+    conceptId: null,
+    items: [],
+    createdAt: null,
+    completedAt: null,
+  });
   useEffect(() => {
     const controller = new AbortController();
     loadActivityPack(spaceId, controller.signal)
@@ -60,6 +78,26 @@ export function ActivityPack({
       );
     return () => controller.abort();
   }, [pack?.packId, spaceId]);
+  useEffect(() => {
+    const controller = new AbortController();
+    loadStudySession(spaceId, controller.signal)
+      .then(setSession)
+      .catch(() =>
+        setError(
+          "Saved session could not be loaded. Retry by reopening this material.",
+        ),
+      );
+    return () => controller.abort();
+  }, [pack?.packId, spaceId]);
+  async function refreshSession() {
+    try {
+      setSession(await loadStudySession(spaceId));
+    } catch {
+      setError(
+        "The saved session state could not be refreshed. Reopen this material to retry.",
+      );
+    }
+  }
   async function prepare() {
     setBusy(true);
     setError("");
@@ -110,22 +148,66 @@ export function ActivityPack({
         </p>
       )}
       {pack && pack.questions.length > 0 && (
-        <ol aria-label="Saved activity pack">
-          {pack.questions.map((question) => (
-            <ActivityQuestion
-              key={question.id}
-              userId={userId}
-              spaceId={spaceId}
-              packId={pack.packId!}
-              question={question}
-              onSource={onSource}
-              initialResult={attempts[question.id] ?? null}
-              initialFlag={flags[question.id] ?? null}
-              onProgressChange={() => setProgressRevision((value) => value + 1)}
-            />
-          ))}
-        </ol>
+        <StudySession
+          spaceId={spaceId}
+          concepts={concepts}
+          session={
+            session.packId && session.packId !== pack.packId
+              ? {
+                  ...session,
+                  status: "empty",
+                  sessionId: null,
+                  packId: null,
+                  items: [],
+                  budgetMinutes: null,
+                  estimatedMinutes: 0,
+                  mode: null,
+                  conceptId: null,
+                  createdAt: null,
+                  completedAt: null,
+                }
+              : session
+          }
+          onChange={setSession}
+        />
       )}
+      {pack &&
+        session.status === "active" &&
+        session.packId === pack.packId && (
+          <ol aria-label="Saved activity pack">
+            {session.items
+              .map((item) =>
+                pack.questions.find(
+                  (question) => question.id === item.questionId,
+                ),
+              )
+              .filter((question): question is NonNullable<typeof question> =>
+                Boolean(question),
+              )
+              .map((question) => (
+                <ActivityQuestion
+                  key={question.id}
+                  userId={userId}
+                  spaceId={spaceId}
+                  packId={pack.packId!}
+                  question={question}
+                  onSource={onSource}
+                  initialResult={attempts[question.id] ?? null}
+                  initialFlag={flags[question.id] ?? null}
+                  onProgressChange={() =>
+                    setProgressRevision((value) => value + 1)
+                  }
+                  studySessionId={session.sessionId!}
+                  onAttemptSaved={() => void refreshSession()}
+                  sessionReason={
+                    session.items.find(
+                      (item) => item.questionId === question.id,
+                    )!.reason
+                  }
+                />
+              ))}
+          </ol>
+        )}
     </section>
   );
 }

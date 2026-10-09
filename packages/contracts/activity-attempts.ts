@@ -8,6 +8,7 @@ const common = {
   packId: uuid,
   questionId: uuid,
   confidence,
+  studySessionId: uuid.optional(),
 };
 export const activityAttemptRequestSchema = z.discriminatedUnion(
   "interaction",

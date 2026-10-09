@@ -43,7 +43,7 @@ M0 is **in progress**, with the local authenticated study-space foundation and b
 
 **Depends on:** M2 activities/attempts. **Coverage:** FR-05–07; Today's session and Session summary.
 
-- M3.1: Session presets 5/15/30 minutes plus a 10-minute recovery option; learn/review/practise choice; explain selection, allow overrides, fit estimated budget without timing out learners.
+- M3.1 (in progress): Persisted 5/15/30-minute learn/review/practise sessions select from the current saved pack, explain each choice, support a concept override and fit the estimate within the budget without timing learners. The 10-minute recovery option remains with M3.4.
 - M3.2 (in progress): Attempts persist before completion with stable IDs, immutable replay and explicit browser-draft retry. Atomic progress writes remain for M3.3.
 - M3.3 (in progress): Deterministic, unflagged MCQ evidence now drives concept labels and the 1/3/7/14-day review projection. Neutral evidence, atomic writes, retroactive flag exclusion and fake-clock boundaries are covered. Overrides and later assessed activity types remain.
 - M3.4: Resume unfinished work or build a short session after configurable inactivity. No forced backlog or broken-streak penalty.

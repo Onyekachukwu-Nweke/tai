@@ -131,6 +131,13 @@ input {
   border-radius: 7px;
   font: inherit;
 }
+.card select {
+  width: 100%;
+  min-height: 44px;
+  margin: 4px 0 16px;
+  padding: 8px;
+  font: inherit;
+}
 .form-row {
   display: flex;
   gap: 12px;
