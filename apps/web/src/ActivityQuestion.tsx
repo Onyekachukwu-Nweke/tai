@@ -22,6 +22,7 @@ export function ActivityQuestion({
   onSource,
   initialResult,
   initialFlag,
+  onProgressChange,
 }: {
   userId: string;
   spaceId: string;
@@ -30,6 +31,7 @@ export function ActivityQuestion({
   onSource: (source: Question["sources"][number]) => void;
   initialResult: ActivityAttemptResponse | null;
   initialFlag: "incorrect" | "ambiguous" | null;
+  onProgressChange: () => void;
 }) {
   const loaded = loadDraft(userId, spaceId, packId, question.id);
   const [draft, setDraft] = useState<ActivityDraft>(loaded.draft);
@@ -68,6 +70,7 @@ export function ActivityQuestion({
       const saved = await saveActivityAttempt(spaceId, input);
       setResult(saved);
       setStorageWarning(clearDraft(userId, spaceId, packId, question.id));
+      onProgressChange();
     } catch (reason) {
       setError(
         reason instanceof Error
@@ -89,6 +92,7 @@ export function ActivityQuestion({
         reason,
       });
       setFlag(saved.reason);
+      onProgressChange();
     } catch (cause) {
       setError(
         cause instanceof Error ? cause.message : "The flag could not be saved.",

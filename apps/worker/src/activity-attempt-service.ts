@@ -7,6 +7,7 @@ import type { ActivityQuestion } from "../../../packages/contracts/activity-pack
 import type { Env } from "./env";
 import { loadCurrentQuestion, saveAttempt } from "./activity-attempt-store";
 import { questionIsFlagged } from "./activity-attempt-store";
+import type { Clock } from "../../../packages/domain/concept-progress";
 
 export class AttemptFailure extends Error {
   constructor(
@@ -104,6 +105,7 @@ export async function recordAttempt(
   userId: string,
   spaceId: string,
   input: ActivityAttemptRequest,
+  clock: Clock,
 ) {
   const question = await loadCurrentQuestion(
     env,
@@ -157,6 +159,7 @@ export async function recordAttempt(
     hash,
     response,
     fields,
+    clock,
   );
   if (!saved)
     throw new AttemptFailure(

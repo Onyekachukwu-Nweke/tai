@@ -116,6 +116,25 @@ test("prepares an ID-only learner-safe pack, reloads it and opens exact evidence
   await page.route(`**/api/study-spaces/${spaceId}/concepts`, (route) =>
     route.fulfill({ json: concepts }),
   );
+  await page.route(`**/api/study-spaces/${spaceId}/concept-progress`, (route) =>
+    route.fulfill({
+      json: {
+        schemaVersion: 1,
+        asOf: "2026-10-09T00:00:00.000Z",
+        policy: "heuristic",
+        disclosure:
+          "Review timing is a simple study heuristic, not a validated prediction of memory.",
+        concepts: concepts.concepts.map((item) => ({
+          conceptId: item.id,
+          conceptLabel: item.label,
+          label: "Not checked",
+          reviewStep: 0,
+          lastCheckedAt: null,
+          nextReviewAt: null,
+        })),
+      },
+    }),
+  );
   await page.route(`**/api/study-spaces/${spaceId}/activity-pack`, (route) =>
     route.fulfill({ json: state }),
   );
@@ -161,6 +180,10 @@ test("prepares an ID-only learner-safe pack, reloads it and opens exact evidence
   await page.getByRole("button", { name: "Preview material" }).click();
   await expect(
     page.getByRole("list", { name: "Saved activity pack" }),
+  ).toBeVisible();
+  await expect(page.getByText("Light: Not checked")).toBeVisible();
+  await expect(
+    page.getByText(/not a validated prediction of memory/),
   ).toBeVisible();
   await page
     .getByRole("button", { name: /Open source section 1/ })
@@ -216,6 +239,17 @@ test("keeps an unacknowledged draft for explicit retry and hides review keys in 
   );
   await page.route(`**/api/study-spaces/${spaceId}/concepts`, (route) =>
     route.fulfill({ json: concepts }),
+  );
+  await page.route(`**/api/study-spaces/${spaceId}/concept-progress`, (route) =>
+    route.fulfill({
+      json: {
+        schemaVersion: 1,
+        asOf: "2026-10-09T00:00:00.000Z",
+        policy: "heuristic",
+        disclosure: "Review timing is a study heuristic.",
+        concepts: [],
+      },
+    }),
   );
   await page.route(`**/api/study-spaces/${spaceId}/activity-pack`, (route) =>
     route.fulfill({ json: ready }),

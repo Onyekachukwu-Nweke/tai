@@ -93,6 +93,13 @@ export async function generateActivityPack(
         new Date().toISOString(),
         ...scope,
       ),
+      ...pack.questions.flatMap((question) =>
+        question.conceptIds.map((conceptId) =>
+          env.DB.prepare(
+            `INSERT INTO activity_question_concepts(user_id,space_id,pack_id,question_id,concept_id) SELECT ?,?,?,?,? WHERE ${gate}`,
+          ).bind(userId, spaceId, packId, question.id, conceptId, ...scope),
+        ),
+      ),
       env.DB.prepare(
         `UPDATE activity_pack_requests SET state='ready',error=NULL WHERE user_id=? AND space_id=? AND request_id=? AND ${gate}`,
       ).bind(userId, spaceId, requestId, ...scope),

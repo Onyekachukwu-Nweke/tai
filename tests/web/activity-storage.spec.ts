@@ -78,6 +78,17 @@ test("keeps the in-memory draft when browser storage rejects writes", async ({
       },
     }),
   );
+  await page.route(`**/api/study-spaces/${space}/concept-progress`, (route) =>
+    route.fulfill({
+      json: {
+        schemaVersion: 1,
+        asOf: "2026-10-09T00:00:00.000Z",
+        policy: "heuristic",
+        disclosure: "Review timing is a study heuristic.",
+        concepts: [],
+      },
+    }),
+  );
   await page.route(`**/api/study-spaces/${space}/activity-pack`, (route) =>
     route.fulfill({
       json: {

@@ -1,6 +1,6 @@
 # Delivery plan
 
-M0 is **in progress**, with the local authenticated study-space foundation and browser extraction preview; M1 is **in progress** with material storage and deletion; M2 is **in progress** with source-linked concept organization backed by a deterministic fake provider; M3–M5 are **not started**. No milestone exit gate is complete. These work packages define implementation order and evidence; they are not claims of completed work. Use the [acceptance matrix](acceptance-matrix.md) with the full PRD criteria.
+M0 is **in progress**, with the local authenticated study-space foundation and browser extraction preview; M1 is **in progress** with material storage and deletion; M2 is **in progress** with source-linked concepts and deterministic activities; M3 is **in progress** with saved attempts and concept review projections; M4–M5 are **not started**. No milestone exit gate is complete. These work packages define implementation order and evidence; they are not claims of completed work. Use the [acceptance matrix](acceptance-matrix.md) with the full PRD criteria.
 
 ## M0 — Foundation and feasibility
 
@@ -45,7 +45,7 @@ M0 is **in progress**, with the local authenticated study-space foundation and b
 
 - M3.1: Session presets 5/15/30 minutes plus a 10-minute recovery option; learn/review/practise choice; explain selection, allow overrides, fit estimated budget without timing out learners.
 - M3.2 (in progress): Attempts persist before completion with stable IDs, immutable replay and explicit browser-draft retry. Atomic progress writes remain for M3.3.
-- M3.3: Implement evidence labels and review policy from [decisions](risks-and-decisions.md); separate correctness, hints/reveals, confidence and timestamps. Fake clocks cover 1/3/7/14-day intervals.
+- M3.3 (in progress): Deterministic, unflagged MCQ evidence now drives concept labels and the 1/3/7/14-day review projection. Neutral evidence, atomic writes, retroactive flag exclusion and fake-clock boundaries are covered. Overrides and later assessed activity types remain.
 - M3.4: Resume unfinished work or build a short session after configurable inactivity. No forced backlog or broken-streak penalty.
 
 **Exit demo:** simulate five days away and offer a manageable ten-minute recovery session. Reload/retry does not lose or duplicate completed work; hinted answers do not extend review intervals.
