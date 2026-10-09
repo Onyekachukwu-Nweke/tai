@@ -98,7 +98,7 @@ describe("activity rubric routes", () => {
   it("builds private context server-side, persists one result and restores it", async () => {
     const fixture = await createActivityFixture();
     const question = fixture.pack.questions.find(
-      (item) => item.type === "explain",
+      (item) => item.type === "scenario",
     )!;
     const attemptId = crypto.randomUUID();
     expect(
@@ -135,7 +135,7 @@ describe("activity rubric routes", () => {
     expect(provider.calls[0]).toMatchObject({
       answer: "A learner explanation",
     });
-    expect(JSON.stringify(provider.calls[0])).not.toContain("userId");
+    expect(JSON.stringify(provider.calls[0])).not.toMatch(/userId|assumptions/);
     expect((await call(input)).status).toBe(201);
     expect(provider.calls).toHaveLength(1);
     expect(

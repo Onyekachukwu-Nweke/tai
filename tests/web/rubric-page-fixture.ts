@@ -19,9 +19,13 @@ const source = {
 };
 const question = {
   id: rubricIds.question,
-  type: "explain" as const,
+  type: "scenario" as const,
   conceptIds: ["44444444-4444-4444-8444-444444444444"],
-  prompt: "Explain how light supports growth.",
+  prompt: "A shaded plant is growing slowly. Explain what to change.",
+  assumptions: [
+    "Water and temperature remain unchanged.",
+    "Use only the cited material.",
+  ],
   estimatedMinutes: 3,
   sources: [source],
 };

@@ -17,6 +17,7 @@ import { ActivityTutorActions } from "./ActivityTutorActions";
 import type { ActivityRubricResponse } from "../../../packages/contracts/activity-rubric";
 import { ActivityRubricFeedback } from "./ActivityRubricFeedback";
 import { ActivityQuestionFooter } from "./ActivityQuestionFooter";
+import { ActivityQuestionPrompt } from "./ActivityQuestionPrompt";
 
 type Question = LearnerActivityPack["questions"][number];
 export function ActivityQuestion({
@@ -160,17 +161,7 @@ export function ActivityQuestion({
       {sessionReason && (
         <p className="fine-print">Why this activity: {sessionReason}</p>
       )}
-      <p>
-        <strong>
-          {question.type === "mcq"
-            ? "Multiple choice"
-            : question.type === "recall"
-              ? "Recall"
-              : "Explain"}
-        </strong>{" "}
-        · about {question.estimatedMinutes} min
-      </p>
-      <p>{question.prompt}</p>
+      <ActivityQuestionPrompt question={question} />
       {!result && question.type === "mcq" && (
         <fieldset disabled={busy}>
           <legend>Choose one answer</legend>
@@ -232,20 +223,22 @@ export function ActivityQuestion({
           it is excluded from future scoring.
         </p>
       )}
-      {!result && question.type === "explain" && (
-        <button
-          disabled={busy || !draft.answer.trim()}
-          onClick={() =>
-            void submit({
-              ...base(),
-              interaction: "explain_submit",
-              answer: draft.answer,
-            })
-          }
-        >
-          Save explanation
-        </button>
-      )}
+      {!result &&
+        (question.type === "explain" || question.type === "scenario") && (
+          <button
+            disabled={busy || !draft.answer.trim()}
+            onClick={() =>
+              void submit({
+                ...base(),
+                interaction: "explain_submit",
+                answer: draft.answer,
+              })
+            }
+          >
+            Save{" "}
+            {question.type === "scenario" ? "scenario response" : "explanation"}
+          </button>
+        )}
       {!result && question.type === "recall" && !checkingRecall && (
         <button
           disabled={busy || !draft.answer.trim()}

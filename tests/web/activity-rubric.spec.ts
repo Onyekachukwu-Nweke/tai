@@ -7,10 +7,14 @@ test("preserves an explanation across grading failure and restores rubric feedba
   await routeRubricPage(page);
   await page.goto("/");
   await page.getByRole("button", { name: "Preview material" }).click();
-  await page.getByLabel("Your response").fill("Light supplies energy.");
-  await page.getByRole("button", { name: "Save explanation" }).click();
+  await expect(page.getByText("Scenario · about 3 min")).toBeVisible();
   await expect(
-    page.getByText(/Grading interrupted.*saved explanation/),
+    page.getByText("Water and temperature remain unchanged."),
+  ).toBeVisible();
+  await page.getByLabel("Your response").fill("Light supplies energy.");
+  await page.getByRole("button", { name: "Save scenario response" }).click();
+  await expect(
+    page.getByText(/Grading interrupted.*saved response/),
   ).toBeVisible();
   expect(await page.evaluate(() => JSON.stringify(localStorage))).toContain(
     "Light supplies energy.",

@@ -83,12 +83,21 @@ describe("source-backed activity packs", () => {
     const raw = await first.text();
     expect(raw).not.toContain('"rubric"');
     const pack = learnerActivityPackSchema.parse(JSON.parse(raw));
-    expect(pack.questions).toHaveLength(3);
+    expect(pack.questions).toHaveLength(4);
     expect(pack.questions[0]).toMatchObject({
       type: "recall",
       review: { supportedAnswer: owner.preview.chunks[0]!.text },
     });
     expect(pack.questions[2]?.type).toBe("explain");
+    const scenario = pack.questions.find((item) => item.type === "scenario")!;
+    expect(scenario).toMatchObject({
+      conceptIds: owner.ids,
+      assumptions: [
+        "Use only the supplied situation and cited excerpts.",
+        "State when the material does not support a needed detail.",
+      ],
+    });
+    expect(JSON.stringify(scenario)).not.toContain("rubric");
     expect(
       new Set(pack.questions.flatMap((question) => question.conceptIds)).size,
     ).toBe(2);
@@ -152,7 +161,7 @@ describe("source-backed activity packs", () => {
       await (await call(owner.spaceId, owner.cookie, invalid, "")).json(),
     );
     expect(state.status).toBe("failed");
-    expect(state.questions).toHaveLength(3);
+    expect(state.questions).toHaveLength(4);
   });
 
   it("requires two selections, scopes ownership and rejects late selection changes", async () => {

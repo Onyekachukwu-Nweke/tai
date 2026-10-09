@@ -31,7 +31,7 @@ M0 is **in progress**, with the local authenticated study-space foundation and b
 
 - M2.1: Selected-section retrieval and roughly 5–15 source-backed editable concepts; preserve IDs and show suggested edges distinctly. Provide map/list parity and no prerequisite locks.
 - M2.2: Generate self-contained 3–5 question packs across at least two selected concepts when material supports it, mixing recall, MCQ, explain, scenario and calculation/equation types as the source allows. Validate JSON shape, concept membership, citation IDs, revision, response bounds, and numeric keys/tolerances/units.
-- M2.3 (in progress): Hidden recall/MCQ review keys, deliberate reveal, skip, deterministic MCQ checks, recall self-check, saved explanations, explicit source-grounded hints and alternate explanations, and bounded source-grounded explanation rubric feedback are implemented with fake providers. Numeric checks, scenarios, calculation working and live-provider quality remain.
+- M2.3 (in progress): Hidden recall/MCQ review keys, deliberate reveal, skip, deterministic MCQ checks, recall self-check, saved explanations and scenario responses, explicit source-grounded hints and alternate explanations, and bounded source-grounded explanation/scenario rubric feedback are implemented with fake providers. Numeric checks, calculation working and live-provider quality remain.
 - M2.3b: Targeted follow-up: after an incorrect or uncertain result, generate one new question aimed at the identified gap, within the session/cost budget.
 - M2.4: Flag/challenge without penalty; block flagged content from future scoring; distinguish supplementary explanation from source-supported content. Persist packs and attempts using versioned contracts.
 

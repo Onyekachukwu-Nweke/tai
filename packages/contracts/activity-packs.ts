@@ -29,6 +29,8 @@ const baseQuestion = {
   estimatedMinutes: z.number().int().min(1).max(10),
   sources: z.array(source).min(1).max(4),
 };
+const assumptions = z.array(z.string().trim().min(1).max(300)).min(1).max(5);
+const rubric = z.array(z.string().trim().min(1).max(500)).min(1).max(5);
 const learnerQuestion = z.discriminatedUnion("type", [
   z
     .object({
@@ -40,6 +42,13 @@ const learnerQuestion = z.discriminatedUnion("type", [
     })
     .strict(),
   z.object({ ...baseQuestion, type: z.literal("explain") }).strict(),
+  z
+    .object({
+      ...baseQuestion,
+      type: z.literal("scenario"),
+      assumptions,
+    })
+    .strict(),
   z
     .object({
       ...baseQuestion,
@@ -80,7 +89,15 @@ const canonicalQuestion = z.discriminatedUnion("type", [
     .object({
       ...baseQuestion,
       type: z.literal("explain"),
-      rubric: z.array(z.string().trim().min(1).max(500)).min(1).max(5),
+      rubric,
+    })
+    .strict(),
+  z
+    .object({
+      ...baseQuestion,
+      type: z.literal("scenario"),
+      assumptions,
+      rubric,
     })
     .strict(),
   z
@@ -197,13 +214,23 @@ export function toLearnerActivityPack(pack: CanonicalActivityPack) {
             sources: question.sources,
             review: { supportedAnswer: question.supportedAnswer },
           }
-        : {
-            id: question.id,
-            type: question.type,
-            conceptIds: question.conceptIds,
-            prompt: question.prompt,
-            estimatedMinutes: question.estimatedMinutes,
-            sources: question.sources,
-          },
+        : question.type === "scenario"
+          ? {
+              id: question.id,
+              type: question.type,
+              conceptIds: question.conceptIds,
+              prompt: question.prompt,
+              estimatedMinutes: question.estimatedMinutes,
+              sources: question.sources,
+              assumptions: question.assumptions,
+            }
+          : {
+              id: question.id,
+              type: question.type,
+              conceptIds: question.conceptIds,
+              prompt: question.prompt,
+              estimatedMinutes: question.estimatedMinutes,
+              sources: question.sources,
+            },
   );
 }

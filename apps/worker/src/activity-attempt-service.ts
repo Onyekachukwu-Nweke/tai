@@ -50,7 +50,11 @@ function result(
       409,
       "This response does not match the current question.",
     );
-  if (input.interaction === "explain_submit" && question.type !== "explain")
+  if (
+    input.interaction === "explain_submit" &&
+    question.type !== "explain" &&
+    question.type !== "scenario"
+  )
     throw new AttemptFailure(
       409,
       "This response does not match the current question.",
@@ -75,7 +79,7 @@ function result(
     input.interaction === "reveal" || input.interaction === "recall_self_check";
   const feedback =
     input.interaction === "explain_submit"
-      ? "Your explanation was saved ungraded. Rubric feedback is not available in this development slice."
+      ? "Your response was saved. Source-grounded rubric feedback is prepared separately."
       : input.interaction === "skip"
         ? "Skipped without a correctness result."
         : input.interaction === "recall_self_check"

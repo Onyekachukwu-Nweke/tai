@@ -198,6 +198,28 @@ describe("activity attempts", () => {
       correctness: null,
       supportedByMaterial: false,
     });
+    const scenario = pack.questions.find((item) => item.type === "scenario")!;
+    const applied = activityAttemptResponseSchema.parse(
+      await (
+        await call("/activity-attempts", {
+          ...base(scenario.id),
+          interaction: "explain_submit",
+          answer: "My response to the bounded situation",
+        })
+      ).json(),
+    );
+    expect(applied).toMatchObject({
+      interaction: "explain_submit",
+      correctness: null,
+      supportedByMaterial: false,
+    });
+    expect(
+      await env.DB.prepare(
+        "SELECT count(*) AS count FROM concept_progress WHERE user_id=? AND space_id=?",
+      )
+        .bind(owner.userId, owner.spaceId)
+        .first("count"),
+    ).toBe(0);
     for (const interaction of ["reveal", "skip"] as const) {
       const result = activityAttemptResponseSchema.parse(
         await (
@@ -232,7 +254,7 @@ describe("activity attempts", () => {
     const state = (await (
       await call(`/activity-attempts?packId=${pack.packId}`)
     ).json()) as { attempts: unknown[]; flags: unknown[] };
-    expect(state.attempts).toHaveLength(2);
+    expect(state.attempts).toHaveLength(3);
     expect(state.flags).toEqual([{ questionId: mcq.id, reason: "ambiguous" }]);
   });
 
