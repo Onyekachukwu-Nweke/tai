@@ -21,6 +21,7 @@ export function activeStudySession(
       0,
     ),
     mode: "learn",
+    kind: "standard",
     conceptId: null,
     items: questions.map((question, position) => ({
       questionId: question.id,
@@ -43,3 +44,23 @@ export const emptyActivityPack = {
   error: null,
   questions: [],
 } as const;
+
+export const routeRecoveryOffer = (
+  page: Page,
+  spaceId: string,
+  offer: Record<string, unknown>,
+) =>
+  page.route(`**/api/study-spaces/${spaceId}/recovery-offer`, (route) =>
+    route.fulfill({
+      json: {
+        schemaVersion: 1,
+        inactiveSince: null,
+        thresholdDays: 3,
+        budgetMinutes: 10,
+        canResume: false,
+        activeSession: null,
+        ...offer,
+      },
+    }),
+  );
+import type { Page } from "@playwright/test";

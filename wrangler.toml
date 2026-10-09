@@ -14,6 +14,7 @@ enabled = false
 
 [vars]
 APP_ORIGIN = "http://localhost:8787"
+RETURN_GAP_DAYS = "3"
 
 [[d1_databases]]
 binding = "DB"

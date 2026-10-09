@@ -1,5 +1,8 @@
 import { expect, test } from "@playwright/test";
-import { activeStudySession } from "./study-session-fixture";
+import {
+  activeStudySession,
+  routeRecoveryOffer,
+} from "./study-session-fixture";
 
 const space = "11111111-1111-4111-8111-111111111111";
 const pack = "77777777-7777-4777-8777-777777777777";
@@ -117,6 +120,28 @@ test("keeps the in-memory draft when browser storage rejects writes", async ({
   const active = activeStudySession(pack, [
     { id: question, estimatedMinutes: 2 },
   ]);
+  await routeRecoveryOffer(page, space, {
+    offered: true,
+    inactiveSince: "2026-10-04T00:00:00.000Z",
+    canResume: true,
+    activeSession: active,
+  });
+  await page.route(
+    `**/api/study-spaces/${space}/recovery-session`,
+    async (route) => {
+      const input = route.request().postDataJSON();
+      await route.fulfill({
+        status: 201,
+        json: {
+          ...active,
+          sessionId: input.sessionId,
+          kind: "recovery",
+          budgetMinutes: 10,
+          mode: "review",
+        },
+      });
+    },
+  );
   await page.route(
     `**/api/study-spaces/${space}/study-session`,
     async (route) => {
@@ -150,6 +175,24 @@ test("keeps the in-memory draft when browser storage rejects writes", async ({
   );
   await page.goto("/");
   await page.getByRole("button", { name: "Preview material" }).click();
+  await expect(
+    page.getByText("Welcome back. Your saved progress is still here."),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("button", { name: "Start a 10-minute review" }),
+  ).toBeVisible();
+  await page.getByRole("button", { name: "Resume saved session" }).click();
+  await expect(
+    page.getByRole("heading", { name: "Welcome back" }),
+  ).toBeHidden();
+  await expect(page.getByLabel("Your response")).toBeVisible();
+  await page.reload();
+  await page.getByRole("button", { name: "Preview material" }).click();
+  await page.getByRole("button", { name: "Start a 10-minute review" }).click();
+  await expect(
+    page.getByRole("heading", { name: "Welcome back" }),
+  ).toBeHidden();
+  await expect(page.getByLabel("Your response")).toBeVisible();
   const answer = page.getByLabel("Your response");
   await answer.fill("Still held in memory");
   await expect(answer).toHaveValue("Still held in memory");

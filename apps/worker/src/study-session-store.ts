@@ -8,9 +8,10 @@ import type { Env } from "./env";
 type SessionRow = {
   id: string;
   pack_id: string;
-  budget_minutes: 5 | 15 | 30;
+  budget_minutes: 5 | 10 | 15 | 30;
   estimated_minutes: number;
   mode: "learn" | "review" | "practise";
+  kind: "standard" | "recovery";
   concept_id: string | null;
   status: "active" | "completed" | "superseded";
   created_at: string;
@@ -102,9 +103,10 @@ export async function replaceSession(
     requestHash: string;
   },
   input: {
-    budgetMinutes: 5 | 15 | 30;
+    budgetMinutes: 5 | 10 | 15 | 30;
     estimatedMinutes: number;
     mode: string;
+    kind: "standard" | "recovery";
     conceptId?: string;
     items: Array<{
       questionId: string;
@@ -120,13 +122,14 @@ export async function replaceSession(
       "UPDATE study_sessions SET status='superseded' WHERE user_id=? AND space_id=? AND status='active'",
     ).bind(keys.userId, keys.spaceId),
     env.DB.prepare(
-      "INSERT INTO study_sessions(user_id,space_id,id,request_hash,pack_id,budget_minutes,estimated_minutes,mode,concept_id,status,created_at,completed_at) VALUES(?,?,?,?,?,?,?,?,?,?,?,?)",
+      "INSERT INTO study_sessions(user_id,space_id,id,request_hash,pack_id,kind,budget_minutes,estimated_minutes,mode,concept_id,status,created_at,completed_at) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?)",
     ).bind(
       keys.userId,
       keys.spaceId,
       keys.id,
       keys.requestHash,
       keys.packId,
+      input.kind,
       input.budgetMinutes,
       input.estimatedMinutes,
       input.mode,
@@ -157,7 +160,7 @@ export async function loadLatestSession(
   spaceId: string,
 ) {
   const row = await env.DB.prepare(
-    "SELECT id,pack_id,budget_minutes,estimated_minutes,mode,concept_id,status,created_at,completed_at FROM study_sessions WHERE user_id=? AND space_id=? AND status IN ('active','completed') ORDER BY CASE status WHEN 'active' THEN 0 ELSE 1 END,created_at DESC,rowid DESC LIMIT 1",
+    "SELECT id,pack_id,kind,budget_minutes,estimated_minutes,mode,concept_id,status,created_at,completed_at FROM study_sessions WHERE user_id=? AND space_id=? AND status IN ('active','completed') ORDER BY CASE status WHEN 'active' THEN 0 ELSE 1 END,created_at DESC,rowid DESC LIMIT 1",
   )
     .bind(userId, spaceId)
     .first<SessionRow>();
@@ -172,7 +175,7 @@ export async function loadSessionById(
   sessionId: string,
 ) {
   const row = await env.DB.prepare(
-    "SELECT id,request_hash,pack_id,budget_minutes,estimated_minutes,mode,concept_id,status,created_at,completed_at FROM study_sessions WHERE user_id=? AND space_id=? AND id=?",
+    "SELECT id,request_hash,pack_id,kind,budget_minutes,estimated_minutes,mode,concept_id,status,created_at,completed_at FROM study_sessions WHERE user_id=? AND space_id=? AND id=?",
   )
     .bind(userId, spaceId, sessionId)
     .first<SessionRequestRow>();
@@ -217,6 +220,7 @@ async function loadSessionItems(
     budgetMinutes: row.budget_minutes,
     estimatedMinutes: row.estimated_minutes,
     mode: row.mode,
+    kind: row.kind,
     conceptId: row.concept_id,
     items: items.results.map((item) => ({
       questionId: item.question_id,
@@ -238,8 +242,37 @@ export const emptySession = (): StudySession => ({
   budgetMinutes: null,
   estimatedMinutes: 0,
   mode: null,
+  kind: null,
   conceptId: null,
   items: [],
   createdAt: null,
   completedAt: null,
 });
+
+export async function loadLastLearningInteraction(
+  env: Env,
+  userId: string,
+  spaceId: string,
+  currentPackId: string,
+) {
+  const row = await env.DB.prepare(
+    "SELECT MAX(occurred_at) occurred_at FROM (SELECT a.created_at occurred_at FROM activity_attempts a JOIN activity_packs p ON p.user_id=a.user_id AND p.space_id=a.space_id AND p.id=a.pack_id JOIN activity_packs current ON current.user_id=p.user_id AND current.space_id=p.space_id AND current.id=? WHERE a.user_id=? AND a.space_id=? AND p.document_id=current.document_id AND p.concept_request_id=current.concept_request_id UNION ALL SELECT s.created_at FROM study_sessions s JOIN activity_packs p ON p.user_id=s.user_id AND p.space_id=s.space_id AND p.id=s.pack_id JOIN activity_packs current ON current.user_id=p.user_id AND current.space_id=p.space_id AND current.id=? WHERE s.user_id=? AND s.space_id=? AND p.document_id=current.document_id AND p.concept_request_id=current.concept_request_id)",
+  )
+    .bind(currentPackId, userId, spaceId, currentPackId, userId, spaceId)
+    .first<{ occurred_at: string | null }>();
+  return row?.occurred_at ?? null;
+}
+
+export async function loadActiveCurrentPackSession(
+  env: Env,
+  userId: string,
+  spaceId: string,
+  packId: string,
+) {
+  const row = await env.DB.prepare(
+    "SELECT id,pack_id,kind,budget_minutes,estimated_minutes,mode,concept_id,status,created_at,completed_at FROM study_sessions WHERE user_id=? AND space_id=? AND pack_id=? AND status='active' ORDER BY created_at DESC,rowid DESC LIMIT 1",
+  )
+    .bind(userId, spaceId, packId)
+    .first<SessionRow>();
+  return row ? loadSessionItems(env, userId, spaceId, row) : null;
+}

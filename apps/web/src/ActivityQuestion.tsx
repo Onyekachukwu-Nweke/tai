@@ -36,10 +36,16 @@ export function ActivityQuestion({
   initialFlag: "incorrect" | "ambiguous" | null;
   onProgressChange: () => void;
   studySessionId?: string;
-  onAttemptSaved?: () => void;
+  onAttemptSaved?: (result: ActivityAttemptResponse) => void;
   sessionReason?: string;
 }) {
-  const loaded = loadDraft(userId, spaceId, packId, question.id);
+  const loaded = loadDraft(
+    userId,
+    spaceId,
+    packId,
+    question.id,
+    studySessionId,
+  );
   const [draft, setDraft] = useState<ActivityDraft>(loaded.draft);
   const [storageWarning, setStorageWarning] = useState(loaded.warning);
   const [result, setResult] = useState<ActivityAttemptResponse | null>(
@@ -60,8 +66,10 @@ export function ActivityQuestion({
   }, [initialFlag]);
   useEffect(() => {
     if (!result)
-      setStorageWarning(saveDraft(userId, spaceId, packId, question.id, draft));
-  }, [draft, packId, question.id, result, spaceId, userId]);
+      setStorageWarning(
+        saveDraft(userId, spaceId, packId, question.id, draft, studySessionId),
+      );
+  }, [draft, packId, question.id, result, spaceId, studySessionId, userId]);
   const base = () => ({
     schemaVersion: 1 as const,
     attemptId: draft.attemptId,
@@ -76,9 +84,11 @@ export function ActivityQuestion({
     try {
       const saved = await saveActivityAttempt(spaceId, input);
       setResult(saved);
-      setStorageWarning(clearDraft(userId, spaceId, packId, question.id));
+      setStorageWarning(
+        clearDraft(userId, spaceId, packId, question.id, studySessionId),
+      );
       onProgressChange();
-      onAttemptSaved?.();
+      onAttemptSaved?.(saved);
     } catch (reason) {
       setError(
         reason instanceof Error

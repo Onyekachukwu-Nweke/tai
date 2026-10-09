@@ -15,7 +15,7 @@ This roadmap translates the complete PRD into an architecture, proposed technolo
 5. [Acceptance matrix](acceptance-matrix.md): PRD coverage and required evidence.
 6. [Risks and decisions](risks-and-decisions.md): explicit product-rule interpretations and unresolved readiness checks.
 
-Current local implementation and checks: [M0 foundation evidence](m0-foundation-evidence.md), [browser extraction evidence](m0-extraction-evidence.md), [material persistence evidence](m1-material-persistence-evidence.md), [M2.1 concept evidence](m2-concept-organization-evidence.md), [M2.2 activity-pack evidence](m2-activity-pack-evidence.md), [M3 concept-progress evidence](m3-concept-progress-evidence.md), and [M3.1 study-session evidence](m3-study-session-evidence.md).
+Current local implementation and checks: [M0 foundation evidence](m0-foundation-evidence.md), [browser extraction evidence](m0-extraction-evidence.md), [material persistence evidence](m1-material-persistence-evidence.md), [M2.1 concept evidence](m2-concept-organization-evidence.md), [M2.2 activity-pack evidence](m2-activity-pack-evidence.md), [M3 concept-progress evidence](m3-concept-progress-evidence.md), [M3.1 study-session evidence](m3-study-session-evidence.md), and [M3.4 recovery-session evidence](m3-recovery-session-evidence.md).
 
 ## Delivery sequence
 
@@ -30,7 +30,7 @@ M0 Foundation, sign-in, and provider feasibility
 
 M0 establishes development tooling and validates deployment assumptions. M1–M5 implement the PRD's five milestones. Accessibility, privacy, source traceability, and error handling start with their owning feature; they are not deferred to a final polish phase.
 
-No calendar deadline or team capacity has been supplied. Sequence by exit criteria rather than invented dates. Re-estimate after M0 and each completed milestone. M0 and M1 remain **in progress**; M2 is **in progress** with deterministic concepts and activities; M3 is **in progress** with saved attempts, concept review projections and persisted budgeted sessions; M4–M5 are **not started**. See [local setup](../developer-guide/setup.md) for the current implementation scope. Live provider and device readiness gates remain open.
+No calendar deadline or team capacity has been supplied. Sequence by exit criteria rather than invented dates. Re-estimate after M0 and each completed milestone. M0 and M1 remain **in progress**; M2 is **in progress** with deterministic concepts and activities; M3 is **in progress** with saved attempts, concept review projections, persisted budgeted sessions and a bounded recovery flow; M4–M5 are **not started**. See [local setup](../developer-guide/setup.md) for the current implementation scope. Live provider and device readiness gates remain open.
 
 ## Working agreement
 

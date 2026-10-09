@@ -3,6 +3,7 @@ import {
   activeStudySession,
   browserSource,
   emptyActivityPack as empty,
+  routeRecoveryOffer,
 } from "./study-session-fixture";
 
 const spaceId = "11111111-1111-4111-8111-111111111111",
@@ -132,6 +133,7 @@ test("prepares an ID-only learner-safe pack, reloads it and opens exact evidence
   await page.route(`**/api/study-spaces/${spaceId}/study-session`, (route) =>
     route.fulfill({ json: studySession }),
   );
+  await routeRecoveryOffer(page, spaceId, { offered: false });
   await page.route(
     `**/api/study-spaces/${spaceId}/activity-pack/generate`,
     async (route) => {
@@ -251,6 +253,7 @@ test("keeps an unacknowledged draft for explicit retry and hides review keys in 
   await page.route(`**/api/study-spaces/${spaceId}/study-session`, (route) =>
     route.fulfill({ json: studySession }),
   );
+  await routeRecoveryOffer(page, spaceId, { offered: false });
   await page.route(
     `**/api/study-spaces/${spaceId}/activity-attempts`,
     async (route) => {

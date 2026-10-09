@@ -72,6 +72,7 @@ Latency is dominated by model generation, not network distance. Measure time to 
 - Attempt interactions are immutable D1 rows. The Worker hashes the canonical request, returns the prior response for an identical retry, rejects changed reuse, and reloads the current canonical question before grading. Normalized question-to-concept rows keep eligible evidence stable across ordinary pack changes; current material and concept revisions bound the projection.
 - Until the server acknowledges an answer, the browser keeps the draft in local storage and offers explicit retry after a network failure. No background queue or replay.
 - A dropped model stream keeps any items already validated and saved; the learner can retry the rest. A retry may cost another inference.
+- The return flow compares an injected clock with the newest current-revision attempt or session creation. At the configured gap it can restore an unfinished current-pack session without writing, or atomically replace it with a server-selected 10-minute recovery review of at most three saved-pack questions. Missed days never multiply required work.
 
 ## Deletion
 

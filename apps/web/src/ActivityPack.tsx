@@ -8,6 +8,9 @@ import { ConceptProgress } from "./ConceptProgress";
 import type { StudySession as SavedSession } from "../../../packages/contracts/study-sessions";
 import { loadStudySession } from "./study-session-api";
 import { StudySession } from "./StudySession";
+import type { RecoveryOffer } from "../../../packages/contracts/study-sessions";
+import { loadRecoveryOffer } from "./recovery-session-api";
+import { RecoveryReturn } from "./RecoveryReturn";
 
 type Source = LearnerActivityPack["questions"][number]["sources"][number];
 export function ActivityPack({
@@ -41,11 +44,13 @@ export function ActivityPack({
     budgetMinutes: null,
     estimatedMinutes: 0,
     mode: null,
+    kind: null,
     conceptId: null,
     items: [],
     createdAt: null,
     completedAt: null,
   });
+  const [recovery, setRecovery] = useState<RecoveryOffer | null>(null);
   useEffect(() => {
     const controller = new AbortController();
     loadActivityPack(spaceId, controller.signal)
@@ -74,6 +79,18 @@ export function ActivityPack({
       .catch(() =>
         setError(
           "Saved practice state could not be loaded. Retry by reopening this material.",
+        ),
+      );
+    return () => controller.abort();
+  }, [pack?.packId, spaceId]);
+  useEffect(() => {
+    if (!pack?.packId) return;
+    const controller = new AbortController();
+    loadRecoveryOffer(spaceId, controller.signal)
+      .then(setRecovery)
+      .catch(() =>
+        setError(
+          "Return options could not be loaded. Retry by reopening this material.",
         ),
       );
     return () => controller.abort();
@@ -162,6 +179,7 @@ export function ActivityPack({
                   budgetMinutes: null,
                   estimatedMinutes: 0,
                   mode: null,
+                  kind: null,
                   conceptId: null,
                   createdAt: null,
                   completedAt: null,
@@ -169,6 +187,16 @@ export function ActivityPack({
               : session
           }
           onChange={setSession}
+        />
+      )}
+      {pack && recovery && (
+        <RecoveryReturn
+          spaceId={spaceId}
+          offer={recovery}
+          onSession={(nextSession) => {
+            setSession(nextSession);
+            setRecovery(null);
+          }}
         />
       )}
       {pack &&
@@ -184,28 +212,39 @@ export function ActivityPack({
               .filter((question): question is NonNullable<typeof question> =>
                 Boolean(question),
               )
-              .map((question) => (
-                <ActivityQuestion
-                  key={question.id}
-                  userId={userId}
-                  spaceId={spaceId}
-                  packId={pack.packId!}
-                  question={question}
-                  onSource={onSource}
-                  initialResult={attempts[question.id] ?? null}
-                  initialFlag={flags[question.id] ?? null}
-                  onProgressChange={() =>
-                    setProgressRevision((value) => value + 1)
-                  }
-                  studySessionId={session.sessionId!}
-                  onAttemptSaved={() => void refreshSession()}
-                  sessionReason={
-                    session.items.find(
-                      (item) => item.questionId === question.id,
-                    )!.reason
-                  }
-                />
-              ))}
+              .map((question) => {
+                const item = session.items.find(
+                  (entry) => entry.questionId === question.id,
+                )!;
+                return (
+                  <ActivityQuestion
+                    key={`${session.sessionId}:${question.id}`}
+                    userId={userId}
+                    spaceId={spaceId}
+                    packId={pack.packId!}
+                    question={question}
+                    onSource={onSource}
+                    initialResult={
+                      session.kind !== "recovery" || item.completedAt
+                        ? (attempts[question.id] ?? null)
+                        : null
+                    }
+                    initialFlag={flags[question.id] ?? null}
+                    onProgressChange={() =>
+                      setProgressRevision((value) => value + 1)
+                    }
+                    studySessionId={session.sessionId!}
+                    onAttemptSaved={(saved) => {
+                      setAttempts((current) => ({
+                        ...current,
+                        [question.id]: saved,
+                      }));
+                      void refreshSession();
+                    }}
+                    sessionReason={item.reason}
+                  />
+                );
+              })}
           </ol>
         )}
     </section>

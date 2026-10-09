@@ -14,6 +14,7 @@ import { activityAttemptRoutes } from "./activity-attempt-routes";
 import type { Clock } from "../../../packages/domain/concept-progress";
 import { conceptProgressRoutes } from "./concept-progress-routes";
 import { studySessionRoutes } from "./study-session-routes";
+import { recoverySessionRoutes } from "./recovery-session-routes";
 
 export function createStudySpaces(
   provider: ConceptProvider,
@@ -97,5 +98,6 @@ export function createStudySpaces(
   studySpaces.route("/", activityAttemptRoutes(clock));
   studySpaces.route("/", conceptProgressRoutes(clock));
   studySpaces.route("/", studySessionRoutes(clock));
+  studySpaces.route("/", recoverySessionRoutes(clock));
   return studySpaces;
 }
