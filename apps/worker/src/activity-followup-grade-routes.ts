@@ -16,6 +16,7 @@ import {
 } from "./activity-followup-grade-service";
 import { loadFollowupGradeState } from "./activity-followup-grade-store";
 import type { Env, Variables } from "./env";
+import { aiCallErrorResponse } from "./ai-quota-http";
 
 export const activityFollowupGradeRoutes = (
   provider: ActivityFollowupGradeProvider,
@@ -29,11 +30,13 @@ export const activityFollowupGradeRoutes = (
       onError: (c) => c.json({ error: "Request is too large." }, 413),
     }),
   );
-  routes.onError((error, c) =>
-    error instanceof FollowupGradeFailure
+  routes.onError((error, c) => {
+    const quota = aiCallErrorResponse(c, error);
+    if (quota) return quota;
+    return error instanceof FollowupGradeFailure
       ? c.json({ error: error.message }, error.status)
-      : c.json({ error: "Follow-up feedback could not be completed." }, 503),
-  );
+      : c.json({ error: "Follow-up feedback could not be completed." }, 503);
+  });
   const parse = async <T>(
     c: Context<{ Bindings: Env; Variables: Variables }>,
     schema: {

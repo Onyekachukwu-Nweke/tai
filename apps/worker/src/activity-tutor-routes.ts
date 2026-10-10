@@ -11,6 +11,7 @@ import { currentPackExists } from "./activity-attempt-store";
 import type { Env, Variables } from "./env";
 import { requestTutorHelp, TutorFailure } from "./activity-tutor-service";
 import { loadTutorState } from "./activity-tutor-store";
+import { aiCallErrorResponse } from "./ai-quota-http";
 
 export const activityTutorRoutes = (
   provider: ActivityTutorProvider,
@@ -24,14 +25,16 @@ export const activityTutorRoutes = (
         onError: (c) => c.json({ error: "Request is too large." }, 413),
       }),
     )
-    .onError((error, c) =>
-      error instanceof TutorFailure
+    .onError((error, c) => {
+      const quota = aiCallErrorResponse(c, error);
+      if (quota) return quota;
+      return error instanceof TutorFailure
         ? c.json({ error: error.message }, error.status)
         : c.json(
             { error: "Tutor help could not be prepared. Retry explicitly." },
             503,
-          ),
-    )
+          );
+    })
     .get("/:id/activity-tutor", async (c) => {
       const packId = z.string().uuid().safeParse(c.req.query("packId"));
       if (!packId.success)

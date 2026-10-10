@@ -9,8 +9,10 @@ import type { Env, Variables } from "./env";
 import { loadConcepts } from "./concept-store";
 import { ConceptFailure, generateConcepts } from "./concept-service";
 import { activeSpace } from "./material-store";
+import { aiCallErrorResponse } from "./ai-quota-http";
+import type { Clock } from "../../../packages/domain/concept-progress";
 
-export function conceptRoutes(provider: ConceptProvider) {
+export function conceptRoutes(provider: ConceptProvider, clock: Clock) {
   const routes = new Hono<{ Bindings: Env; Variables: Variables }>();
   routes.use(
     "/:id/concepts/*",
@@ -19,8 +21,10 @@ export function conceptRoutes(provider: ConceptProvider) {
       onError: (c) => c.json({ error: "Request is too large." }, 413),
     }),
   );
-  routes.onError((error, c) =>
-    error instanceof ConceptFailure
+  routes.onError((error, c) => {
+    const quota = aiCallErrorResponse(c, error);
+    if (quota) return quota;
+    return error instanceof ConceptFailure
       ? c.json({ error: error.message }, error.status)
       : c.json(
           {
@@ -28,8 +32,8 @@ export function conceptRoutes(provider: ConceptProvider) {
               "The concept request could not be completed. Retry explicitly.",
           },
           503,
-        ),
-  );
+        );
+  });
   routes.get("/:id/concepts", async (c) => {
     const userId = c.get("user").id,
       spaceId = c.req.param("id");
@@ -59,6 +63,7 @@ export function conceptRoutes(provider: ConceptProvider) {
         c.req.param("id"),
         requestId,
         selection.location,
+        clock,
       ),
     );
   });

@@ -9,8 +9,13 @@ import {
   generateActivityPack,
 } from "./activity-pack-service";
 import { activeSpace } from "./material-store";
+import { aiCallErrorResponse } from "./ai-quota-http";
+import type { Clock } from "../../../packages/domain/concept-progress";
 
-export function activityPackRoutes(provider: ActivityPackProvider) {
+export function activityPackRoutes(
+  provider: ActivityPackProvider,
+  clock: Clock,
+) {
   const routes = new Hono<{ Bindings: Env; Variables: Variables }>();
   routes.use(
     "/:id/activity-pack/*",
@@ -19,8 +24,10 @@ export function activityPackRoutes(provider: ActivityPackProvider) {
       onError: (c) => c.json({ error: "Request is too large." }, 413),
     }),
   );
-  routes.onError((error, c) =>
-    error instanceof ActivityPackFailure
+  routes.onError((error, c) => {
+    const quota = aiCallErrorResponse(c, error);
+    if (quota) return quota;
+    return error instanceof ActivityPackFailure
       ? c.json({ error: error.message }, error.status)
       : c.json(
           {
@@ -28,8 +35,8 @@ export function activityPackRoutes(provider: ActivityPackProvider) {
               "The activity request could not be completed. Retry explicitly.",
           },
           503,
-        ),
-  );
+        );
+  });
   routes.get("/:id/activity-pack", async (c) => {
     const userId = c.get("user").id,
       spaceId = c.req.param("id");
@@ -56,6 +63,7 @@ export function activityPackRoutes(provider: ActivityPackProvider) {
         c.get("user").id,
         c.req.param("id"),
         parsed.data.requestId,
+        clock,
       ),
     );
   });

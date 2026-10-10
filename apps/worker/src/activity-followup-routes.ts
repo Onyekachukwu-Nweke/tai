@@ -11,6 +11,7 @@ import { currentPackExists } from "./activity-attempt-store";
 import { generateFollowup, FollowupFailure } from "./activity-followup-service";
 import { loadFollowupState } from "./activity-followup-store";
 import type { Env, Variables } from "./env";
+import { aiCallErrorResponse } from "./ai-quota-http";
 
 export const activityFollowupRoutes = (
   provider: ActivityFollowupProvider,
@@ -24,14 +25,16 @@ export const activityFollowupRoutes = (
         onError: (c) => c.json({ error: "Request is too large." }, 413),
       }),
     )
-    .onError((error, c) =>
-      error instanceof FollowupFailure
+    .onError((error, c) => {
+      const quota = aiCallErrorResponse(c, error);
+      if (quota) return quota;
+      return error instanceof FollowupFailure
         ? c.json({ error: error.message }, error.status)
         : c.json(
             { error: "Follow-up could not be prepared. Retry explicitly." },
             503,
-          ),
-    )
+          );
+    })
     .get("/:id/activity-followup", async (c) => {
       const packId = z.string().uuid().safeParse(c.req.query("packId"));
       if (!packId.success)

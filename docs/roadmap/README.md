@@ -11,6 +11,7 @@ This roadmap translates the complete PRD into an architecture, proposed technolo
 1. [Architecture](architecture.md): system boundaries, sign-in and ownership, D1/R2 storage, teaching pipeline, and failure handling.
 2. [Technology decisions](technology-decisions.md): recommended stack, alternatives, and decisions to validate.
 3. [AI provider and budget](ai-provider-and-budget.md): Workers AI vs Bedrock, model evaluation, quotas and spending controls.
+   Local quota behavior is recorded in [per-user AI quota evidence](ai-quota-evidence.md).
 4. [Delivery plan](delivery-plan.md): milestones, dependencies, work packages, and exit criteria.
 5. [Acceptance matrix](acceptance-matrix.md): PRD coverage and required evidence.
 6. [Risks and decisions](risks-and-decisions.md): explicit product-rule interpretations and unresolved readiness checks.

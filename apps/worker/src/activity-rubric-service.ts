@@ -8,6 +8,12 @@ import {
 import type { Clock } from "../../../packages/domain/concept-progress";
 import type { Env } from "./env";
 import {
+  AiCallFailure,
+  completeAiCall,
+  failAiCall,
+  reserveAiCall,
+} from "./ai-quota-service";
+import {
   loadCurrentQuestion,
   questionIsFlagged,
 } from "./activity-attempt-store";
@@ -137,6 +143,14 @@ export async function gradeExplanation(
     sources: question.sources,
   };
   try {
+    await reserveAiCall(
+      env,
+      userId,
+      input.requestId,
+      "grading",
+      "rubric_grade",
+      clock,
+    );
     const response = validateRubricResponse(
       await provider.grade(context),
       context,
@@ -155,10 +169,13 @@ export async function gradeExplanation(
         409,
         "The activity changed before feedback was saved.",
       );
+    await completeAiCall(env, userId, input.requestId, "rubric_grade", clock);
     return response;
   } catch (error) {
+    await failAiCall(env, userId, input.requestId, "rubric_grade", clock);
     await failRubricRequest(env, userId, spaceId, input.requestId, clock);
-    if (error instanceof RubricFailure) throw error;
+    if (error instanceof RubricFailure || error instanceof AiCallFailure)
+      throw error;
     throw new RubricFailure(
       503,
       "Rubric feedback could not be prepared. Retry explicitly.",
