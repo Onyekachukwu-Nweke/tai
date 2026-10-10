@@ -26,6 +26,10 @@ import {
   FakeActivityFollowupProvider,
   type ActivityFollowupProvider,
 } from "../../../packages/adapters/fake-activity-followup";
+import {
+  FakeActivityFollowupGradeProvider,
+  type ActivityFollowupGradeProvider,
+} from "../../../packages/adapters/fake-activity-followup-grade";
 
 export function createApp(
   provider: ConceptProvider = new FakeConceptProvider(),
@@ -34,6 +38,7 @@ export function createApp(
   tutorProvider: ActivityTutorProvider = new FakeActivityTutorProvider(),
   rubricProvider: ActivityRubricProvider = new FakeActivityRubricProvider(),
   followupProvider: ActivityFollowupProvider = new FakeActivityFollowupProvider(),
+  followupGradeProvider: ActivityFollowupGradeProvider = new FakeActivityFollowupGradeProvider(),
 ) {
   const app = new Hono<{ Bindings: Env; Variables: Variables }>();
 
@@ -93,6 +98,7 @@ export function createApp(
       tutorProvider,
       rubricProvider,
       followupProvider,
+      followupGradeProvider,
     ),
   );
 
