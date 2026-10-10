@@ -21,6 +21,8 @@ import type { ActivityRubricProvider } from "../../../packages/adapters/fake-act
 import { activityRubricRoutes } from "./activity-rubric-routes";
 import type { ActivityFollowupProvider } from "../../../packages/adapters/fake-activity-followup";
 import { activityFollowupRoutes } from "./activity-followup-routes";
+import type { ActivityFollowupGradeProvider } from "../../../packages/adapters/fake-activity-followup-grade";
+import { activityFollowupGradeRoutes } from "./activity-followup-grade-routes";
 
 export function createStudySpaces(
   provider: ConceptProvider,
@@ -29,6 +31,7 @@ export function createStudySpaces(
   tutorProvider: ActivityTutorProvider,
   rubricProvider: ActivityRubricProvider,
   followupProvider: ActivityFollowupProvider,
+  followupGradeProvider: ActivityFollowupGradeProvider,
 ) {
   const studySpaces = new Hono<{ Bindings: Env; Variables: Variables }>();
 
@@ -111,5 +114,9 @@ export function createStudySpaces(
   studySpaces.route("/", activityTutorRoutes(tutorProvider, clock));
   studySpaces.route("/", activityRubricRoutes(rubricProvider, clock));
   studySpaces.route("/", activityFollowupRoutes(followupProvider, clock));
+  studySpaces.route(
+    "/",
+    activityFollowupGradeRoutes(followupGradeProvider, clock),
+  );
   return studySpaces;
 }

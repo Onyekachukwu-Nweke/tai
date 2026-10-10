@@ -33,6 +33,21 @@ test("preserves an explanation across grading failure and restores rubric feedba
       "How would added light affect growth under these assumptions?",
     ),
   ).toBeVisible();
+  await page
+    .getByRole("region", { name: "Targeted follow-up" })
+    .getByLabel("Your follow-up response")
+    .fill("Added light supplies more energy for growth.");
+  await page
+    .getByRole("button", { name: "Save and check follow-up response" })
+    .click();
+  await expect(page.getByText(/Follow-up grading interrupted/)).toBeVisible();
+  await expect(page.getByLabel("Your follow-up response")).toHaveValue(
+    "Added light supplies more energy for growth.",
+  );
+  await page.getByRole("button", { name: "Retry follow-up feedback" }).click();
+  await expect(
+    page.getByText(/Source-supported follow-up outcome: partial/),
+  ).toBeVisible();
   expect(await page.evaluate(() => JSON.stringify(localStorage))).not.toContain(
     "Light supplies energy.",
   );
@@ -45,6 +60,12 @@ test("preserves an explanation across grading failure and restores rubric feedba
     page.getByText(
       "How would added light affect growth under these assumptions?",
     ),
+  ).toBeVisible();
+  await expect(page.getByLabel("Your follow-up response")).toHaveValue(
+    "Added light supplies more energy for growth.",
+  );
+  await expect(
+    page.getByText("Connect the response directly to the cited role of light."),
   ).toBeVisible();
   await page
     .getByRole("region", { name: "Targeted follow-up" })
@@ -71,4 +92,31 @@ test("keeps a flagged scenario draft while disabling rubric submission", async (
   expect(await page.evaluate(() => JSON.stringify(localStorage))).toContain(
     "My retained scenario draft",
   );
+});
+
+test("restores a completed follow-up grade after its response is lost", async ({
+  page,
+}) => {
+  const observed = await routeRubricPage(page, {
+    immediate: true,
+    lostFollowupGradeResponse: true,
+  });
+  await page.goto("/");
+  await page.getByRole("button", { name: "Preview material" }).click();
+  await page.getByLabel("Your response").fill("Light supplies energy.");
+  await page.getByRole("button", { name: "Save scenario response" }).click();
+  await expect(page.getByText(/Source-supported rubric outcome/)).toBeVisible();
+  await page.getByRole("button", { name: "Practise this gap" }).click();
+  await page
+    .getByLabel("Your follow-up response")
+    .fill("More light provides more energy for growth.");
+  await page
+    .getByRole("button", { name: "Save and check follow-up response" })
+    .click();
+  await expect(page.getByText(/Follow-up grading interrupted/)).toBeVisible();
+  await page.getByRole("button", { name: "Retry follow-up feedback" }).click();
+  await expect(
+    page.getByText(/Source-supported follow-up outcome: partial/),
+  ).toBeVisible();
+  expect(observed.followupGradeCalls()).toBe(1);
 });

@@ -41,13 +41,21 @@ const pack = {
 
 export async function routeRubricPage(
   page: Page,
-  options: { flagged?: boolean } = {},
+  options: {
+    flagged?: boolean;
+    immediate?: boolean;
+    lostFollowupGradeResponse?: boolean;
+  } = {},
 ) {
   let attempt: Record<string, unknown> | null = null;
   let grade: Record<string, unknown> | null = null;
   let followup: Record<string, unknown> | null = null;
-  let failures = 1;
-  let followupFailures = 1;
+  let followupAttempt: Record<string, unknown> | null = null;
+  let followupGrade: Record<string, unknown> | null = null;
+  let failures = options.immediate ? 0 : 1;
+  let followupFailures = options.immediate ? 0 : 1;
+  let followupGradeFailures = 1;
+  let followupGradeCalls = 0;
   await page.route("**/api/session", (route) =>
     route.fulfill({
       json: {
@@ -178,6 +186,18 @@ export async function routeRubricPage(
       }),
   );
   await page.route(
+    `**/api/study-spaces/${rubricIds.space}/activity-followup-grades?packId=*`,
+    (route) =>
+      route.fulfill({
+        json: {
+          schemaVersion: 1,
+          packId: rubricIds.pack,
+          attempts: followupAttempt ? [followupAttempt] : [],
+          grades: followupGrade ? [followupGrade] : [],
+        },
+      }),
+  );
+  await page.route(
     `**/api/study-spaces/${rubricIds.space}/activity-attempts`,
     async (route) => {
       const input = route.request().postDataJSON();
@@ -256,4 +276,44 @@ export async function routeRubricPage(
       await route.fulfill({ status: 201, json: followup });
     },
   );
+  await page.route(
+    `**/api/study-spaces/${rubricIds.space}/activity-followup-attempts`,
+    async (route) => {
+      const input = route.request().postDataJSON();
+      followupAttempt = {
+        ...input,
+        packId: rubricIds.pack,
+        questionId: rubricIds.question,
+      };
+      await route.fulfill({ status: 201, json: followupAttempt });
+    },
+  );
+  await page.route(
+    `**/api/study-spaces/${rubricIds.space}/activity-followup-grades`,
+    async (route) => {
+      followupGradeCalls += 1;
+      const input = route.request().postDataJSON();
+      followupGrade = {
+        schemaVersion: 1,
+        requestId: input.requestId,
+        attemptId: input.attemptId,
+        followupRequestId: followup!.requestId,
+        packId: rubricIds.pack,
+        questionId: rubricIds.question,
+        targetedCriterion: "Connect light to growth",
+        outcome: "partial",
+        feedback: "Connect the response directly to the cited role of light.",
+        sources: [source],
+      };
+      if (followupGradeFailures--) {
+        if (!options.lostFollowupGradeResponse) followupGrade = null;
+        return route.fulfill({
+          status: 503,
+          json: { error: "Follow-up grading interrupted." },
+        });
+      }
+      await route.fulfill({ status: 201, json: followupGrade });
+    },
+  );
+  return { followupGradeCalls: () => followupGradeCalls };
 }
