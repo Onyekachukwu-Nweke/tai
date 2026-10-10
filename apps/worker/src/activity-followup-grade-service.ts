@@ -11,6 +11,12 @@ import { activityFollowupResponseSchema } from "../../../packages/contracts/acti
 import type { Clock } from "../../../packages/domain/concept-progress";
 import type { Env } from "./env";
 import {
+  AiCallFailure,
+  completeAiCall,
+  failAiCall,
+  reserveAiCall,
+} from "./ai-quota-service";
+import {
   failFollowupGrade,
   expireStaleFollowupGrade,
   finishFollowupGrade,
@@ -225,6 +231,14 @@ export async function gradeFollowup(
     sources: followup.sources,
   };
   try {
+    await reserveAiCall(
+      env,
+      userId,
+      input.requestId,
+      "grading",
+      "followup_grade",
+      clock,
+    );
     const response = validateFollowupGrade(
       await provider.grade(context),
       context,
@@ -243,10 +257,13 @@ export async function gradeFollowup(
         409,
         "The activity changed before follow-up feedback was saved.",
       );
+    await completeAiCall(env, userId, input.requestId, "followup_grade", clock);
     return response;
   } catch (error) {
+    await failAiCall(env, userId, input.requestId, "followup_grade", clock);
     await failFollowupGrade(env, userId, spaceId, input.requestId, clock);
-    if (error instanceof FollowupGradeFailure) throw error;
+    if (error instanceof FollowupGradeFailure || error instanceof AiCallFailure)
+      throw error;
     throw new FollowupGradeFailure(
       503,
       "Follow-up feedback could not be prepared. Retry explicitly.",

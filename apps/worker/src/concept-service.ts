@@ -1,6 +1,13 @@
 import type { ConceptProvider } from "../../../packages/adapters/fake-concepts";
 import { validateConceptDrafts } from "../../../packages/contracts/concepts";
+import type { Clock } from "../../../packages/domain/concept-progress";
 import type { Env } from "./env";
+import {
+  AiCallFailure,
+  completeAiCall,
+  failAiCall,
+  reserveAiCall,
+} from "./ai-quota-service";
 import {
   loadConcepts,
   loadContext,
@@ -24,6 +31,7 @@ export async function generateConcepts(
   spaceId: string,
   requestId: string,
   location: number,
+  clock: Clock,
 ) {
   const previous = await requestState(env, userId, spaceId);
   if (previous?.request_id === requestId && previous.state !== "failed")
@@ -36,6 +44,7 @@ export async function generateConcepts(
     );
   await reserveRequest(env, userId, spaceId, requestId, context);
   try {
+    await reserveAiCall(env, userId, requestId, "concepts", "concepts", clock);
     const result = validateConceptDrafts(
       await provider.generate(context),
       context,
@@ -93,10 +102,13 @@ export async function generateConcepts(
         409,
         "The material changed or study space was deleted before concepts were saved.",
       );
+    await completeAiCall(env, userId, requestId, "concepts", clock);
     return saved;
   } catch (error) {
-    if (error instanceof ConceptFailure) throw error;
+    await failAiCall(env, userId, requestId, "concepts", clock);
     await markFailed(env, userId, spaceId, requestId);
+    if (error instanceof ConceptFailure || error instanceof AiCallFailure)
+      throw error;
     throw new ConceptFailure(
       503,
       "Concepts could not be prepared from this source. Retry explicitly.",

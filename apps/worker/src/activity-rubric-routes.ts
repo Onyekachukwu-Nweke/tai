@@ -11,6 +11,7 @@ import { currentPackExists } from "./activity-attempt-store";
 import { gradeExplanation, RubricFailure } from "./activity-rubric-service";
 import { loadRubricState } from "./activity-rubric-store";
 import type { Env, Variables } from "./env";
+import { aiCallErrorResponse } from "./ai-quota-http";
 
 export const activityRubricRoutes = (
   provider: ActivityRubricProvider,
@@ -24,16 +25,18 @@ export const activityRubricRoutes = (
         onError: (c) => c.json({ error: "Request is too large." }, 413),
       }),
     )
-    .onError((error, c) =>
-      error instanceof RubricFailure
+    .onError((error, c) => {
+      const quota = aiCallErrorResponse(c, error);
+      if (quota) return quota;
+      return error instanceof RubricFailure
         ? c.json({ error: error.message }, error.status)
         : c.json(
             {
               error: "Rubric feedback could not be prepared. Retry explicitly.",
             },
             503,
-          ),
-    )
+          );
+    })
     .get("/:id/activity-rubric", async (c) => {
       const packId = z.string().uuid().safeParse(c.req.query("packId"));
       if (!packId.success)

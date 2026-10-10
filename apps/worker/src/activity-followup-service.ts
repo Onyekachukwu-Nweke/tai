@@ -21,6 +21,12 @@ import {
   reserveFollowupRequest,
 } from "./activity-followup-store";
 import type { Env } from "./env";
+import {
+  AiCallFailure,
+  completeAiCall,
+  failAiCall,
+  reserveAiCall,
+} from "./ai-quota-service";
 
 export class FollowupFailure extends Error {
   constructor(
@@ -164,6 +170,14 @@ export async function generateFollowup(
     sources: question.sources,
   };
   try {
+    await reserveAiCall(
+      env,
+      userId,
+      input.requestId,
+      "support",
+      "followup",
+      clock,
+    );
     const response = validateFollowupResponse(
       await provider.generate(context),
       context,
@@ -182,10 +196,13 @@ export async function generateFollowup(
         409,
         "The activity changed before follow-up was saved.",
       );
+    await completeAiCall(env, userId, input.requestId, "followup", clock);
     return response;
   } catch (error) {
+    await failAiCall(env, userId, input.requestId, "followup", clock);
     await failFollowupRequest(env, userId, spaceId, input.requestId, clock);
-    if (error instanceof FollowupFailure) throw error;
+    if (error instanceof FollowupFailure || error instanceof AiCallFailure)
+      throw error;
     throw new FollowupFailure(
       503,
       "Follow-up could not be prepared. Retry explicitly.",

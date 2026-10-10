@@ -3,7 +3,14 @@ import {
   type CanonicalActivityPack,
   validateActivityPack,
 } from "../../../packages/contracts/activity-packs";
+import type { Clock } from "../../../packages/domain/concept-progress";
 import type { Env } from "./env";
+import {
+  AiCallFailure,
+  completeAiCall,
+  failAiCall,
+  reserveAiCall,
+} from "./ai-quota-service";
 import {
   failPackRequest,
   loadActivityContext,
@@ -49,6 +56,7 @@ export async function generateActivityPack(
   userId: string,
   spaceId: string,
   requestId: string,
+  clock: Clock,
 ) {
   const previous = await packRequestState(env, userId, spaceId);
   if (previous?.request_id === requestId && previous.state !== "failed")
@@ -61,6 +69,7 @@ export async function generateActivityPack(
     );
   await reservePackRequest(env, userId, spaceId, requestId, context);
   try {
+    await reserveAiCall(env, userId, requestId, "packs", "pack", clock);
     const providerPack = validateActivityPack(
       await provider.generate(context),
       context,
@@ -117,10 +126,13 @@ export async function generateActivityPack(
         409,
         "The material or concept selection changed before activities were saved.",
       );
+    await completeAiCall(env, userId, requestId, "pack", clock);
     return saved;
   } catch (error) {
-    if (error instanceof ActivityPackFailure) throw error;
+    await failAiCall(env, userId, requestId, "pack", clock);
     await failPackRequest(env, userId, spaceId, requestId);
+    if (error instanceof ActivityPackFailure || error instanceof AiCallFailure)
+      throw error;
     throw new ActivityPackFailure(
       503,
       "Activities could not be prepared. Retry explicitly.",

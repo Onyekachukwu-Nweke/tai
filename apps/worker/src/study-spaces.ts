@@ -105,8 +105,8 @@ export function createStudySpaces(
   );
 
   studySpaces.route("/", materialRoutes);
-  studySpaces.route("/", conceptRoutes(provider));
-  studySpaces.route("/", activityPackRoutes(activityProvider));
+  studySpaces.route("/", conceptRoutes(provider, clock));
+  studySpaces.route("/", activityPackRoutes(activityProvider, clock));
   studySpaces.route("/", activityAttemptRoutes(clock));
   studySpaces.route("/", conceptProgressRoutes(clock));
   studySpaces.route("/", studySessionRoutes(clock));

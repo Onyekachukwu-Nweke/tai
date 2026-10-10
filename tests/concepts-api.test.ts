@@ -15,6 +15,7 @@ function conceptCall(
   path: string,
   cookie: string,
   init: RequestInit = {},
+  bindings = env,
 ) {
   const headers = new Headers(init.headers);
   headers.set("cookie", cookie);
@@ -24,7 +25,7 @@ function conceptCall(
   return createApp(provider).request(
     `http://localhost:8787/api/study-spaces${path}`,
     { ...init, headers },
-    env,
+    bindings,
   );
 }
 class RecordingProvider implements ConceptProvider {
@@ -133,6 +134,28 @@ describe("source-backed concept organization", () => {
       status: "failed",
       concepts: [
         { id: result.concepts[0].id, label: "Photosynthesis", selected: false },
+      ],
+    });
+    expect(
+      await env.DB.prepare(
+        "SELECT COUNT(*) AS count FROM ai_call_ledger WHERE user_id=? AND category='concepts'",
+      )
+        .bind("alice")
+        .first("count"),
+    ).toBe(2);
+    expect(
+      await env.DB.prepare(
+        "SELECT operation_id,state FROM ai_call_ledger WHERE user_id=? AND task_kind='concepts' ORDER BY operation_id",
+      )
+        .bind("alice")
+        .all(),
+    ).toMatchObject({
+      results: [
+        { operation_id: requestId, state: "completed" },
+        {
+          operation_id: "55555555-5555-4555-8555-555555555555",
+          state: "failed",
+        },
       ],
     });
     expect(

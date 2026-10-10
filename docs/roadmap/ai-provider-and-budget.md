@@ -42,6 +42,8 @@ Record non-secret results in a dated decision note.
 
 Until these pass, develop against the fake provider and label any demo accordingly. Automated tests never call a paid model.
 
+The local per-user reservation and kill-switch implementation is documented in [AI quota evidence](ai-quota-evidence.md). Its configured limits are development defaults, not a measured or owner-approved production budget.
+
 ## Cost planning
 
 ```text

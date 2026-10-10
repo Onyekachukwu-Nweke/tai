@@ -7,6 +7,12 @@ import {
 } from "../../../packages/contracts/activity-tutor";
 import type { Clock } from "../../../packages/domain/concept-progress";
 import type { Env } from "./env";
+import {
+  AiCallFailure,
+  completeAiCall,
+  failAiCall,
+  reserveAiCall,
+} from "./ai-quota-service";
 import { loadCurrentQuestion } from "./activity-attempt-store";
 import {
   failTutorRequest,
@@ -98,6 +104,14 @@ export async function requestTutorHelp(
     },
   };
   try {
+    await reserveAiCall(
+      env,
+      userId,
+      input.requestId,
+      "support",
+      input.kind,
+      clock,
+    );
     const response = validateTutorResponse(
       await provider.generate(context),
       context,
@@ -116,10 +130,13 @@ export async function requestTutorHelp(
         409,
         "The activity changed before tutor help was saved.",
       );
+    await completeAiCall(env, userId, input.requestId, input.kind, clock);
     return response;
   } catch (error) {
+    await failAiCall(env, userId, input.requestId, input.kind, clock);
     await failTutorRequest(env, userId, spaceId, input.requestId, clock);
-    if (error instanceof TutorFailure) throw error;
+    if (error instanceof TutorFailure || error instanceof AiCallFailure)
+      throw error;
     throw new TutorFailure(
       503,
       "Tutor help could not be prepared. Retry explicitly.",

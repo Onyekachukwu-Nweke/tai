@@ -15,6 +15,13 @@ enabled = false
 [vars]
 APP_ORIGIN = "http://localhost:8787"
 RETURN_GAP_DAYS = "3"
+AI_CALLS_ENABLED = "true"
+AI_DAILY_TOTAL_LIMIT = "100"
+AI_DAILY_CONCEPT_LIMIT = "10"
+AI_DAILY_PACK_LIMIT = "20"
+AI_DAILY_GRADING_LIMIT = "30"
+AI_DAILY_SUPPORT_LIMIT = "40"
+AI_DAILY_PRACTICAL_LIMIT = "10"
 
 [[d1_databases]]
 binding = "DB"
