@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { sessionSchema } from "../../../packages/contracts/study-spaces";
 import { api, authClient } from "./api";
 import { StudySpaces } from "./StudySpaces";
+import { DeleteAccount } from "./DeleteAccount";
 
 type User = { id: string; name: string; email: string };
 
@@ -71,6 +72,13 @@ export function App() {
     }
   }
 
+  function accountDeleted(warning: string) {
+    setUser(null);
+    setError(
+      warning || "Your account and application-controlled data were deleted.",
+    );
+  }
+
   return (
     <>
       <a className="skip-link" href="#main">
@@ -109,7 +117,10 @@ export function App() {
         {loading ? (
           <p role="status">Checking your session…</p>
         ) : user ? (
-          <StudySpaces key={user.id} userId={user.id} />
+          <>
+            <StudySpaces key={user.id} userId={user.id} />
+            <DeleteAccount userId={user.id} onDeleted={accountDeleted} />
+          </>
         ) : (
           <section className="card" aria-labelledby="signin-title">
             <h2 id="signin-title">Start with your own space</h2>

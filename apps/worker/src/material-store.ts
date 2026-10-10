@@ -103,13 +103,21 @@ export async function reserveImport(
   try {
     if (previous?.state === "failed") {
       await env.DB.prepare(
-        "UPDATE material_imports SET state = 'writing', object_key = ? WHERE user_id = ? AND space_id = ? AND object_key = ? AND state = 'failed' AND EXISTS (SELECT 1 FROM study_spaces WHERE user_id = ? AND id = ? AND deleted_at IS NULL)",
+        "UPDATE material_imports SET state = 'writing', object_key = ? WHERE user_id = ? AND space_id = ? AND object_key = ? AND state = 'failed' AND EXISTS (SELECT 1 FROM study_spaces WHERE user_id = ? AND id = ? AND deleted_at IS NULL) AND NOT EXISTS (SELECT 1 FROM account_deletions WHERE user_id = ?)",
       )
-        .bind(key, userId, spaceId, previous.object_key, userId, spaceId)
+        .bind(
+          key,
+          userId,
+          spaceId,
+          previous.object_key,
+          userId,
+          spaceId,
+          userId,
+        )
         .run();
     } else {
       await env.DB.prepare(
-        "INSERT INTO material_imports (user_id, space_id, document_id, fingerprint, object_key, state, filename, format, warnings_json) SELECT ?, ?, ?, ?, ?, 'writing', ?, ?, ? WHERE EXISTS (SELECT 1 FROM study_spaces WHERE user_id = ? AND id = ? AND deleted_at IS NULL) ON CONFLICT DO NOTHING",
+        "INSERT INTO material_imports (user_id, space_id, document_id, fingerprint, object_key, state, filename, format, warnings_json) SELECT ?, ?, ?, ?, ?, 'writing', ?, ?, ? WHERE EXISTS (SELECT 1 FROM study_spaces WHERE user_id = ? AND id = ? AND deleted_at IS NULL) AND NOT EXISTS (SELECT 1 FROM account_deletions WHERE user_id = ?) ON CONFLICT DO NOTHING",
       )
         .bind(
           userId,
@@ -122,6 +130,7 @@ export async function reserveImport(
           JSON.stringify(preview.warnings),
           userId,
           spaceId,
+          userId,
         )
         .run();
     }

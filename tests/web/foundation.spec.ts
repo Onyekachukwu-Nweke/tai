@@ -205,3 +205,45 @@ test("expired sessions offer sign-in and retain the unsaved title if sign-in fai
   );
   await expect(title).toHaveValue(space.title);
 });
+
+test("account deletion discloses processing and retries pending cleanup", async ({
+  page,
+}) => {
+  await session(page);
+  await page.route("**/api/study-spaces", (route) =>
+    route.fulfill({ json: { schemaVersion: 1, spaces: [] } }),
+  );
+  let deletes = 0;
+  await page.route("**/api/account", (route) => {
+    deletes += 1;
+    return deletes === 1
+      ? route.fulfill({
+          status: 202,
+          json: { schemaVersion: 1, cleanupPending: true },
+        })
+      : route.fulfill({ status: 204, body: "" });
+  });
+  await page.goto("/");
+  await page.evaluate(() => {
+    localStorage.setItem("tai:activity-draft:synthetic-user:space:pack:q", "x");
+    localStorage.setItem("tai:activity-draft:other-user:space:pack:q", "y");
+  });
+  await expect(page.getByText("configured AI service")).toBeVisible();
+  await page.getByRole("button", { name: "Delete my account" }).click();
+  await expect(page.getByText("This cannot be undone.")).toBeVisible();
+  await page.getByRole("button", { name: "Delete permanently" }).click();
+  await expect(
+    page.getByText("Your account is retained", { exact: false }),
+  ).toBeVisible();
+  await page.getByRole("button", { name: "Retry deletion" }).click();
+  await expect(
+    page.getByRole("button", { name: "Continue with Google" }),
+  ).toBeVisible();
+  expect(
+    await page.evaluate(() => [
+      localStorage.getItem("tai:activity-draft:synthetic-user:space:pack:q"),
+      localStorage.getItem("tai:activity-draft:other-user:space:pack:q"),
+    ]),
+  ).toEqual([null, "y"]);
+  expect(deletes).toBe(2);
+});
