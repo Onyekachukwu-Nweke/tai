@@ -98,3 +98,18 @@ export function clearDraft(
     return warning;
   }
 }
+
+export function clearUserDrafts(userId: string) {
+  const prefix = `tai:activity-draft:${userId}:`;
+  try {
+    const keys = Array.from({ length: localStorage.length }, (_, index) =>
+      localStorage.key(index),
+    ).filter((draftKey): draftKey is string =>
+      Boolean(draftKey?.startsWith(prefix)),
+    );
+    keys.forEach((draftKey) => localStorage.removeItem(draftKey));
+    return "";
+  } catch {
+    return "TAI could not clear this account’s activity drafts from this browser.";
+  }
+}

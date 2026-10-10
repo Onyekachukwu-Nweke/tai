@@ -30,6 +30,7 @@ import {
   FakeActivityFollowupGradeProvider,
   type ActivityFollowupGradeProvider,
 } from "../../../packages/adapters/fake-activity-followup-grade";
+import { accountRoutes } from "./account-routes";
 
 export function createApp(
   provider: ConceptProvider = new FakeConceptProvider(),
@@ -89,6 +90,19 @@ export function createApp(
     });
     await next();
   });
+  app.use("/api/account", async (c, next) => {
+    const session = await createAuth(c.env).api.getSession({
+      headers: c.req.raw.headers,
+    });
+    if (!session)
+      return c.json({ error: "Sign in with Google to continue." }, 401);
+    c.set("user", {
+      id: session.user.id,
+      name: session.user.name,
+      email: session.user.email,
+    });
+    await next();
+  });
   app.route(
     "/api/study-spaces",
     createStudySpaces(
@@ -101,6 +115,7 @@ export function createApp(
       followupGradeProvider,
     ),
   );
+  app.route("/api/account", accountRoutes);
 
   app.notFound((c) => c.json({ error: "Not found." }, 404));
   app.onError((_error, c) =>

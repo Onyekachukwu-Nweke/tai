@@ -35,6 +35,21 @@ export function createStudySpaces(
 ) {
   const studySpaces = new Hono<{ Bindings: Env; Variables: Variables }>();
 
+  studySpaces.use("*", async (c, next) => {
+    if (c.req.method === "GET") return next();
+    const fenced = await c.env.DB.prepare(
+      "SELECT 1 FROM account_deletions WHERE user_id=?",
+    )
+      .bind(c.get("user").id)
+      .first();
+    if (fenced)
+      return c.json(
+        { error: "Account deletion has started. No new changes are accepted." },
+        410,
+      );
+    return next();
+  });
+
   studySpaces.get("/", async (c) => {
     const rows = await c.env.DB.prepare(
       "SELECT id, title, created_at AS createdAt, deleted_at FROM study_spaces WHERE user_id = ? AND (deleted_at IS NULL OR EXISTS (SELECT 1 FROM material_imports m WHERE m.user_id = study_spaces.user_id AND m.space_id = study_spaces.id)) ORDER BY created_at DESC, id DESC",
@@ -95,11 +110,24 @@ export function createStudySpaces(
         title: parsed.data.title,
         createdAt: new Date().toISOString(),
       };
-      await c.env.DB.prepare(
-        "INSERT INTO study_spaces (id, user_id, title, created_at, schema_version) VALUES (?, ?, ?, ?, 1)",
+      const created = await c.env.DB.prepare(
+        "INSERT INTO study_spaces (id, user_id, title, created_at, schema_version) SELECT ?, ?, ?, ?, 1 WHERE NOT EXISTS (SELECT 1 FROM account_deletions WHERE user_id=?)",
       )
-        .bind(space.id, c.get("user").id, space.title, space.createdAt)
+        .bind(
+          space.id,
+          c.get("user").id,
+          space.title,
+          space.createdAt,
+          c.get("user").id,
+        )
         .run();
+      if (!created.meta.changes)
+        return c.json(
+          {
+            error: "Account deletion has started. No new changes are accepted.",
+          },
+          410,
+        );
       return c.json({ schemaVersion: 1, space }, 201);
     },
   );

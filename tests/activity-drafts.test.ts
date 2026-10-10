@@ -1,11 +1,15 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { loadDraft } from "../apps/web/src/activity-drafts";
+import { clearUserDrafts, loadDraft } from "../apps/web/src/activity-drafts";
 
 const values = new Map<string, string>();
 
 beforeEach(() => {
   values.clear();
   vi.stubGlobal("localStorage", {
+    get length() {
+      return values.size;
+    },
+    key: (index: number) => [...values.keys()][index] ?? null,
     getItem: (key: string) => values.get(key) ?? null,
     setItem: (key: string, value: string) => values.set(key, value),
     removeItem: (key: string) => values.delete(key),
@@ -44,5 +48,17 @@ describe("activity draft identity", () => {
     expect(first.attemptId).not.toBe("prior-attempt");
     expect(retry.attemptId).toBe(first.attemptId);
     expect(values.has(prefix)).toBe(false);
+  });
+
+  it("clears only drafts belonging to the deleted account", () => {
+    values.set("tai:activity-draft:alice:space:pack:question", "alice");
+    values.set("tai:activity-draft:bob:space:pack:question", "bob");
+    values.set("unrelated", "keep");
+
+    expect(clearUserDrafts("alice")).toBe("");
+    expect([...values.entries()]).toEqual([
+      ["tai:activity-draft:bob:space:pack:question", "bob"],
+      ["unrelated", "keep"],
+    ]);
   });
 });
