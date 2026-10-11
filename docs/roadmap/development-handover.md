@@ -12,7 +12,7 @@
 2. Apply local D1 migrations through `0017` with `npm run db:migrate`.
 3. After M4.1 merges, use a new branch for M4.2's small reviewed resource catalog.
 
-Do not commit `.env` or populated `.dev.vars`. Do not add guest mode, a second database, a queue, autonomous agent behavior, or P1 offline features.
+Do not commit `.env`. Do not add guest mode, a second database, a queue, autonomous agent behavior, or P1 offline features.
 
 ## Current product state
 
@@ -139,7 +139,7 @@ Recommended next code slice after M4.1 merges: M4.2 resource catalog using a sma
 
 ## Environment and local commands
 
-Required local values are documented in [`.dev.vars.example`](../../.dev.vars.example):
+Required local secrets are documented in [`.env.example`](../../.env.example):
 
 - `BETTER_AUTH_SECRET`
 - `GOOGLE_CLIENT_ID`

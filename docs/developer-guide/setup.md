@@ -14,11 +14,11 @@ npm run dev
 
 Open `http://localhost:8787`. The development command builds the client and serves it through Wrangler; restart it after client edits. D1 is persisted locally in the ignored `.wrangler` directory. The `ORIGINALS` R2 binding is emulated locally alongside D1. No Cloudflare account or remote resource is required locally. Without OAuth configuration, the app reports that sign-in is unavailable; there is no guest or development-login bypass.
 
-For client hot reload, run `npm run dev:web` alongside Wrangler, set `APP_ORIGIN` to `http://localhost:5173` in `.dev.vars`, and use that origin in the browser and Google OAuth configuration. The Vite server proxies `/api` to Wrangler. Restart Wrangler after changing its variables.
+For client hot reload, run `npm run dev:web` alongside Wrangler, set `APP_ORIGIN` to `http://localhost:5173` in the local Wrangler configuration, and use that origin in the browser and Google OAuth configuration. The Vite server proxies `/api` to Wrangler. Restart Wrangler after changing its variables.
 
 ## Google sign-in
 
-1. Copy `.dev.vars.example` to `.dev.vars`.
+1. Copy `.env.example` to `.env`.
 2. Generate a secret with `openssl rand -base64 32` and set `BETTER_AUTH_SECRET` locally.
 3. Configure a Google OAuth web client and set `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET` locally. Never paste secrets into source files or chat.
 4. Register `http://localhost:8787/api/auth/callback/google` as the authorized redirect URI (or port 5173 when using hot reload).
@@ -32,8 +32,8 @@ Production requires an explicit HTTPS `APP_ORIGIN`, Worker secrets, a real D1 da
 
 Keep deployment credentials separate from application bindings:
 
-- Copy `.env.example` to ignored `.env` and set `CLOUDFLARE_ACCOUNT_ID` and `CLOUDFLARE_API_TOKEN` for non-interactive Wrangler commands. In GitHub Actions, configure the same names as repository secrets instead of committing an `.env` file. These values authenticate Wrangler and must not be read by TAI.
-- Copy `.dev.vars.example` to ignored `.dev.vars` for local Worker runtime values. Wrangler gives `.dev.vars` precedence, which prevents the CLI token in `.env` from becoming a Worker binding.
+- Copy `.env.example` to ignored `.env`. Put `CLOUDFLARE_ACCOUNT_ID`, `CLOUDFLARE_API_TOKEN`, `BETTER_AUTH_SECRET`, `GOOGLE_CLIENT_ID`, and `GOOGLE_CLIENT_SECRET` there. The `[secrets]` declaration limits which values become Worker bindings, so Wrangler's Cloudflare credentials remain CLI-only.
+- Do not create `.dev.vars` for this repository. Wrangler gives it precedence over `.env`, which would hide the runtime secrets in `.env` during local development.
 - Configure production `BETTER_AUTH_SECRET`, `GOOGLE_CLIENT_ID`, and `GOOGLE_CLIENT_SECRET` as encrypted Worker secrets. Their public names are declared under `[env.production.secrets]`; their values do not belong in `wrangler.toml`.
 - Keep `APP_ORIGIN`, D1 database ID, R2 bucket name, `AI_GATEWAY_ID`, and `WORKERS_AI_MODEL` in deployment configuration. They identify public or account resources and are not credentials.
 
