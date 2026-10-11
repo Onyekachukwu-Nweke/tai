@@ -1,10 +1,12 @@
 import { cloudflareTest, readD1Migrations } from "@cloudflare/vitest-plugin";
 import { defineConfig } from "vitest/config";
 
+process.env.CLOUDFLARE_LOAD_DEV_VARS_FROM_DOT_ENV = "false";
+
 export default defineConfig({
   plugins: [
     cloudflareTest(async () => ({
-      wrangler: { configPath: "./wrangler.toml" },
+      wrangler: { configPath: "./wrangler.test.toml" },
       miniflare: {
         bindings: {
           APP_ORIGIN: "http://localhost:8787",

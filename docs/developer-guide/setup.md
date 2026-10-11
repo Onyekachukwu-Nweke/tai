@@ -1,6 +1,6 @@
 # Local development
 
-TAI uses a React client served by one Hono Worker, Better Auth with Google, and local D1. This preview supports study spaces, browser extraction, private source storage, concepts, activity packs, deterministic MCQ checks, saved practice interactions and study-space deletion. Model grading and live AI are not implemented yet. Use synthetic data during development.
+TAI uses a React client served by one Hono Worker, Better Auth with Google, and local D1/R2 emulation. This preview supports study spaces, browser extraction, private source storage, concepts, activity packs, deterministic MCQ checks, saved practice interactions and study-space deletion. Local development uses the same Workers AI binding, gateway, model and quotas as deployment; model calls reach Cloudflare and consume the account allowance. Automated tests force fake providers and make no billed calls. Use synthetic data during development.
 
 ## Prerequisites and commands
 
@@ -12,7 +12,7 @@ npm run db:migrate
 npm run dev
 ```
 
-Open `http://localhost:8787`. The development command builds the client and serves it through Wrangler; restart it after client edits. D1 is persisted locally in the ignored `.wrangler` directory. The `ORIGINALS` R2 binding is emulated locally alongside D1. No Cloudflare account or remote resource is required locally. Without OAuth configuration, the app reports that sign-in is unavailable; there is no guest or development-login bypass.
+Open `http://localhost:8787`. The development command builds the client and serves it through Wrangler; restart it after client edits. D1 is persisted locally in the ignored `.wrangler` directory. The `ORIGINALS` R2 binding is emulated locally alongside D1. Live concept and activity generation requires Cloudflare credentials and uses the configured Workers AI allowance. Without OAuth configuration, the app reports that sign-in is unavailable; there is no guest or development-login bypass.
 
 For client hot reload, run `npm run dev:web` alongside Wrangler, set `APP_ORIGIN` to `http://localhost:5173` in the local Wrangler configuration, and use that origin in the browser and Google OAuth configuration. The Vite server proxies `/api` to Wrangler. Restart Wrangler after changing its variables.
 
@@ -26,16 +26,16 @@ For client hot reload, run `npm run dev:web` alongside Wrangler, set `APP_ORIGIN
 
 The [Better Auth Google setup guide](https://better-auth.com/docs/authentication/google) describes provider registration. Real provider login needs your OAuth configuration; synthetic integration tests do not prove that external OAuth is ready.
 
-Production requires an explicit HTTPS `APP_ORIGIN`, Worker secrets, a real D1 database ID and matching Google callback URI. `wrangler.toml` deliberately contains a local placeholder database ID. Do not treat the checked-in file as deployed infrastructure. This work does not provision or deploy cloud resources.
+Production requires an explicit HTTPS `APP_ORIGIN`, encrypted Worker secrets, and a matching Google callback URI. The checked-in D1 and R2 bindings name the verified remote resources; `wrangler dev` emulates them locally unless remote development is explicitly selected.
 
 ## Cloudflare credentials and Worker secrets
 
 Keep deployment credentials separate from application bindings:
 
-- Copy `.env.example` to ignored `.env`. Put `CLOUDFLARE_ACCOUNT_ID`, `CLOUDFLARE_API_TOKEN`, `BETTER_AUTH_SECRET`, `GOOGLE_CLIENT_ID`, and `GOOGLE_CLIENT_SECRET` there. The `[secrets]` declaration limits which values become Worker bindings, so Wrangler's Cloudflare credentials remain CLI-only.
+- Copy `.env.example` to ignored `.env`. Put `CLOUDFLARE_ACCOUNT_ID`, `CLOUDFLARE_API_TOKEN`, `APP_ORIGIN`, `BETTER_AUTH_SECRET`, `GOOGLE_CLIENT_ID`, and `GOOGLE_CLIENT_SECRET` there. The `[secrets]` declaration limits which values become Worker bindings, so Wrangler's Cloudflare credentials remain CLI-only.
 - Do not create `.dev.vars` for this repository. Wrangler gives it precedence over `.env`, which would hide the runtime secrets in `.env` during local development.
-- Configure production `BETTER_AUTH_SECRET`, `GOOGLE_CLIENT_ID`, and `GOOGLE_CLIENT_SECRET` as encrypted Worker secrets. Their public names are declared under `[env.production.secrets]`; their values do not belong in `wrangler.toml`.
-- Keep `APP_ORIGIN`, D1 database ID, R2 bucket name, `AI_GATEWAY_ID`, and `WORKERS_AI_MODEL` in deployment configuration. They identify public or account resources and are not credentials.
+- Configure production `APP_ORIGIN`, `BETTER_AUTH_SECRET`, `GOOGLE_CLIENT_ID`, and `GOOGLE_CLIENT_SECRET` as encrypted Worker secrets. Their public names are declared under `[secrets]`; their values do not belong in `wrangler.toml`.
+- `APP_ORIGIN` is non-sensitive but varies by environment, so it is supplied through the same runtime binding mechanism as secrets. D1 database ID, R2 bucket name, `AI_GATEWAY_ID`, and `WORKERS_AI_MODEL` remain in checked-in deployment configuration.
 
 The Workers AI `AI` binding authenticates model and AI Gateway requests with the Worker account identity. Do not create or bind a second Workers AI token. A Cloudflare API token is needed only for Wrangler, CI, direct REST calls, or resource-management automation.
 
@@ -44,9 +44,10 @@ For an interactive workstation, `npx wrangler login` is an alternative to placin
 Set production application secrets after the Worker environment exists:
 
 ```sh
-npx wrangler secret put BETTER_AUTH_SECRET --env production
-npx wrangler secret put GOOGLE_CLIENT_ID --env production
-npx wrangler secret put GOOGLE_CLIENT_SECRET --env production
+npx wrangler secret put APP_ORIGIN
+npx wrangler secret put BETTER_AUTH_SECRET
+npx wrangler secret put GOOGLE_CLIENT_ID
+npx wrangler secret put GOOGLE_CLIENT_SECRET
 ```
 
 Do not pass the Wrangler API token to `wrangler secret put`; it is deployment authentication rather than an application secret.
@@ -62,11 +63,11 @@ npm run check
 
 This runs formatting, ESLint, TypeScript, the 350-line authored-code check, local Markdown file-link validation, Vitest in the Workers runtime, Playwright browser tests with mocked APIs, the Vite production build, and a Wrangler dry-run bundle. Individual scripts are in `package.json`. Use `npm run format` to format application/tooling files. Existing planning Markdown is excluded from bulk formatting to avoid unrelated rewrites.
 
-Tests use local D1 migrations and synthetic sessions with the actual auth implementation. The fake concept adapter is internal test infrastructure and makes no network or billed model calls. There is no fake educational-content endpoint or production test-login route.
+Tests use `wrangler.test.toml`, local D1 migrations, and synthetic sessions with the actual auth implementation. The test config omits the Workers AI binding, and fake AI adapters make no network or billed model calls. There is no fake educational-content endpoint or production test-login route.
 
-The concept explorer currently uses that deterministic fake adapter through authenticated concept routes. The interface labels its output as an unreviewed development preview. This proves owner-scoped chunk retrieval, citation validation, persistence, editing, retry and source navigation; it does not establish concept quality or live-model readiness.
+The concept explorer uses Workers AI through AI Gateway in normal development. The interface labels its output as unreviewed. Owner-scoped chunk retrieval, citation validation, persistence, editing, retry and source navigation are automated; educational quality still requires the documented content audit.
 
-The activity-pack preview also uses a deterministic fake adapter. An explicit request sends only a request UUID; the Worker loads selected concepts and chunks and validates a canonical 3–5 question pack. The authenticated DTO carries bounded recall and MCQ review keys for local checking, but the interface hides them until submission or deliberate reveal and never writes them to browser storage. Attempts persist before acknowledgment; failed saves keep a user-scoped draft for explicit retry. Explanations are saved ungraded. Run `npm run db:migrate` after pulling migrations, including `0005_activity_attempts.sql`.
+Activity-pack generation also uses Workers AI through AI Gateway in normal development. An explicit request sends only a request UUID; the Worker loads selected concepts and chunks and validates a canonical 3–5 question pack. Provider, model, prompt and schema provenance are saved only when the pack commits successfully. The authenticated DTO carries bounded recall and MCQ review keys for local checking, but the interface hides them until submission or deliberate reveal and never writes them to browser storage. Attempts persist before acknowledgment; failed saves keep a user-scoped draft for explicit retry. Explanations are saved ungraded. Run `npm run db:migrate` after pulling migrations.
 
 The link checker checks relative Markdown file targets, not anchors or remote URL availability. Generated `dist`, installed dependencies, and Wrangler state are excluded from authored-code checks. Playwright covers browser behavior with mocked API responses; full browser-to-Worker OAuth and low-end device extraction tests remain future work. On Linux, use `npx playwright install --with-deps chromium` if browser system dependencies are missing.
 
@@ -85,7 +86,7 @@ Synthetic fixtures are reproducible with `node scripts/generate-material-fixture
 - `apps/web`: React interface and client request handling.
 - `apps/worker`: Hono routes, session resolution, ownership and request validation.
 - `packages/contracts`: versioned boundary schemas.
-- `packages/adapters`: internal fake AI adapter.
+- `packages/adapters`: Workers AI and deterministic test adapters.
 - `migrations`: auth and versioned application tables for spaces, materials, concepts, packs and attempts.
 - `tests`: synthetic contracts and Worker/D1 integration checks.
 

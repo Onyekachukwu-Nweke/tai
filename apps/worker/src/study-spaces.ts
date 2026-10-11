@@ -28,7 +28,7 @@ import { practicalTaskRoutes } from "./practical-task-routes";
 
 export function createStudySpaces(
   provider: ConceptProvider | undefined,
-  activityProvider: ActivityPackProvider,
+  activityProvider: ActivityPackProvider | undefined,
   clock: Clock,
   tutorProvider: ActivityTutorProvider,
   rubricProvider: ActivityRubricProvider,

@@ -4,7 +4,26 @@ import type {
 } from "../contracts/activity-packs";
 
 export interface ActivityPackProvider {
+  metadata?: ActivityPackProviderMetadata;
   generate(context: ActivityContext): Promise<unknown>;
+}
+export type ActivityPackProviderMetadata = {
+  provider: "fake" | "workers_ai";
+  model: string | null;
+  promptVersion: string;
+  schemaVersion: 1;
+};
+export function activityPackProviderMetadata(
+  provider: ActivityPackProvider,
+): ActivityPackProviderMetadata {
+  return (
+    provider.metadata ?? {
+      provider: "fake",
+      model: null,
+      promptVersion: "injected-fake-v1",
+      schemaVersion: 1,
+    }
+  );
 }
 const questionId = (index: number) =>
   `10000000-0000-4000-8000-00000000000${index}`;
@@ -12,6 +31,12 @@ const optionId = (index: number) =>
   `20000000-0000-4000-8000-00000000000${index}`;
 
 export class FakeActivityPackProvider implements ActivityPackProvider {
+  readonly metadata = {
+    provider: "fake",
+    model: null,
+    promptVersion: "deterministic-fake-v1",
+    schemaVersion: 1,
+  } as const;
   async generate(context: ActivityContext): Promise<CanonicalActivityPack> {
     const [first, second] = context.concepts;
     if (!first || !second) throw new Error("Insufficient selected concepts");

@@ -124,7 +124,7 @@ export const learnerActivityPackSchema = z
     status: z.enum(["empty", "pending", "ready", "failed"]),
     requestId: uuid.nullable(),
     packId: uuid.nullable(),
-    provider: z.literal("fake"),
+    provider: z.enum(["fake", "workers_ai"]),
     error: z.string().max(240).nullable(),
     questions: z.array(learnerQuestion).max(5),
   })

@@ -1,0 +1,27 @@
+# Isolated local bindings for automated tests. Live AI is replaced by injected
+# fakes so test runs cannot consume provider quota or expose fixture content.
+name = "tai-test"
+main = "apps/worker/src/index.ts"
+compatibility_date = "2026-10-06"
+compatibility_flags = ["nodejs_compat"]
+
+[vars]
+RETURN_GAP_DAYS = "3"
+AI_CALLS_ENABLED = "true"
+AI_DAILY_TOTAL_LIMIT = "100"
+AI_DAILY_CONCEPT_LIMIT = "10"
+AI_DAILY_PACK_LIMIT = "20"
+AI_DAILY_GRADING_LIMIT = "30"
+AI_DAILY_SUPPORT_LIMIT = "40"
+AI_DAILY_PRACTICAL_LIMIT = "10"
+AI_PROVIDER = "fake"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "tai-test"
+database_id = "64149050-28d3-489f-ae2f-80f1fa42a64b"
+migrations_dir = "migrations"
+
+[[r2_buckets]]
+binding = "ORIGINALS"
+bucket_name = "tai-test-originals"
