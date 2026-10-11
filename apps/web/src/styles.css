@@ -260,6 +260,31 @@ footer {
 .activity-pack > ol {
   padding-left: 24px;
 }
+.practical-task {
+  margin-top: 24px;
+  border-top: 1px solid #d7dfd5;
+  padding-top: 16px;
+}
+.practical-task article,
+.practical-task dl {
+  overflow-wrap: anywhere;
+}
+.practical-task dl {
+  display: grid;
+  grid-template-columns: minmax(7rem, auto) 1fr;
+  gap: 8px 16px;
+}
+.practical-task dt {
+  font-weight: 700;
+}
+.practical-task dd {
+  margin: 0;
+}
+@media (max-width: 520px) {
+  .practical-task dl {
+    grid-template-columns: 1fr;
+  }
+}
 .activity-card {
   border-top: 1px solid #d7dfd5;
   padding: 12px 0;

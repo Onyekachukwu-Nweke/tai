@@ -31,6 +31,10 @@ import {
   type ActivityFollowupGradeProvider,
 } from "../../../packages/adapters/fake-activity-followup-grade";
 import { accountRoutes } from "./account-routes";
+import {
+  FakePracticalTaskProvider,
+  type PracticalTaskProvider,
+} from "../../../packages/adapters/fake-practical-tasks";
 
 export function createApp(
   provider: ConceptProvider = new FakeConceptProvider(),
@@ -40,6 +44,7 @@ export function createApp(
   rubricProvider: ActivityRubricProvider = new FakeActivityRubricProvider(),
   followupProvider: ActivityFollowupProvider = new FakeActivityFollowupProvider(),
   followupGradeProvider: ActivityFollowupGradeProvider = new FakeActivityFollowupGradeProvider(),
+  practicalProvider: PracticalTaskProvider = new FakePracticalTaskProvider(),
 ) {
   const app = new Hono<{ Bindings: Env; Variables: Variables }>();
 
@@ -113,6 +118,7 @@ export function createApp(
       rubricProvider,
       followupProvider,
       followupGradeProvider,
+      practicalProvider,
     ),
   );
   app.route("/api/account", accountRoutes);

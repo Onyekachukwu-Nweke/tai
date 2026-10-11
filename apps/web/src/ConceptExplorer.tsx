@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import type { ConceptCollection } from "../../../packages/contracts/concepts";
 import { generateConcepts, loadConcepts, updateConcept } from "./concept-api";
 import { ActivityPack } from "./ActivityPack";
+import { PracticalTask } from "./PracticalTask";
 
 type Source = ConceptCollection["concepts"][number]["sources"][number];
 export function ConceptExplorer({
@@ -183,15 +184,27 @@ export function ConceptExplorer({
         </>
       )}
       {concepts.length > 0 && (
-        <ActivityPack
-          userId={userId}
-          spaceId={spaceId}
-          selectedCount={concepts.filter((concept) => concept.selected).length}
-          concepts={concepts
-            .filter((concept) => concept.selected)
-            .map(({ id, label }) => ({ id, label }))}
-          onSource={onSource}
-        />
+        <>
+          <ActivityPack
+            userId={userId}
+            spaceId={spaceId}
+            selectedCount={
+              concepts.filter((concept) => concept.selected).length
+            }
+            concepts={concepts
+              .filter((concept) => concept.selected)
+              .map(({ id, label }) => ({ id, label }))}
+            onSource={onSource}
+          />
+          <PracticalTask
+            spaceId={spaceId}
+            conceptIds={concepts
+              .filter((concept) => concept.selected)
+              .map((concept) => concept.id)}
+            sources={concepts.flatMap((concept) => concept.sources)}
+            onSource={onSource}
+          />
+        </>
       )}
     </section>
   );
