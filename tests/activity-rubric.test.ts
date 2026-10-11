@@ -11,6 +11,12 @@ import { createActivityFixture } from "./activity-fixture";
 import { learner } from "./material-fixtures";
 
 class InspectingProvider implements ActivityRubricProvider {
+  readonly metadata = {
+    provider: "workers_ai" as const,
+    model: "@cf/example/model",
+    promptVersion: "activity-rubric-v1",
+    schemaVersion: 1 as const,
+  };
   calls: RubricContext[] = [];
   fail = false;
   mutate = false;
@@ -132,6 +138,18 @@ describe("activity rubric routes", () => {
       attemptId,
     };
     expect((await call(input)).status).toBe(201);
+    expect(
+      await env.DB.prepare(
+        "SELECT provider,model,prompt_version,output_schema_version FROM activity_rubric_requests WHERE user_id=? AND space_id=? AND request_id=?",
+      )
+        .bind(fixture.owner.userId, fixture.owner.spaceId, input.requestId)
+        .first(),
+    ).toMatchObject({
+      provider: "workers_ai",
+      model: "@cf/example/model",
+      prompt_version: "activity-rubric-v1",
+      output_schema_version: 1,
+    });
     expect(provider.calls[0]).toMatchObject({
       answer: "A learner explanation",
     });

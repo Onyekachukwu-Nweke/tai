@@ -4,10 +4,35 @@ import type {
 } from "../contracts/activity-rubric";
 
 export interface ActivityRubricProvider {
+  readonly metadata?: ActivityRubricProviderMetadata;
   grade(context: RubricContext): Promise<unknown>;
 }
 
+export interface ActivityRubricProviderMetadata {
+  provider: "fake" | "workers_ai";
+  model: string | null;
+  promptVersion: string;
+  schemaVersion: 1;
+}
+
+export const activityRubricProviderMetadata = (
+  provider: ActivityRubricProvider,
+): ActivityRubricProviderMetadata =>
+  provider.metadata ?? {
+    provider: "fake",
+    model: null,
+    promptVersion: "injected-fake-v1",
+    schemaVersion: 1,
+  };
+
 export class FakeActivityRubricProvider implements ActivityRubricProvider {
+  readonly metadata = {
+    provider: "fake",
+    model: null,
+    promptVersion: "deterministic-fake-v1",
+    schemaVersion: 1,
+  } as const;
+
   async grade(context: RubricContext): Promise<ActivityRubricResponse> {
     return {
       schemaVersion: 1,

@@ -31,7 +31,7 @@ export function createStudySpaces(
   activityProvider: ActivityPackProvider | undefined,
   clock: Clock,
   tutorProvider: ActivityTutorProvider,
-  rubricProvider: ActivityRubricProvider,
+  rubricProvider: ActivityRubricProvider | undefined,
   followupProvider: ActivityFollowupProvider,
   followupGradeProvider: ActivityFollowupGradeProvider,
   practicalProvider: PracticalTaskProvider,

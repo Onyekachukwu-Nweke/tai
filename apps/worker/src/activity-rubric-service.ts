@@ -1,4 +1,7 @@
-import type { ActivityRubricProvider } from "../../../packages/adapters/fake-activity-rubric";
+import {
+  activityRubricProviderMetadata,
+  type ActivityRubricProvider,
+} from "../../../packages/adapters/fake-activity-rubric";
 import {
   activityRubricResponseSchema,
   validateRubricResponse,
@@ -107,7 +110,8 @@ export async function gradeExplanation(
     packId: attempt.pack_id,
     questionId: attempt.question_id,
   };
-  if (!(await reserveRubricRequest(env, keys, hash, clock))) {
+  const metadata = activityRubricProviderMetadata(provider);
+  if (!(await reserveRubricRequest(env, keys, hash, clock, metadata))) {
     const raced = await loadRubricRequest(
       env,
       userId,
