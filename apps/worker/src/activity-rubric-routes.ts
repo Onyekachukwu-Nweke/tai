@@ -12,9 +12,10 @@ import { gradeExplanation, RubricFailure } from "./activity-rubric-service";
 import { loadRubricState } from "./activity-rubric-store";
 import type { Env, Variables } from "./env";
 import { aiCallErrorResponse } from "./ai-quota-http";
+import { activityRubricProviderForEnv } from "./activity-rubric-provider";
 
 export const activityRubricRoutes = (
-  provider: ActivityRubricProvider,
+  provider: ActivityRubricProvider | undefined,
   clock: Clock,
 ) =>
   new Hono<{ Bindings: Env; Variables: Variables }>()
@@ -82,7 +83,7 @@ export const activityRubricRoutes = (
       return c.json(
         await gradeExplanation(
           c.env,
-          provider,
+          provider ?? activityRubricProviderForEnv(c.env),
           c.get("user").id,
           c.req.param("id"),
           parsed.data,

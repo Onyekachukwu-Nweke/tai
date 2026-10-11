@@ -4,11 +4,16 @@ import {
 } from "../../../packages/contracts/activity-rubric";
 import type { Clock } from "../../../packages/domain/concept-progress";
 import type { Env } from "./env";
+import type { ActivityRubricProviderMetadata } from "../../../packages/adapters/fake-activity-rubric";
 
 export type RubricRequestRow = {
   request_hash: string;
   state: "pending" | "ready" | "failed";
   response_json: string | null;
+  provider: "fake" | "workers_ai";
+  model: string | null;
+  prompt_version: string;
+  output_schema_version: 1;
 };
 
 export const loadRubricRequest = (
@@ -18,7 +23,7 @@ export const loadRubricRequest = (
   requestId: string,
 ) =>
   env.DB.prepare(
-    "SELECT request_hash,state,response_json FROM activity_rubric_requests WHERE user_id=? AND space_id=? AND request_id=?",
+    "SELECT request_hash,state,response_json,provider,model,prompt_version,output_schema_version FROM activity_rubric_requests WHERE user_id=? AND space_id=? AND request_id=?",
   )
     .bind(userId, spaceId, requestId)
     .first<RubricRequestRow>();
@@ -35,10 +40,11 @@ export async function reserveRubricRequest(
   },
   hash: string,
   clock: Clock,
+  metadata: ActivityRubricProviderMetadata,
 ) {
   const now = clock.now().toISOString();
   const result = await env.DB.prepare(
-    "INSERT OR IGNORE INTO activity_rubric_requests(user_id,space_id,request_id,attempt_id,pack_id,question_id,request_hash,state,response_json,error,created_at,updated_at) VALUES(?,?,?,?,?,?,?,'pending',NULL,NULL,?,?)",
+    "INSERT OR IGNORE INTO activity_rubric_requests(user_id,space_id,request_id,attempt_id,pack_id,question_id,request_hash,state,response_json,error,created_at,updated_at,provider,model,prompt_version,output_schema_version) VALUES(?,?,?,?,?,?,?,'pending',NULL,NULL,?,?,?,?,?,?)",
   )
     .bind(
       keys.userId,
@@ -50,6 +56,10 @@ export async function reserveRubricRequest(
       hash,
       now,
       now,
+      metadata.provider,
+      metadata.model,
+      metadata.promptVersion,
+      metadata.schemaVersion,
     )
     .run();
   return result.meta.changes === 1;
@@ -62,7 +72,7 @@ export const loadActiveRubricForAttempt = (
   attemptId: string,
 ) =>
   env.DB.prepare(
-    "SELECT request_hash,state,response_json FROM activity_rubric_requests WHERE user_id=? AND space_id=? AND attempt_id=? AND state IN ('pending','ready') LIMIT 1",
+    "SELECT request_hash,state,response_json,provider,model,prompt_version,output_schema_version FROM activity_rubric_requests WHERE user_id=? AND space_id=? AND attempt_id=? AND state IN ('pending','ready') LIMIT 1",
   )
     .bind(userId, spaceId, attemptId)
     .first<RubricRequestRow>();

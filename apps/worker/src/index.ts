@@ -12,10 +12,7 @@ import {
   FakeActivityTutorProvider,
   type ActivityTutorProvider,
 } from "../../../packages/adapters/fake-activity-tutor";
-import {
-  FakeActivityRubricProvider,
-  type ActivityRubricProvider,
-} from "../../../packages/adapters/fake-activity-rubric";
+import type { ActivityRubricProvider } from "../../../packages/adapters/fake-activity-rubric";
 import {
   FakeActivityFollowupProvider,
   type ActivityFollowupProvider,
@@ -35,7 +32,7 @@ export function createApp(
   activityProvider?: ActivityPackProvider,
   clock: Clock = systemClock,
   tutorProvider: ActivityTutorProvider = new FakeActivityTutorProvider(),
-  rubricProvider: ActivityRubricProvider = new FakeActivityRubricProvider(),
+  rubricProvider?: ActivityRubricProvider,
   followupProvider: ActivityFollowupProvider = new FakeActivityFollowupProvider(),
   followupGradeProvider: ActivityFollowupGradeProvider = new FakeActivityFollowupGradeProvider(),
   practicalProvider: PracticalTaskProvider = new FakePracticalTaskProvider(),

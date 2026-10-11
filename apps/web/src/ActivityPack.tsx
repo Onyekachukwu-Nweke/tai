@@ -186,8 +186,10 @@ export function ActivityPack({
             ? "A deterministic development provider prepared this saved pack. "
             : "Preparing a pack sends the selected source excerpts to the configured AI provider. "}
         Prompts have not been reviewed for teaching quality. Multiple choice is
-        checked deterministically; free-text tutor feedback currently uses a
-        deterministic development provider and does not affect review progress.
+        checked deterministically. Requesting free-text rubric feedback sends
+        the saved answer and cited excerpts to the configured AI provider; its
+        outcome does not advance review progress. Tutor and follow-up responses
+        currently use deterministic development providers.
       </p>
       <button
         type="button"
