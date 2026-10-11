@@ -1,7 +1,7 @@
 # M0 Workers AI live-provider evidence
 
 **Date:** 11 October 2026  
-**Status:** adapter and synthetic-binding verification complete; live account invocation blocked by missing Cloudflare authentication and production resource values.
+**Status:** adapter and synthetic-binding verification complete; Cloudflare authentication and core remote resources verified. Live invocation remains blocked by the public production origin and OAuth callback.
 
 ## Implemented slice
 
@@ -17,15 +17,15 @@ Synthetic binding tests cover the request shape, named gateway, disabled log col
 
 ## Live gate still open
 
-`wrangler whoami` reported that this workstation is not authenticated. The production Wrangler environment also retains placeholders for the deployed HTTPS `APP_ORIGIN` and remote D1 database ID. No live model call, token/cost measurement, model comparison, or deployed end-to-end claim has been made.
+The account API token was verified on 11 October 2026. Remote R2 bucket `tai-originals`, D1 database `tai`, and AI Gateway `tai` exist. All migrations through `0018` were applied remotely. The gateway reports body logging disabled, authentication enabled, zero-data-retention enabled, no cache TTL, and a bounded rate limit. Better Auth and Google OAuth values were uploaded as encrypted production Worker secrets. No secret values were recorded.
+
+The Cloudflare account does not yet have a `workers.dev` subdomain, so the production HTTPS origin and matching Google OAuth callback cannot be finalized. `APP_ORIGIN` remains a local placeholder and no application deployment or live model call has been made. Token/cost measurement, model comparison, and deployed end-to-end behavior remain unverified.
 
 Before the first live call:
 
-1. Authenticate Wrangler to the intended Cloudflare account.
-2. Create or select a named AI Gateway and confirm body logging is disabled in its dashboard settings.
-3. Create the remote D1 database and R2 bucket, apply all migrations through `0018`, and place their real identifiers in deployment configuration.
-4. Set the deployed HTTPS origin and matching Google OAuth callback.
-5. Start with `AI_CALLS_ENABLED=false`, low daily quotas, and an owner-approved spend ceiling; enable calls only after the bindings and privacy settings are verified.
-6. Run the same bounded quantitative and scenario fixtures against two accessible Workers AI JSON-capable models and record exact model IDs, prompt/schema version, latency, usage, cost, schema compliance, and source fidelity.
+1. Open Workers & Pages in the Cloudflare dashboard once to register the account's `workers.dev` subdomain, or choose a custom domain.
+2. Set the deployed HTTPS `APP_ORIGIN` and matching Google OAuth callback.
+3. Start with `AI_CALLS_ENABLED=false`, low daily quotas, and an owner-approved spend ceiling; enable calls only after the deployed bindings and privacy settings are rechecked.
+4. Run the same bounded quantitative and scenario fixtures against two accessible Workers AI JSON-capable models and record exact model IDs, prompt/schema version, latency, usage, cost, schema compliance, and source fidelity.
 
 Live evaluation must remain separate from CI and must use synthetic, non-sensitive material until the privacy gate passes.

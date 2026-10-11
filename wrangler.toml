@@ -31,8 +31,7 @@ AI_PROVIDER = "fake"
 [[d1_databases]]
 binding = "DB"
 database_name = "tai"
-# Local placeholder. Replace only after creating the remote database.
-database_id = "00000000-0000-0000-0000-000000000000"
+database_id = "64149050-28d3-489f-ae2f-80f1fa42a64b"
 migrations_dir = "migrations"
 
 [[r2_buckets]]
@@ -65,7 +64,7 @@ WORKERS_AI_MODEL = "@cf/meta/llama-3.3-70b-instruct-fp8-fast"
 [[env.production.d1_databases]]
 binding = "DB"
 database_name = "tai"
-database_id = "00000000-0000-0000-0000-000000000000"
+database_id = "64149050-28d3-489f-ae2f-80f1fa42a64b"
 migrations_dir = "migrations"
 
 [[env.production.r2_buckets]]
