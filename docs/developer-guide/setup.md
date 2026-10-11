@@ -28,6 +28,29 @@ The [Better Auth Google setup guide](https://better-auth.com/docs/authentication
 
 Production requires an explicit HTTPS `APP_ORIGIN`, Worker secrets, a real D1 database ID and matching Google callback URI. `wrangler.toml` deliberately contains a local placeholder database ID. Do not treat the checked-in file as deployed infrastructure. This work does not provision or deploy cloud resources.
 
+## Cloudflare credentials and Worker secrets
+
+Keep deployment credentials separate from application bindings:
+
+- Copy `.env.example` to ignored `.env` and set `CLOUDFLARE_ACCOUNT_ID` and `CLOUDFLARE_API_TOKEN` for non-interactive Wrangler commands. In GitHub Actions, configure the same names as repository secrets instead of committing an `.env` file. These values authenticate Wrangler and must not be read by TAI.
+- Copy `.dev.vars.example` to ignored `.dev.vars` for local Worker runtime values. Wrangler gives `.dev.vars` precedence, which prevents the CLI token in `.env` from becoming a Worker binding.
+- Configure production `BETTER_AUTH_SECRET`, `GOOGLE_CLIENT_ID`, and `GOOGLE_CLIENT_SECRET` as encrypted Worker secrets. Their public names are declared under `[env.production.secrets]`; their values do not belong in `wrangler.toml`.
+- Keep `APP_ORIGIN`, D1 database ID, R2 bucket name, `AI_GATEWAY_ID`, and `WORKERS_AI_MODEL` in deployment configuration. They identify public or account resources and are not credentials.
+
+The Workers AI `AI` binding authenticates model and AI Gateway requests with the Worker account identity. Do not create or bind a second Workers AI token. A Cloudflare API token is needed only for Wrangler, CI, direct REST calls, or resource-management automation.
+
+For an interactive workstation, `npx wrangler login` is an alternative to placing a Cloudflare API token in `.env`. For CI, create a scoped token with only the permissions needed by the deployment and store it as `CLOUDFLARE_API_TOKEN` in the repository's secret settings.
+
+Set production application secrets after the Worker environment exists:
+
+```sh
+npx wrangler secret put BETTER_AUTH_SECRET --env production
+npx wrangler secret put GOOGLE_CLIENT_ID --env production
+npx wrangler secret put GOOGLE_CLIENT_SECRET --env production
+```
+
+Do not pass the Wrangler API token to `wrangler secret put`; it is deployment authentication rather than an application secret.
+
 Sessions have a fixed seven-day lifetime with no cookie cache or rolling renewal. Expired sessions require Google sign-in again. Optional avatars, IP/user-agent metadata, and OAuth access/refresh/ID tokens are not retained.
 
 ## Verification

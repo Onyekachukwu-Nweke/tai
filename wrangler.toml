@@ -12,6 +12,10 @@ run_worker_first = ["/api/*"]
 [observability]
 enabled = false
 
+# Names are public; values are encrypted Worker secrets configured separately.
+[secrets]
+required = ["BETTER_AUTH_SECRET", "GOOGLE_CLIENT_ID", "GOOGLE_CLIENT_SECRET"]
+
 [vars]
 APP_ORIGIN = "http://localhost:8787"
 RETURN_GAP_DAYS = "3"
@@ -40,6 +44,9 @@ name = "tai"
 
 [env.production.ai]
 binding = "AI"
+
+[env.production.secrets]
+required = ["BETTER_AUTH_SECRET", "GOOGLE_CLIENT_ID", "GOOGLE_CLIENT_SECRET"]
 
 [env.production.vars]
 APP_ORIGIN = "http://localhost:8787"
