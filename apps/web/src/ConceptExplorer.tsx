@@ -121,7 +121,7 @@ export function ConceptExplorer({
           >
             {concepts.map((concept) => (
               <li key={concept.id} className="concept-card">
-                <label>
+                <label className="concept-toggle">
                   <input
                     type="checkbox"
                     checked={concept.selected}
@@ -130,7 +130,7 @@ export function ConceptExplorer({
                         selected: event.target.checked,
                       })
                     }
-                  />{" "}
+                  />
                   Include {concept.label}
                 </label>
                 <form
