@@ -1,4 +1,7 @@
-import type { ActivityPackProvider } from "../../../packages/adapters/fake-activity-packs";
+import {
+  activityPackProviderMetadata,
+  type ActivityPackProvider,
+} from "../../../packages/adapters/fake-activity-packs";
 import {
   type CanonicalActivityPack,
   validateActivityPack,
@@ -67,7 +70,8 @@ export async function generateActivityPack(
       409,
       "Select at least two source-backed concepts before preparing activities.",
     );
-  await reservePackRequest(env, userId, spaceId, requestId, context);
+  const metadata = activityPackProviderMetadata(provider);
+  await reservePackRequest(env, userId, spaceId, requestId, context, metadata);
   try {
     await reserveAiCall(env, userId, requestId, "packs", "pack", clock);
     const providerPack = validateActivityPack(
@@ -113,8 +117,17 @@ export async function generateActivityPack(
         ),
       ),
       env.DB.prepare(
-        `UPDATE activity_pack_requests SET state='ready',error=NULL WHERE user_id=? AND space_id=? AND request_id=? AND ${gate}`,
-      ).bind(userId, spaceId, requestId, ...scope),
+        `UPDATE activity_pack_requests SET state='ready',error=NULL,provider=?,model=?,prompt_version=?,output_schema_version=? WHERE user_id=? AND space_id=? AND request_id=? AND ${gate}`,
+      ).bind(
+        metadata.provider,
+        metadata.model,
+        metadata.promptVersion,
+        metadata.schemaVersion,
+        userId,
+        spaceId,
+        requestId,
+        ...scope,
+      ),
     ]);
     const saved = await loadLearnerPack(env, userId, spaceId);
     if (

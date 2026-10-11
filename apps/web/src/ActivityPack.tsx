@@ -180,11 +180,14 @@ export function ActivityPack({
       <ConceptProgress spaceId={spaceId} revision={progressRevision} />
       <h3 id="activity-heading">Practice activities</h3>
       <p className="notice">
-        Development preview: these prompts and tutor responses come from
-        deterministic fake providers and have not been reviewed for teaching
-        quality. Multiple choice is checked deterministically; free-text
-        feedback uses a bounded source-grounded rubric and does not affect
-        review progress.
+        {pack?.provider === "workers_ai"
+          ? "Workers AI prepared this saved pack through AI Gateway from the selected source excerpts. "
+          : pack?.provider === "fake"
+            ? "A deterministic development provider prepared this saved pack. "
+            : "Preparing a pack sends the selected source excerpts to the configured AI provider. "}
+        Prompts have not been reviewed for teaching quality. Multiple choice is
+        checked deterministically; free-text tutor feedback currently uses a
+        deterministic development provider and does not affect review progress.
       </p>
       <button
         type="button"

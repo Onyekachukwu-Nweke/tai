@@ -5,6 +5,7 @@ import {
   type ActivityContext,
 } from "../../../packages/contracts/activity-packs";
 import type { Env } from "./env";
+import type { ActivityPackProviderMetadata } from "../../../packages/adapters/fake-activity-packs";
 
 export type PackRequestRow = {
   request_id: string;
@@ -13,6 +14,10 @@ export type PackRequestRow = {
   selection_key: string;
   state: "pending" | "ready" | "failed";
   error: string | null;
+  provider: "fake" | "workers_ai";
+  model: string | null;
+  prompt_version: string;
+  output_schema_version: 1;
 };
 export async function loadActivityContext(
   env: Env,
@@ -70,7 +75,7 @@ export async function packRequestState(
   spaceId: string,
 ) {
   return env.DB.prepare(
-    "SELECT request_id,document_id,concept_request_id,selection_key,state,error FROM activity_pack_requests WHERE user_id=? AND space_id=?",
+    "SELECT request_id,document_id,concept_request_id,selection_key,state,error,provider,model,prompt_version,output_schema_version FROM activity_pack_requests WHERE user_id=? AND space_id=?",
   )
     .bind(userId, spaceId)
     .first<PackRequestRow>();
@@ -81,9 +86,10 @@ export async function reservePackRequest(
   spaceId: string,
   requestId: string,
   context: ActivityContext,
+  metadata: ActivityPackProviderMetadata,
 ) {
   await env.DB.prepare(
-    "INSERT INTO activity_pack_requests(user_id,space_id,request_id,document_id,concept_request_id,selection_key,state,error) VALUES(?,?,?,?,?,?,'pending',NULL) ON CONFLICT(user_id,space_id) DO UPDATE SET request_id=excluded.request_id,document_id=excluded.document_id,concept_request_id=excluded.concept_request_id,selection_key=excluded.selection_key,state='pending',error=NULL",
+    "INSERT INTO activity_pack_requests(user_id,space_id,request_id,document_id,concept_request_id,selection_key,state,error,provider,model,prompt_version,output_schema_version) VALUES(?,?,?,?,?,?,'pending',NULL,?,?,?,?) ON CONFLICT(user_id,space_id) DO UPDATE SET request_id=excluded.request_id,document_id=excluded.document_id,concept_request_id=excluded.concept_request_id,selection_key=excluded.selection_key,state='pending',error=NULL",
   )
     .bind(
       userId,
@@ -92,6 +98,10 @@ export async function reservePackRequest(
       context.materialId,
       context.conceptRequestId,
       selectionKey(context),
+      metadata.provider,
+      metadata.model,
+      metadata.promptVersion,
+      metadata.schemaVersion,
     )
     .run();
 }
@@ -136,7 +146,7 @@ export async function loadLearnerPack(
     status: request.state,
     requestId: request.request_id,
     packId: row?.id ?? null,
-    provider: "fake",
+    provider: request.provider,
     error: request.error,
     questions: pack ? toLearnerActivityPack(pack) : [],
   });

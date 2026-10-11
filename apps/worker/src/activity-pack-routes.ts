@@ -11,9 +11,10 @@ import {
 import { activeSpace } from "./material-store";
 import { aiCallErrorResponse } from "./ai-quota-http";
 import type { Clock } from "../../../packages/domain/concept-progress";
+import { activityPackProviderForEnv } from "./activity-pack-provider";
 
 export function activityPackRoutes(
-  provider: ActivityPackProvider,
+  provider: ActivityPackProvider | undefined,
   clock: Clock,
 ) {
   const routes = new Hono<{ Bindings: Env; Variables: Variables }>();
@@ -59,7 +60,7 @@ export function activityPackRoutes(
     return c.json(
       await generateActivityPack(
         c.env,
-        provider,
+        provider ?? activityPackProviderForEnv(c.env),
         c.get("user").id,
         c.req.param("id"),
         parsed.data.requestId,

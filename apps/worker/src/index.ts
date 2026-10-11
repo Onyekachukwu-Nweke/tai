@@ -3,10 +3,7 @@ import { authConfigured, createAuth } from "./auth";
 import type { Env, Variables } from "./env";
 import type { ConceptProvider } from "../../../packages/adapters/fake-concepts";
 import { createStudySpaces } from "./study-spaces";
-import {
-  FakeActivityPackProvider,
-  type ActivityPackProvider,
-} from "../../../packages/adapters/fake-activity-packs";
+import type { ActivityPackProvider } from "../../../packages/adapters/fake-activity-packs";
 import {
   systemClock,
   type Clock,
@@ -35,7 +32,7 @@ import {
 
 export function createApp(
   provider?: ConceptProvider,
-  activityProvider: ActivityPackProvider = new FakeActivityPackProvider(),
+  activityProvider?: ActivityPackProvider,
   clock: Clock = systemClock,
   tutorProvider: ActivityTutorProvider = new FakeActivityTutorProvider(),
   rubricProvider: ActivityRubricProvider = new FakeActivityRubricProvider(),
