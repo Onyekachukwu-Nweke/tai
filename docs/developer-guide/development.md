@@ -1,6 +1,6 @@
 # Development
 
-Build tai against [PRD v0.2](../../PRD_v2.md), including its confirmed hackathon decisions. The repository contains a working local application; the [roadmap](../roadmap/README.md) defines a TypeScript app on Cloudflare: one Worker (web app + API), required Google sign-in, D1 database, R2 files, and AI Gateway in front of Workers AI and Bedrock. Exact versions, provider/model access, and deployment feasibility must pass M0; see [local setup](setup.md) for executable commands and verification limits.
+Build tai against [PRD v0.2](../../PRD_v2.md), including its confirmed hackathon decisions. The repository contains a working local application; the [roadmap](../roadmap/README.md) defines a TypeScript app on Cloudflare: one Worker (web app + API), required Google sign-in, D1 database, R2 files, and AI Gateway in front of Workers AI. Exact versions, model access, and deployment feasibility must pass M0; see [local setup](setup.md) for executable commands and verification limits.
 
 ## Product boundaries
 
@@ -26,7 +26,7 @@ Delete a study space and its dependent D1/R2 data server-side; cancel its in-fli
 
 Use a fixed teaching pipeline: read source-grounded material → write an answer → grade → offer targeted follow-up. P0 activities include scenario and calculation questions alongside recall and explanation. Render mathematical notation with KaTeX using safe settings; never execute generated expressions with raw `eval`. Grade numeric answers deterministically against reviewed answer keys with explicit tolerance and unit rules. Use rubric-based model feedback for working steps, preserving an uncertain result when evidence or the key is ambiguous.
 
-Select models through a quality-first comparison of Workers AI and Bedrock candidates via AI Gateway on the same two source documents with the same tasks and scoring rubric. Inspect grounding, teaching quality, scenario/calculation correctness, and grading uncertainty before comparing latency and cost. Record actual model access and results; do not claim unsupported capabilities or select a model on size alone.
+Select models through a quality-first comparison of Workers AI candidates via AI Gateway on the same two source documents with the same tasks and scoring rubric. Inspect grounding, teaching quality, scenario/calculation correctness, and grading uncertainty before comparing latency and cost. Record actual model access and results; do not claim unsupported capabilities or select a model on size alone.
 
 All human- and AI-written code files must fit the [350-line rule](code-hygiene.md#file-size-and-responsibility).
 

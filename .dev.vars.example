@@ -13,3 +13,8 @@ AI_DAILY_PACK_LIMIT=20
 AI_DAILY_GRADING_LIMIT=30
 AI_DAILY_SUPPORT_LIMIT=40
 AI_DAILY_PRACTICAL_LIMIT=10
+# Local development and automated tests stay deterministic by default.
+AI_PROVIDER=fake
+# Required when AI_PROVIDER=workers_ai. The AI binding supplies credentials.
+AI_GATEWAY_ID=tai
+WORKERS_AI_MODEL=@cf/meta/llama-3.3-70b-instruct-fp8-fast

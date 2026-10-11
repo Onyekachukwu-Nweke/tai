@@ -1,10 +1,7 @@
 import { Hono } from "hono";
 import { authConfigured, createAuth } from "./auth";
 import type { Env, Variables } from "./env";
-import {
-  FakeConceptProvider,
-  type ConceptProvider,
-} from "../../../packages/adapters/fake-concepts";
+import type { ConceptProvider } from "../../../packages/adapters/fake-concepts";
 import { createStudySpaces } from "./study-spaces";
 import {
   FakeActivityPackProvider,
@@ -37,7 +34,7 @@ import {
 } from "../../../packages/adapters/fake-practical-tasks";
 
 export function createApp(
-  provider: ConceptProvider = new FakeConceptProvider(),
+  provider?: ConceptProvider,
   activityProvider: ActivityPackProvider = new FakeActivityPackProvider(),
   clock: Clock = systemClock,
   tutorProvider: ActivityTutorProvider = new FakeActivityTutorProvider(),

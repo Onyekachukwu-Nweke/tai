@@ -89,7 +89,7 @@ No roadmap milestone has completed its full exit gate. The main gaps are ordered
 ### 1. Finish M0 provider and deployment readiness
 
 - Inspect Cloudflare account/plan, Workers AI access, AI Gateway, remote D1/R2, logging configuration, and spending controls.
-- Decide whether AWS Bedrock remains in scope after checking credit and model access.
+- Use Workers AI only for the hackathon; Bedrock and other providers are out of scope.
 - Implement the real provider adapter behind AI Gateway and keep credentials server-side.
 - Run bounded synthetic live calls, compare a smaller and stronger available model, and record model IDs, prompt/rule versions, schema compliance, latency, and cost.
 - Verify Google OAuth end to end with the deployed callback URI.

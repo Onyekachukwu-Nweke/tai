@@ -4,6 +4,7 @@ import {
   type SourceContext,
 } from "../../../packages/contracts/concepts";
 import type { Env } from "./env";
+import type { ConceptProviderMetadata } from "../../../packages/adapters/fake-concepts";
 
 type RequestRow = {
   request_id: string;
@@ -11,6 +12,10 @@ type RequestRow = {
   location: number;
   state: "pending" | "ready" | "failed";
   error: string | null;
+  provider: "fake" | "workers_ai";
+  model: string | null;
+  prompt_version: string;
+  output_schema_version: 1;
 };
 export async function loadConcepts(
   env: Env,
@@ -18,7 +23,7 @@ export async function loadConcepts(
   spaceId: string,
 ): Promise<ConceptCollection> {
   const request = await env.DB.prepare(
-    "SELECT request_id,document_id,location,state,error FROM concept_requests WHERE user_id=? AND space_id=?",
+    "SELECT request_id,document_id,location,state,error,provider,model,prompt_version,output_schema_version FROM concept_requests WHERE user_id=? AND space_id=?",
   )
     .bind(userId, spaceId)
     .first<RequestRow>();
@@ -83,7 +88,7 @@ export async function loadConcepts(
     })),
     relations: relationRows.results,
     error: request.error,
-    provider: "fake",
+    provider: request.provider,
   });
 }
 
@@ -129,7 +134,7 @@ export async function requestState(
   spaceId: string,
 ): Promise<RequestRow | null> {
   return env.DB.prepare(
-    "SELECT request_id,document_id,location,state,error FROM concept_requests WHERE user_id=? AND space_id=?",
+    "SELECT request_id,document_id,location,state,error,provider,model,prompt_version,output_schema_version FROM concept_requests WHERE user_id=? AND space_id=?",
   )
     .bind(userId, spaceId)
     .first<RequestRow>();
@@ -141,11 +146,22 @@ export async function reserveRequest(
   spaceId: string,
   requestId: string,
   context: SourceContext,
+  metadata: ConceptProviderMetadata,
 ): Promise<void> {
   await env.DB.prepare(
-    "INSERT INTO concept_requests(user_id,space_id,request_id,document_id,location,state,error) VALUES(?,?,?,?,?,'pending',NULL) ON CONFLICT(user_id,space_id) DO UPDATE SET request_id=excluded.request_id,document_id=excluded.document_id,location=excluded.location,state='pending',error=NULL",
+    "INSERT INTO concept_requests(user_id,space_id,request_id,document_id,location,state,error,provider,model,prompt_version,output_schema_version) VALUES(?,?,?,?,?,'pending',NULL,?,?,?,?) ON CONFLICT(user_id,space_id) DO UPDATE SET request_id=excluded.request_id,document_id=excluded.document_id,location=excluded.location,state='pending',error=NULL",
   )
-    .bind(userId, spaceId, requestId, context.materialId, context.location)
+    .bind(
+      userId,
+      spaceId,
+      requestId,
+      context.materialId,
+      context.location,
+      metadata.provider,
+      metadata.model,
+      metadata.promptVersion,
+      metadata.schemaVersion,
+    )
     .run();
 }
 

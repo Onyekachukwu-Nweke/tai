@@ -6,7 +6,7 @@ TAI (`tai`) is a self-directed learning companion. Learners bring their own cour
 
 Use **TAI** as the product name and **tai** for code identifiers where appropriate. [PRD v0.2](PRD_v2.md) is the current product specification; [PRD v0.1](PRD.md) is historical context. Follow v0.2 where the versions differ.
 
-The hackathon scope supports text-based PDF and TXT uploads, one material per study space, and English only. Prioritize the P0 learner journey and implementation milestones in the PRD. TAI runs on Cloudflare: one Worker (web app + API), required Google sign-in, D1 as the single learner database, R2 for original files, and AI Gateway in front of Workers AI and Bedrock. Full offline mode is deferred to P1. Exact tooling and hosting choices must pass the roadmap readiness checks. Do not assume tooling or infrastructure exists.
+The hackathon scope supports text-based PDF and TXT uploads, one material per study space, and English only. Prioritize the P0 learner journey and implementation milestones in the PRD. TAI runs on Cloudflare: one Worker (web app + API), required Google sign-in, D1 as the single learner database, R2 for original files, and AI Gateway in front of Workers AI. Bedrock and other model providers are outside the hackathon scope. Full offline mode is deferred to P1. Exact tooling and hosting choices must pass the roadmap readiness checks. Do not assume tooling or infrastructure exists.
 
 ## Working rules
 

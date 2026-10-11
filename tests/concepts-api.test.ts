@@ -99,16 +99,42 @@ describe("source-backed concept organization", () => {
       provider,
       `/${spaceId}/concepts`,
       cookie,
+      {},
+      { ...env, AI_PROVIDER: "workers_ai" },
     );
+    const reloadedCollection = conceptCollectionSchema.parse(
+      await reloaded.json(),
+    );
+    expect(reloadedCollection).toMatchObject({
+      provider: "fake",
+      concepts: [
+        {
+          id: result.concepts[0].id,
+          label: "Photosynthesis",
+          selected: false,
+        },
+      ],
+    });
     expect(
-      conceptCollectionSchema.parse(await reloaded.json()).concepts[0],
-    ).toMatchObject({
-      id: result.concepts[0].id,
-      label: "Photosynthesis",
-      selected: false,
+      await env.DB.prepare(
+        "SELECT provider,model,prompt_version,output_schema_version FROM concept_requests WHERE user_id=? AND space_id=?",
+      )
+        .bind("alice", spaceId)
+        .first(),
+    ).toEqual({
+      provider: "fake",
+      model: null,
+      prompt_version: "injected-fake-v1",
+      output_schema_version: 1,
     });
     const failedRegeneration = await conceptCall(
       {
+        metadata: {
+          provider: "workers_ai",
+          model: "@cf/example/new-model",
+          promptVersion: "concept-organization-v2",
+          schemaVersion: 1,
+        },
         generate: async () => {
           throw new Error("provider unavailable");
         },
@@ -132,6 +158,7 @@ describe("source-backed concept organization", () => {
     );
     expect(retained).toMatchObject({
       status: "failed",
+      provider: "fake",
       concepts: [
         { id: result.concepts[0].id, label: "Photosynthesis", selected: false },
       ],

@@ -37,7 +37,7 @@ Check stable IDs, persisted schema versions, activity invalidation after source 
 
 Keep packs self-contained with 3–5 questions, answers or rubrics, explanations, and source excerpts. Stream complete validated items only, grade MCQs locally, and bound prefetch to one next pack while the learner studies.
 
-Compare Workers AI and Bedrock candidates through AI Gateway on the same two source documents and tasks. Review measured teaching quality, grounding, calculation correctness, latency, and cost; model capabilities and access must be verified rather than assumed.
+Compare Workers AI candidates through AI Gateway on the same two source documents and tasks. Review measured teaching quality, grounding, calculation correctness, latency, and cost; model capabilities and access must be verified rather than assumed.
 
 ## Verification and usability
 

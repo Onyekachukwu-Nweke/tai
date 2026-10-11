@@ -27,7 +27,7 @@ import type { PracticalTaskProvider } from "../../../packages/adapters/fake-prac
 import { practicalTaskRoutes } from "./practical-task-routes";
 
 export function createStudySpaces(
-  provider: ConceptProvider,
+  provider: ConceptProvider | undefined,
   activityProvider: ActivityPackProvider,
   clock: Clock,
   tutorProvider: ActivityTutorProvider,

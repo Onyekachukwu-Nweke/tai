@@ -10,8 +10,8 @@
 | Auth | Required Google sign-in via Better Auth on D1 | Workers-compatible, data stays in our D1. Confirm in M0; a hosted provider (e.g. Clerk) is the fallback if integration stalls |
 | Database | Cloudflare D1 (SQLite) | Native binding, no connection management, free tier fits the hackathon. Neon Postgres via Hyperdrive is the fallback if Postgres features are required. Do not run two databases |
 | File storage | Cloudflare R2, private bucket | Original PDF/TXT files under owner-scoped keys, served only through the Worker |
-| AI routing | Cloudflare AI Gateway | Per-route rate limits, fallback between providers, usage metrics; configure it not to store prompt/response bodies |
-| AI models | Workers AI and Amazon Bedrock behind one adapter | Choose per task by measured quality; see [AI provider and budget](ai-provider-and-budget.md) |
+| AI routing | Cloudflare AI Gateway | Rate limits and usage metrics; configure it not to store prompt/response bodies |
+| AI models | Workers AI behind a replaceable adapter | Compare suitable models per task by measured quality; see [AI provider and budget](ai-provider-and-budget.md) |
 | Validation | Zod at browser/API/provider boundaries | Shape plus application invariants; provider JSON syntax is insufficient |
 | Extraction | PDF.js (`pdfjs-dist`) in the browser; explicit TXT decoding | Avoids Worker CPU limits; learner sees extraction problems before upload. No OCR |
 | Math rendering | KaTeX with `trust: false`, bounded expression size, MathML output | Readable equations without executing content; raw-text fallback on failure |
@@ -29,7 +29,7 @@ apps/web/                  React UI, PDF.js extraction, rendering
 apps/worker/               Hono API, auth, ownership checks, AI task handlers
 packages/domain/           Grading, numeric checks, evidence, sessions, review rules
 packages/contracts/        Versioned API, pack and provider schemas
-packages/adapters/         Workers AI, Bedrock, D1, R2 and fake implementations
+packages/adapters/         Workers AI and fake model implementations
 packages/content/          Prompt versions and checked resource catalog
 migrations/                D1 SQL migrations
 tests/                     Cross-boundary fixtures and end-to-end checks

@@ -23,14 +23,14 @@ This revision records the agreed Cloudflare architecture (required sign-in, D1, 
 | Pack size and latency | 3–5 questions; only complete validated items are streamed; at most one next-pack request and one unused prefetched pack |
 | Difficult extraction/languages | Limit generation to readable supported English sections; show lost equation/table/diagram or language limitations and invite another supported source |
 | Calculation grading | Final number checked locally against a reviewed key with configured absolute/relative tolerance and allow-listed units; model grades working separately; a correct number with flawed working does not advance reasoning progress |
-| Model selection | Quality-first comparison of Workers AI and Bedrock candidates through AI Gateway on the same fixtures; per-task routing allowed when measured |
+| Model selection | Quality-first comparison of Workers AI candidates through AI Gateway on the same fixtures; per-task routing allowed when measured |
 | Resource coverage | Small checked catalog with real URLs and honest no-match for uncovered concepts; no fixed subject curriculum |
 
 ## Risk register
 
 | Risk | Owning stage/role | Mitigation and verification |
 | --- | --- | --- |
-| Provider access or credit unavailable | M0 principal engineer/account owner | Two providers behind one adapter; verify Workers AI model access and any AWS credit coverage; fake adapter keeps work moving; no claimed live demo without provider access |
+| Provider access or credit unavailable | M0 principal engineer/account owner | Verify Workers AI model access and budget; fake adapter keeps tests moving; no claimed live demo without provider access |
 | Model unavailable/poor quality | M0/M2 principal engineer and tester | Compare a smaller and a stronger accessible candidate on the same quantitative and scenario fixtures; pin the winning identifier per task; show insufficient evidence rather than invented answers |
 | Wrong calculation keys or garbled notation | M2 tester | Independently check demo keys; numeric checks use reviewed keys only; generate calculations only from readable/corrected notation; flag uncertainty instead of guessing |
 | Costs exceed expectation | M0/M2 coder and coordinator | Bounded input/output, concurrency and retries, platform request limits, operator disable switch, billing alerts and measured cost per pack |
@@ -48,7 +48,7 @@ This revision records the agreed Cloudflare architecture (required sign-in, D1, 
 ## Open readiness items
 
 - Cloudflare plan, Workers AI model access and AI Gateway setup: **not inspected**.
-- AWS credit balance, exclusions and Bedrock Claude access (only if Bedrock is pursued): **not inspected**.
+- Bedrock and other model providers: **outside the hackathon scope by owner decision on 11 October 2026**.
 - Actual model quality, latency and cost per pack: **not tested**.
 - Hackathon deadline and available team capacity: **not supplied**; do not invent calendar commitments.
 - Package versions, auth library integration, browser PDF extraction on a low-end device, and streaming through AI Gateway: **M0 validation pending**.

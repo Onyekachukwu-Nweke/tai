@@ -22,6 +22,7 @@ AI_DAILY_PACK_LIMIT = "20"
 AI_DAILY_GRADING_LIMIT = "30"
 AI_DAILY_SUPPORT_LIMIT = "40"
 AI_DAILY_PRACTICAL_LIMIT = "10"
+AI_PROVIDER = "fake"
 
 [[d1_databases]]
 binding = "DB"
@@ -31,5 +32,35 @@ database_id = "00000000-0000-0000-0000-000000000000"
 migrations_dir = "migrations"
 
 [[r2_buckets]]
+binding = "ORIGINALS"
+bucket_name = "tai-originals"
+
+[env.production]
+name = "tai"
+
+[env.production.ai]
+binding = "AI"
+
+[env.production.vars]
+APP_ORIGIN = "http://localhost:8787"
+RETURN_GAP_DAYS = "3"
+AI_CALLS_ENABLED = "true"
+AI_DAILY_TOTAL_LIMIT = "100"
+AI_DAILY_CONCEPT_LIMIT = "10"
+AI_DAILY_PACK_LIMIT = "20"
+AI_DAILY_GRADING_LIMIT = "30"
+AI_DAILY_SUPPORT_LIMIT = "40"
+AI_DAILY_PRACTICAL_LIMIT = "10"
+AI_PROVIDER = "workers_ai"
+AI_GATEWAY_ID = "tai"
+WORKERS_AI_MODEL = "@cf/meta/llama-3.3-70b-instruct-fp8-fast"
+
+[[env.production.d1_databases]]
+binding = "DB"
+database_name = "tai"
+database_id = "00000000-0000-0000-0000-000000000000"
+migrations_dir = "migrations"
+
+[[env.production.r2_buckets]]
 binding = "ORIGINALS"
 bucket_name = "tai-originals"

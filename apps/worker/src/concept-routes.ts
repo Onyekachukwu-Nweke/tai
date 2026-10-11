@@ -11,8 +11,12 @@ import { ConceptFailure, generateConcepts } from "./concept-service";
 import { activeSpace } from "./material-store";
 import { aiCallErrorResponse } from "./ai-quota-http";
 import type { Clock } from "../../../packages/domain/concept-progress";
+import { conceptProviderForEnv } from "./concept-provider";
 
-export function conceptRoutes(provider: ConceptProvider, clock: Clock) {
+export function conceptRoutes(
+  provider: ConceptProvider | undefined,
+  clock: Clock,
+) {
   const routes = new Hono<{ Bindings: Env; Variables: Variables }>();
   routes.use(
     "/:id/concepts/*",
@@ -58,7 +62,7 @@ export function conceptRoutes(provider: ConceptProvider, clock: Clock) {
     return c.json(
       await generateConcepts(
         c.env,
-        provider,
+        provider ?? conceptProviderForEnv(c.env),
         c.get("user").id,
         c.req.param("id"),
         requestId,

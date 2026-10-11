@@ -13,6 +13,10 @@ export interface Env {
   AI_DAILY_GRADING_LIMIT?: string;
   AI_DAILY_SUPPORT_LIMIT?: string;
   AI_DAILY_PRACTICAL_LIMIT?: string;
+  AI_PROVIDER?: string;
+  AI_GATEWAY_ID?: string;
+  WORKERS_AI_MODEL?: string;
+  AI?: Ai;
 }
 
 export interface Variables {

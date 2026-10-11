@@ -2,7 +2,7 @@
 
 **Planning baseline:** 5 October 2026 · **Specification:** [PRD v0.2](../../PRD_v2.md) · **Implementation status:** M0 foundation in progress.
 
-TAI runs on Cloudflare: one Worker (web app + API), required Google sign-in, D1 as the single database, R2 for original files, and AI Gateway in front of Workers AI and Bedrock. Full offline mode is deferred to P1.
+TAI runs on Cloudflare: one Worker (web app + API), required Google sign-in, D1 as the single database, R2 for original files, and AI Gateway in front of Workers AI. Bedrock and other model providers are outside the hackathon scope. Full offline mode is deferred to P1.
 
 This roadmap translates the complete PRD into an architecture, proposed technology baseline, ordered delivery stages, and acceptance gates. Committing it records the plan; it does not establish deployed infrastructure, available credit, or passing application tests.
 
@@ -10,14 +10,14 @@ This roadmap translates the complete PRD into an architecture, proposed technolo
 
 1. [Architecture](architecture.md): system boundaries, sign-in and ownership, D1/R2 storage, teaching pipeline, and failure handling.
 2. [Technology decisions](technology-decisions.md): recommended stack, alternatives, and decisions to validate.
-3. [AI provider and budget](ai-provider-and-budget.md): Workers AI vs Bedrock, model evaluation, quotas and spending controls.
+3. [AI provider and budget](ai-provider-and-budget.md): Workers AI model evaluation, quotas and spending controls.
    Local quota behavior is recorded in [per-user AI quota evidence](ai-quota-evidence.md).
 4. [Delivery plan](delivery-plan.md): milestones, dependencies, work packages, and exit criteria.
 5. [Acceptance matrix](acceptance-matrix.md): PRD coverage and required evidence.
 6. [Risks and decisions](risks-and-decisions.md): explicit product-rule interpretations and unresolved readiness checks.
 7. [Development handover](development-handover.md): current revision, implemented scope, open gates, and the recommended resume sequence.
 
-Current local implementation and checks: [M0 foundation evidence](m0-foundation-evidence.md), [browser extraction evidence](m0-extraction-evidence.md), [material persistence evidence](m1-material-persistence-evidence.md), [M2.1 concept evidence](m2-concept-organization-evidence.md), [M2.2 activity-pack evidence](m2-activity-pack-evidence.md), [M2 tutor evidence](m2-activity-tutor-evidence.md), [M2 rubric-grading evidence](m2-rubric-grading-evidence.md), [M2 scenario evidence](m2-scenario-activity-evidence.md), [M2 calculation evidence](m2-calculation-evidence.md), [M2 targeted follow-up evidence](m2-targeted-followup-evidence.md), [M3 concept-progress evidence](m3-concept-progress-evidence.md), [M3.1 study-session evidence](m3-study-session-evidence.md), [M3.4 recovery-session evidence](m3-recovery-session-evidence.md), [M4.1 practical-task evidence](m4-practical-task-evidence.md), and [M4.3 account-deletion evidence](m4-account-deletion-evidence.md).
+Current local implementation and checks: [M0 foundation evidence](m0-foundation-evidence.md), [Workers AI provider evidence](m0-workers-ai-evidence.md), [browser extraction evidence](m0-extraction-evidence.md), [material persistence evidence](m1-material-persistence-evidence.md), [M2.1 concept evidence](m2-concept-organization-evidence.md), [M2.2 activity-pack evidence](m2-activity-pack-evidence.md), [M2 tutor evidence](m2-activity-tutor-evidence.md), [M2 rubric-grading evidence](m2-rubric-grading-evidence.md), [M2 scenario evidence](m2-scenario-activity-evidence.md), [M2 calculation evidence](m2-calculation-evidence.md), [M2 targeted follow-up evidence](m2-targeted-followup-evidence.md), [M3 concept-progress evidence](m3-concept-progress-evidence.md), [M3.1 study-session evidence](m3-study-session-evidence.md), [M3.4 recovery-session evidence](m3-recovery-session-evidence.md), [M4.1 practical-task evidence](m4-practical-task-evidence.md), and [M4.3 account-deletion evidence](m4-account-deletion-evidence.md).
 
 ## Delivery sequence
 
@@ -42,7 +42,7 @@ Create a focused branch and pull request for each coherent work package. Include
 
 ## First implementation task
 
-Start M0 with a thin Worker + React skeleton, Google sign-in, one application table in D1 (plus auth tables), versioned contracts, fake AI adapter and automated checks. In parallel, the account owner sets up Cloudflare (Workers AI, AI Gateway) and, if pursued, AWS Bedrock access and a spending ceiling. Development proceeds with fake responses until a provider is ready; a live AI demo cannot be marked ready until the [AI provider gate](ai-provider-and-budget.md) passes.
+Start M0 with a thin Worker + React skeleton, Google sign-in, one application table in D1 (plus auth tables), versioned contracts, fake AI adapter and automated checks. In parallel, the account owner sets up Workers AI, AI Gateway with body logging disabled, and a spending ceiling. Development proceeds with fake responses until the provider is ready; a live AI demo cannot be marked ready until the [AI provider gate](ai-provider-and-budget.md) passes.
 
 ## Connectivity story for the demo
 

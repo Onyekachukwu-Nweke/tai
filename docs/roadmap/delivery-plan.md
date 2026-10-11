@@ -7,7 +7,7 @@ M0 is **in progress**, with the local authenticated study-space foundation and b
 **Dependencies:** none. **Primary owner:** principal engineer; coder scaffolds after the brief.
 
 - M0.1: Pin compatible runtime/dependencies; create web app, Worker API and domain skeleton with Wrangler, D1 migrations, fake provider, shared schemas, formatter/linter/type checks and 350-line check. Document real setup commands. Aim for a running vertical slice early: sign in → import text → concepts → one question → answer → saved in D1.
-- M0.2: Set up Google sign-in (Better Auth on D1), AI Gateway, and Workers AI and Bedrock access; resolve account/credit/model questions using the [AI provider gate](ai-provider-and-budget.md). Run a bounded synthetic invocation only during authorized implementation, not as part of this planning commit.
+- M0.2: Set up Google sign-in (Better Auth on D1), AI Gateway with body logging disabled, and Workers AI access; resolve account, budget, and model questions using the [AI provider gate](ai-provider-and-budget.md). Run bounded synthetic invocations only during authorized live evaluation, never in CI.
 - M0.3: Spike in-browser PDF.js extraction and page references on small representative files, including a 50-page PDF on a low-end Android device and a math-heavy page. Verify streaming from a model through AI Gateway and the Worker to the browser.
 - M0.4: Define the D1 schema and migrations, R2 key layout, AI task-kind request/response schemas (concepts, pack, grade, followup, hint, explain_again, practical_task), pack JSON, numeric key/tolerance/unit format, evidence outcomes and per-user AI quotas.
 
