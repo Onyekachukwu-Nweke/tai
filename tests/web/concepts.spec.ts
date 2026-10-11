@@ -183,3 +183,36 @@ test("a PDF citation explicitly opens the matching rendered page", async ({
   });
   await expect(page.locator("mark")).toHaveText(excerpt);
 });
+
+test("keeps each concept selection control aligned at desktop and mobile widths", async ({
+  page,
+}) => {
+  await page.route(`**/api/study-spaces/${spaceId}/concepts`, (route) =>
+    route.fulfill({ json: ready }),
+  );
+  await open(page);
+  const control = page.getByLabel("Include Photosynthesis");
+  const label = control.locator("..");
+
+  for (const viewport of [
+    { width: 1000, height: 800 },
+    { width: 360, height: 740 },
+  ]) {
+    await page.setViewportSize(viewport);
+    await expect(control).toBeVisible();
+    const controlBox = await control.boundingBox();
+    const labelBox = await label.boundingBox();
+    expect(controlBox).not.toBeNull();
+    expect(labelBox).not.toBeNull();
+    expect(controlBox!.width).toBeLessThanOrEqual(24);
+    expect(controlBox!.height).toBeLessThanOrEqual(24);
+    expect(
+      Math.abs(
+        controlBox!.y +
+          controlBox!.height / 2 -
+          (labelBox!.y + labelBox!.height / 2),
+      ),
+    ).toBeLessThanOrEqual(2);
+    expect(labelBox!.x + labelBox!.width).toBeLessThanOrEqual(viewport.width);
+  }
+});

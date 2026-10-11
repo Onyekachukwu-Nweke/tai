@@ -131,6 +131,15 @@ input {
   border-radius: 7px;
   font: inherit;
 }
+input[type="checkbox"],
+input[type="radio"] {
+  width: 1.25rem;
+  min-width: 1.25rem;
+  height: 1.25rem;
+  min-height: 1.25rem;
+  padding: 0;
+  accent-color: #175b4a;
+}
 .card select {
   width: 100%;
   min-height: 44px;
@@ -253,6 +262,13 @@ footer {
   border: 1px solid #d7dfd5;
   border-radius: 8px;
   padding: 16px;
+}
+.concept-toggle {
+  display: flex;
+  width: fit-content;
+  min-height: 44px;
+  align-items: center;
+  gap: 8px;
 }
 .activity-pack {
   margin-top: 24px;
