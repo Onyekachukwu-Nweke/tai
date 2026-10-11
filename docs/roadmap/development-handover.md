@@ -1,18 +1,16 @@
 # Development handover
 
-**Prepared:** 10 October 2026  
-**Specification:** [PRD v0.2](../../PRD_v2.md)  
-**Repository state:** PR #20 is open from `feat/account-data-deletion` into `main`  
-**Feature revision:** `77a70b9` (`feat(account): add safe data deletion`)  
-**Merged baseline:** `795dff7` (PR #19, per-user AI request quotas)
+**Prepared:** 11 October 2026
+**Specification:** [PRD v0.2](../../PRD_v2.md)
+**Repository state:** reviewed M4.1 practical tasks are ready for a pull request on `feat/practical-tasks`
+**Feature revision:** pending practical-task commit
+**Merged baseline:** `5f82949` (PR #20, safe account and data deletion)
 
 ## Resume here
 
-1. Review and merge PR #20: `https://github.com/Onyekachukwu-Nweke/tai/pull/20`.
-2. After merge, run `git checkout main && git pull --ff-only origin main`.
-3. Apply local D1 migrations through `0016` with `npm run db:migrate`.
-4. Re-run `npm run check` with Node 22 before starting another branch.
-5. Use the principal engineer and coder for the next implementation slice. Use the reviewer and tester for the final pass of that milestone slice, following [agent workflow](../developer-guide/agent-workflow.md).
+1. Review and merge the practical-task pull request after it is opened from `feat/practical-tasks`.
+2. Apply local D1 migrations through `0017` with `npm run db:migrate`.
+3. After M4.1 merges, use a new branch for M4.2's small reviewed resource catalog.
 
 Do not commit `.env` or populated `.dev.vars`. Do not add guest mode, a second database, a queue, autonomous agent behavior, or P1 offline features.
 
@@ -27,9 +25,9 @@ The implementation uses deterministic fake AI providers. It does not yet establi
 - Google-only sign-in through Better Auth; server-resolved ownership for every study-space operation.
 - PDF and TXT validation/extraction in the browser, private original storage in R2, stable source chunks in D1, and explicit source viewing.
 - Tombstone-first study-space deletion with late-write rejection and explicit retry.
-- Versioned D1 migrations through `0016_account_deletion_fence.sql`.
+- Versioned D1 migrations through merged `0016_account_deletion_fence.sql`; M4.1 adds pending `0017_practical_tasks.sql`.
 - Per-user daily AI request-credit quotas with total/category limits, kill switch, UTC reset metadata, replay protection, and structured learner messages.
-- Account deletion in PR #20: durable user fence, atomic mutation denial, owner-scoped R2 cleanup, D1/auth cascade, confirmation UI, processing disclosure, and user-scoped browser-draft cleanup.
+- Account deletion: durable user fence, atomic mutation denial, owner-scoped R2 cleanup, D1/auth cascade, confirmation UI, processing disclosure, and user-scoped browser-draft cleanup.
 
 ### Implemented learning loop
 
@@ -46,7 +44,27 @@ The implementation uses deterministic fake AI providers. It does not yet establi
 - Deterministic concept review projection using eligible unflagged MCQ evidence and 1/3/7/14-day intervals.
 - Configurable inactivity recovery that resumes unfinished work or creates a bounded ten-minute review.
 
-## Verification at handover
+### Practical tasks in the current branch
+
+- Exactly one explicit selected concept with current source and revision validation on generation, reload, and completion.
+- Persisted safe standard, simpler, and no-cost variants with allowlisted modality plus structured cost and connectivity disclosures.
+- Deterministic hazardous-procedure and external-URL rejection before save.
+- Exact replay, practical quota reservation, deletion fences, and late-save rejection.
+- Durable unsuitable decisions and completion/undo state separate from quiz evidence.
+- Source navigation plus keyboard-operable native controls and responsive existing layouts.
+
+See [M4.1 evidence](m4-practical-task-evidence.md). Independent review, full local checks, and migration checks pass; live-provider content quality and the manual safety audit remain open.
+
+### Verification on the current branch
+
+- 145 Vitest tests across 37 files.
+- 48 Playwright tests, including the practical-task workflow.
+- 9 maintenance tests.
+- Formatting, ESLint, TypeScript, 215-file line limit, and 97 documentation links.
+- Fresh migrations through `0017` and populated `0016 → 0017` upgrade with no foreign-key violations.
+- Vite production build and Wrangler deploy dry run.
+
+## Verification at merged handover
 
 The exact PR #20 tree passed `npm run check`:
 
@@ -104,12 +122,12 @@ These items block claims that M0, live AI, or deployed infrastructure is complet
 
 ### 5. Build remaining M4 features
 
-- **M4.1 practical tasks:** grounded objective, instructions, output, tools, duration, self-check, simpler variant, cost/connectivity disclosure, free alternative, safety screening, and completion stored separately from quiz correctness.
+- **M4.1 practical tasks:** implementation is present on the current branch; finish independent review, migration/full-suite verification, and merge before marking the slice delivered.
 - **M4.2 resource catalog:** small manually checked catalog with real dated URLs, publisher, concept, language, format, access conditions, relevance reason, free/access disclosure, and honest no-match behavior.
 - **M4.4 accessibility/language:** complete keyboard/focus/contrast/touch/text-size audit; English-only and unsupported-language messaging; simpler-English controls without changing source meaning; supplementary-example labels.
 - Validate production provider retention disclosures and account deletion behavior without promising deletion from external providers.
 
-Recommended next code slice after PR #20: M4.1 practical tasks. The quota contract already reserves the `practical` category/task kind, and practical work is independent of the still-open live-provider gate when developed first with a validated fake provider.
+Recommended next code slice after M4.1 merges: M4.2 resource catalog using a small manually checked set of dated, free links.
 
 ### 6. Run M5 demo verification
 
