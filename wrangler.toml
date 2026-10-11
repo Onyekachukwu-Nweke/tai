@@ -12,6 +12,10 @@ run_worker_first = ["/api/*"]
 [observability]
 enabled = false
 
+# Names are public; values are encrypted Worker secrets configured separately.
+[secrets]
+required = ["BETTER_AUTH_SECRET", "GOOGLE_CLIENT_ID", "GOOGLE_CLIENT_SECRET"]
+
 [vars]
 APP_ORIGIN = "http://localhost:8787"
 RETURN_GAP_DAYS = "3"
@@ -22,14 +26,47 @@ AI_DAILY_PACK_LIMIT = "20"
 AI_DAILY_GRADING_LIMIT = "30"
 AI_DAILY_SUPPORT_LIMIT = "40"
 AI_DAILY_PRACTICAL_LIMIT = "10"
+AI_PROVIDER = "fake"
 
 [[d1_databases]]
 binding = "DB"
 database_name = "tai"
-# Local placeholder. Replace only after creating the remote database.
-database_id = "00000000-0000-0000-0000-000000000000"
+database_id = "64149050-28d3-489f-ae2f-80f1fa42a64b"
 migrations_dir = "migrations"
 
 [[r2_buckets]]
+binding = "ORIGINALS"
+bucket_name = "tai-originals"
+
+[env.production]
+name = "tai"
+
+[env.production.ai]
+binding = "AI"
+
+[env.production.secrets]
+required = ["BETTER_AUTH_SECRET", "GOOGLE_CLIENT_ID", "GOOGLE_CLIENT_SECRET"]
+
+[env.production.vars]
+APP_ORIGIN = "http://localhost:8787"
+RETURN_GAP_DAYS = "3"
+AI_CALLS_ENABLED = "true"
+AI_DAILY_TOTAL_LIMIT = "100"
+AI_DAILY_CONCEPT_LIMIT = "10"
+AI_DAILY_PACK_LIMIT = "20"
+AI_DAILY_GRADING_LIMIT = "30"
+AI_DAILY_SUPPORT_LIMIT = "40"
+AI_DAILY_PRACTICAL_LIMIT = "10"
+AI_PROVIDER = "workers_ai"
+AI_GATEWAY_ID = "tai"
+WORKERS_AI_MODEL = "@cf/meta/llama-3.3-70b-instruct-fp8-fast"
+
+[[env.production.d1_databases]]
+binding = "DB"
+database_name = "tai"
+database_id = "64149050-28d3-489f-ae2f-80f1fa42a64b"
+migrations_dir = "migrations"
+
+[[env.production.r2_buckets]]
 binding = "ORIGINALS"
 bucket_name = "tai-originals"

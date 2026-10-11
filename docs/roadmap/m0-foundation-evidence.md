@@ -38,7 +38,7 @@ Independent review found one session-expiry recovery issue; it was fixed and re-
 
 ## Open gates
 
-Real Google OAuth needs owner-provided configuration and an actual callback walkthrough. Cloudflare remote D1/R2, AI Gateway, Workers AI/Bedrock access, spending controls, live streaming, model quality/cost, and browser PDF extraction/device spikes remain unverified. No cloud resources were provisioned or deployed, and no live AI calls were made.
+Real Google OAuth needs owner-provided configuration and an actual callback walkthrough. Cloudflare remote D1/R2, AI Gateway, Workers AI access, spending controls, live generation, model quality/cost, and browser PDF extraction/device spikes remain unverified. No cloud resources were provisioned or deployed, and no live AI calls were made.
 
 Uploads, file storage/deletion, learning activities, progress, quotas, and account deletion are not implemented in this preview. Study-space creation is not idempotent across ambiguous network failures; the UI retains the title and asks the learner to reload before retrying. This is separate from the future required idempotent activity-submission flow.
 

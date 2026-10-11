@@ -12,6 +12,7 @@ export default defineConfig({
             "synthetic-test-secret-with-at-least-32-characters",
           GOOGLE_CLIENT_ID: "synthetic-client-id",
           GOOGLE_CLIENT_SECRET: "synthetic-client-secret",
+          AI_PROVIDER: "fake",
           TEST_MIGRATIONS: await readD1Migrations("./migrations"),
         },
       },

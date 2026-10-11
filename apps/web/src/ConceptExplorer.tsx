@@ -67,9 +67,11 @@ export function ConceptExplorer({
     <section className="concept-explorer" aria-labelledby="concept-heading">
       <h3 id="concept-heading">Concept explorer</h3>
       <p className="notice">
-        Development preview: concepts below come from a deterministic fake
-        provider and have not been reviewed for teaching quality. Selected
-        source excerpts are sent only when generation is requested.
+        {collection === null
+          ? "Concept generation details will appear after saved concepts load."
+          : collection.provider === "workers_ai"
+            ? "Cloudflare Workers AI produced the concepts below. They have not been reviewed for teaching quality. Selected source excerpts are sent only when generation is requested."
+            : "Development preview: concepts below come from a deterministic fake provider and have not been reviewed for teaching quality. Selected source excerpts are sent only when generation is requested."}
       </p>
       <button type="button" disabled={busy} onClick={() => void generate()}>
         {busy

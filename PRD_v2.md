@@ -2,7 +2,7 @@
 
 **Version:** 0.2 · **Date:** 5 October 2026 · **Status:** Draft for hackathon implementation
 
-**Scope revision (6 October 2026):** Learners sign in (no guest mode); learner data is stored server-side on Cloudflare (D1 database, R2 files) and AI calls go through AI Gateway to Workers AI or Bedrock. Full offline study (FR-10) is deferred to P1. Scenario-based and calculation/equation questions are P0 where source evidence supports them.
+**Scope revision (11 October 2026):** Learners sign in (no guest mode); learner data is stored server-side on Cloudflare (D1 database, R2 files) and AI calls go through AI Gateway to Workers AI. Amazon Bedrock and other model providers are outside the hackathon scope. Full offline study (FR-10) is deferred to P1. Scenario-based and calculation/equation questions are P0 where source evidence supports them.
 
 ## 1. Product summary
 
@@ -280,7 +280,7 @@ Sign in → import PDF/TXT in browser → validate and extract → store origina
 
 Treat uploaded text as content, never as executable instructions. Reject invented citation IDs, sanitize extracted and generated content before rendering, and avoid automatic fetching of arbitrary URLs from uploaded text. Validate references against actual chunks; this checks traceability but does not establish factual accuracy. Offer explicit, bounded manual retries and a clear fallback if generation fails. Do not automatically replay failed generation or grading requests.
 
-TAI runs as one Cloudflare Worker serving the web app and API, with D1 as the single learner database and R2 for original files. The browser extracts PDF/TXT; the server owns sign-in, ownership checks, persistence, quotas and all model calls. Model calls go through AI Gateway to Workers AI or Amazon Bedrock, chosen per task by measured quality. Keep the AI adapter replaceable.
+TAI runs as one Cloudflare Worker serving the web app and API, with D1 as the single learner database and R2 for original files. The browser extracts PDF/TXT; the server owns sign-in, ownership checks, persistence, quotas and all model calls. Model calls go through AI Gateway to Workers AI. Keep the AI adapter replaceable and compare suitable Workers AI models per task using measured quality.
 
 ## 11. Minimum data model
 
@@ -328,7 +328,7 @@ These are prototype acceptance targets, not measured results or production servi
 
 ### Quality-first model evaluation
 
-Compare candidate models from Workers AI and Amazon Bedrock (for example gpt-oss-120b or Kimi K2.6 against Claude Haiku) through AI Gateway on the same two permitted source documents and the same activity/answer cases before choosing the default. Include one quantitative document and one supporting scenario-based reasoning. Assess source fidelity, question usefulness, independent numeric-key correctness, working/rubric feedback (including uncertainty), hints and alternate explanations, then measure latency, request size, and cost. Use consistent prompts and budgets and record model IDs/Regions and actual results; choose quality sufficient for the learning loop before optimizing price. Model availability, credits, and access must be verified, not assumed; no OpenAI access or funding is implied. If only one model is accessible, record the comparison as blocked rather than claiming it passed.
+Compare at least two suitable Workers AI models through AI Gateway on the same two permitted source documents and the same activity/answer cases before choosing the default. Include one quantitative document and one supporting scenario-based reasoning. Assess source fidelity, question usefulness, independent numeric-key correctness, working/rubric feedback (including uncertainty), hints and alternate explanations, then measure latency, request size, token usage, and cost. Use consistent prompts and budgets and record exact model IDs and actual results; choose quality sufficient for the learning loop before optimizing price. Model availability, credits, and access must be verified, not assumed. If only one model is accessible, record the comparison as blocked rather than claiming it passed.
 
 ### Small learner pilot
 
@@ -379,7 +379,7 @@ Exit each milestone with a working flow. If time is short, simplify map complexi
 | Active learning | Scenarios and calculation/equation questions join P0 where evidence supports them; matching/ordering puzzles remain P1 |
 | Tutor workflow | Fixed bounded read/write/grade/follow-up stages; explicit hints and alternate explanations, no autonomous loop or four-call-per-answer requirement |
 | Mathematical feedback | Safe LaTeX rendering, deterministic numeric tolerance/unit checks, separate uncertain rubric grading of working, and independently checked demo keys |
-| Model selection | Evaluate Workers AI and Bedrock candidates through AI Gateway on the same two documents; prioritize learning quality, allow per-task routing, and report actual access, costs, and results |
+| Model selection | Evaluate Workers AI candidates through AI Gateway on the same two documents; prioritize learning quality, allow per-task routing, and report actual access, costs, and results |
 | Platform | Cloudflare: one Worker (web app + API), D1 database, R2 files, AI Gateway. No MongoDB, no second database |
 | Identity | Google sign-in required; no guest mode |
 | Usability participants | Any available learner group; institution-specific recruitment is optional |

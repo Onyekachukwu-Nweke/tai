@@ -14,11 +14,11 @@ npm run dev
 
 Open `http://localhost:8787`. The development command builds the client and serves it through Wrangler; restart it after client edits. D1 is persisted locally in the ignored `.wrangler` directory. The `ORIGINALS` R2 binding is emulated locally alongside D1. No Cloudflare account or remote resource is required locally. Without OAuth configuration, the app reports that sign-in is unavailable; there is no guest or development-login bypass.
 
-For client hot reload, run `npm run dev:web` alongside Wrangler, set `APP_ORIGIN` to `http://localhost:5173` in `.dev.vars`, and use that origin in the browser and Google OAuth configuration. The Vite server proxies `/api` to Wrangler. Restart Wrangler after changing its variables.
+For client hot reload, run `npm run dev:web` alongside Wrangler, set `APP_ORIGIN` to `http://localhost:5173` in the local Wrangler configuration, and use that origin in the browser and Google OAuth configuration. The Vite server proxies `/api` to Wrangler. Restart Wrangler after changing its variables.
 
 ## Google sign-in
 
-1. Copy `.dev.vars.example` to `.dev.vars`.
+1. Copy `.env.example` to `.env`.
 2. Generate a secret with `openssl rand -base64 32` and set `BETTER_AUTH_SECRET` locally.
 3. Configure a Google OAuth web client and set `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET` locally. Never paste secrets into source files or chat.
 4. Register `http://localhost:8787/api/auth/callback/google` as the authorized redirect URI (or port 5173 when using hot reload).
@@ -27,6 +27,29 @@ For client hot reload, run `npm run dev:web` alongside Wrangler, set `APP_ORIGIN
 The [Better Auth Google setup guide](https://better-auth.com/docs/authentication/google) describes provider registration. Real provider login needs your OAuth configuration; synthetic integration tests do not prove that external OAuth is ready.
 
 Production requires an explicit HTTPS `APP_ORIGIN`, Worker secrets, a real D1 database ID and matching Google callback URI. `wrangler.toml` deliberately contains a local placeholder database ID. Do not treat the checked-in file as deployed infrastructure. This work does not provision or deploy cloud resources.
+
+## Cloudflare credentials and Worker secrets
+
+Keep deployment credentials separate from application bindings:
+
+- Copy `.env.example` to ignored `.env`. Put `CLOUDFLARE_ACCOUNT_ID`, `CLOUDFLARE_API_TOKEN`, `BETTER_AUTH_SECRET`, `GOOGLE_CLIENT_ID`, and `GOOGLE_CLIENT_SECRET` there. The `[secrets]` declaration limits which values become Worker bindings, so Wrangler's Cloudflare credentials remain CLI-only.
+- Do not create `.dev.vars` for this repository. Wrangler gives it precedence over `.env`, which would hide the runtime secrets in `.env` during local development.
+- Configure production `BETTER_AUTH_SECRET`, `GOOGLE_CLIENT_ID`, and `GOOGLE_CLIENT_SECRET` as encrypted Worker secrets. Their public names are declared under `[env.production.secrets]`; their values do not belong in `wrangler.toml`.
+- Keep `APP_ORIGIN`, D1 database ID, R2 bucket name, `AI_GATEWAY_ID`, and `WORKERS_AI_MODEL` in deployment configuration. They identify public or account resources and are not credentials.
+
+The Workers AI `AI` binding authenticates model and AI Gateway requests with the Worker account identity. Do not create or bind a second Workers AI token. A Cloudflare API token is needed only for Wrangler, CI, direct REST calls, or resource-management automation.
+
+For an interactive workstation, `npx wrangler login` is an alternative to placing a Cloudflare API token in `.env`. For CI, create a scoped token with only the permissions needed by the deployment and store it as `CLOUDFLARE_API_TOKEN` in the repository's secret settings.
+
+Set production application secrets after the Worker environment exists:
+
+```sh
+npx wrangler secret put BETTER_AUTH_SECRET --env production
+npx wrangler secret put GOOGLE_CLIENT_ID --env production
+npx wrangler secret put GOOGLE_CLIENT_SECRET --env production
+```
+
+Do not pass the Wrangler API token to `wrangler secret put`; it is deployment authentication rather than an application secret.
 
 Sessions have a fixed seven-day lifetime with no cookie cache or rolling renewal. Expired sessions require Google sign-in again. Optional avatars, IP/user-agent metadata, and OAuth access/refresh/ID tokens are not retained.
 

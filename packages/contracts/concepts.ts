@@ -86,7 +86,7 @@ export const conceptCollectionSchema = z
       )
       .max(30),
     error: z.string().max(240).nullable(),
-    provider: z.literal("fake"),
+    provider: z.enum(["fake", "workers_ai"]),
   })
   .strict();
 export const updateConceptSchema = z

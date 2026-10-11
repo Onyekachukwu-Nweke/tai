@@ -11,7 +11,7 @@ Development guidelines for TAI:
 - [Code review](review.md): review priorities and acceptance checks.
 - [Testing](testing.md): test layers, learner scenarios, and content audits.
 
-This guide translates the [v0.2 PRD](../../PRD_v2.md) into initial development guidelines. Refer to the PRD for full acceptance criteria; this guide does not replace them. The [roadmap](../roadmap/README.md) records the Cloudflare baseline: one Worker, required Google sign-in, D1, R2, and AI Gateway in front of Workers AI and Bedrock. Exact model access remains subject to M0 verification.
+This guide translates the [v0.2 PRD](../../PRD_v2.md) into initial development guidelines. Refer to the PRD for full acceptance criteria; this guide does not replace them. The [roadmap](../roadmap/README.md) records the Cloudflare baseline: one Worker, required Google sign-in, D1, R2, and AI Gateway in front of Workers AI. Bedrock and other model providers are outside the hackathon scope. Exact model access remains subject to M0 verification.
 
 ## Build within the agreed scope
 

@@ -1,4 +1,7 @@
-import type { ConceptProvider } from "../../../packages/adapters/fake-concepts";
+import {
+  conceptProviderMetadata,
+  type ConceptProvider,
+} from "../../../packages/adapters/fake-concepts";
 import { validateConceptDrafts } from "../../../packages/contracts/concepts";
 import type { Clock } from "../../../packages/domain/concept-progress";
 import type { Env } from "./env";
@@ -42,7 +45,8 @@ export async function generateConcepts(
       409,
       "The selected section has no usable saved text.",
     );
-  await reserveRequest(env, userId, spaceId, requestId, context);
+  const metadata = conceptProviderMetadata(provider);
+  await reserveRequest(env, userId, spaceId, requestId, context, metadata);
   try {
     await reserveAiCall(env, userId, requestId, "concepts", "concepts", clock);
     const result = validateConceptDrafts(
@@ -92,8 +96,15 @@ export async function generateConcepts(
     );
     statements.push(
       env.DB.prepare(
-        `UPDATE concept_requests SET state='ready',error=NULL WHERE user_id=? AND space_id=? AND request_id=? AND document_id=? AND state='pending' AND ${gate}`,
-      ).bind(...scope, ...scope),
+        `UPDATE concept_requests SET state='ready',error=NULL,provider=?,model=?,prompt_version=?,output_schema_version=? WHERE user_id=? AND space_id=? AND request_id=? AND document_id=? AND state='pending' AND ${gate}`,
+      ).bind(
+        metadata.provider,
+        metadata.model,
+        metadata.promptVersion,
+        metadata.schemaVersion,
+        ...scope,
+        ...scope,
+      ),
     );
     await env.DB.batch(statements);
     const saved = await loadConcepts(env, userId, spaceId);

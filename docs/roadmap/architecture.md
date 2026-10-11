@@ -1,6 +1,6 @@
 # Architecture
 
-**Decision (6 October 2026):** TAI runs on Cloudflare. Learners sign in (no guest mode). One Cloudflare Worker serves the web app and a JSON API; D1 is the single learner database; R2 holds original files; AI Gateway fronts the model providers (Workers AI and Bedrock), chosen by measured quality. Full offline mode remains deferred to P1. This replaces the earlier local-first, stateless-endpoint design and the AWS Lambda/SAM hosting plan.
+**Decision (11 October 2026):** TAI runs on Cloudflare. Learners sign in (no guest mode). One Cloudflare Worker serves the web app and a JSON API; D1 is the single learner database; R2 holds original files; AI Gateway fronts Workers AI, with models chosen by measured quality. Bedrock and other model providers are outside the hackathon scope. Full offline mode remains deferred to P1.
 
 ## System view
 
@@ -10,9 +10,8 @@ flowchart TD
     Worker --> Auth[Auth: Google sign-in, sessions in D1]
     Worker --> D1[(D1: users, spaces, chunks, concepts, packs, attempts, progress, quotas)]
     Worker --> R2[(R2: private original files)]
-    Worker --> GW[AI Gateway: rate limits, logging off, fallback]
+    Worker --> GW[AI Gateway: rate limits, body logging off]
     GW --> WAI[Workers AI models]
-    GW --> BR[Amazon Bedrock models]
 ```
 
 One deployable Worker, one database, one bucket. No queue, no job workers, no outbox or sync layer: with offline deferred, the browser is a plain client of the API.
