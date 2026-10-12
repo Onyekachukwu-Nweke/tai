@@ -188,8 +188,10 @@ export function ActivityPack({
         Prompts have not been reviewed for teaching quality. Multiple choice is
         checked deterministically. Requesting free-text rubric feedback sends
         the saved answer and cited excerpts to the configured AI provider; its
-        outcome does not advance review progress. Tutor and follow-up responses
-        currently use deterministic development providers.
+        outcome does not advance review progress. Requesting a hint or alternate
+        explanation sends the question and cited excerpts to the configured AI
+        provider without the learner draft or hidden answer keys. Follow-up
+        responses currently use deterministic development providers.
       </p>
       <button
         type="button"

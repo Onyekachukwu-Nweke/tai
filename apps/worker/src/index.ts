@@ -8,10 +8,7 @@ import {
   systemClock,
   type Clock,
 } from "../../../packages/domain/concept-progress";
-import {
-  FakeActivityTutorProvider,
-  type ActivityTutorProvider,
-} from "../../../packages/adapters/fake-activity-tutor";
+import type { ActivityTutorProvider } from "../../../packages/adapters/fake-activity-tutor";
 import type { ActivityRubricProvider } from "../../../packages/adapters/fake-activity-rubric";
 import {
   FakeActivityFollowupProvider,
@@ -31,7 +28,7 @@ export function createApp(
   provider?: ConceptProvider,
   activityProvider?: ActivityPackProvider,
   clock: Clock = systemClock,
-  tutorProvider: ActivityTutorProvider = new FakeActivityTutorProvider(),
+  tutorProvider?: ActivityTutorProvider,
   rubricProvider?: ActivityRubricProvider,
   followupProvider: ActivityFollowupProvider = new FakeActivityFollowupProvider(),
   followupGradeProvider: ActivityFollowupGradeProvider = new FakeActivityFollowupGradeProvider(),

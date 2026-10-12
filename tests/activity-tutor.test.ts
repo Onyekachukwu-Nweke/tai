@@ -10,6 +10,12 @@ import { createApp } from "../apps/worker/src/index";
 import { createActivityFixture } from "./activity-fixture";
 
 class InspectingProvider implements ActivityTutorProvider {
+  readonly metadata = {
+    provider: "workers_ai" as const,
+    model: "@cf/example/model",
+    promptVersion: "activity-tutor-v1",
+    schemaVersion: 1 as const,
+  };
   calls: TutorContext[] = [];
   fail = false;
   mutateSource = false;
@@ -131,6 +137,18 @@ describe("activity tutor routes", () => {
     };
     const first = await call(input);
     expect(first.status).toBe(201);
+    expect(
+      await env.DB.prepare(
+        "SELECT provider,model,prompt_version,output_schema_version FROM activity_tutor_requests WHERE user_id=? AND space_id=? AND request_id=?",
+      )
+        .bind(fixture.owner.userId, fixture.owner.spaceId, requestId)
+        .first(),
+    ).toMatchObject({
+      provider: "workers_ai",
+      model: "@cf/example/model",
+      prompt_version: "activity-tutor-v1",
+      output_schema_version: 1,
+    });
     expect(provider.calls).toHaveLength(1);
     expect(JSON.stringify(provider.calls[0])).not.toMatch(
       /correctOptionId|answerExplanation|supportedAnswer|rubric|draft|confidence/,

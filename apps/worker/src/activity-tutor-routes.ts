@@ -12,9 +12,10 @@ import type { Env, Variables } from "./env";
 import { requestTutorHelp, TutorFailure } from "./activity-tutor-service";
 import { loadTutorState } from "./activity-tutor-store";
 import { aiCallErrorResponse } from "./ai-quota-http";
+import { activityTutorProviderForEnv } from "./activity-tutor-provider";
 
 export const activityTutorRoutes = (
-  provider: ActivityTutorProvider,
+  provider: ActivityTutorProvider | undefined,
   clock: Clock,
 ) =>
   new Hono<{ Bindings: Env; Variables: Variables }>()
@@ -77,7 +78,7 @@ export const activityTutorRoutes = (
       return c.json(
         await requestTutorHelp(
           c.env,
-          provider,
+          provider ?? activityTutorProviderForEnv(c.env),
           c.get("user").id,
           c.req.param("id"),
           parsed.data,
