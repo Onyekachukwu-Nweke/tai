@@ -19,8 +19,11 @@ in flight. Requests are learner scoped, retry safe, and limited to one saved
 follow-up per attempt. Ready requests replay, pending requests conflict, and a
 failed request requires an explicit retry with a new ID.
 
-The deterministic fake provider exercises persistence and recovery without
-claiming teaching quality. The learner explicitly asks for the follow-up, can
+The runtime selects live Workers AI providers through AI Gateway, while tests
+inject deterministic fake providers. Generation omits the prior learner answer,
+application IDs, concept IDs and hidden keys. Grading receives only the practice
+prompt, saved answer, targeted criterion and excerpts. Responses rebuild trusted
+IDs and citations locally, reject invalid sources, bypass caches and disable logs. The learner explicitly asks for the follow-up, can
 retry a failure, reopen its supporting source, and recover the saved prompt
 after reload. A learner can now save one immutable response to that prompt and
 request bounded feedback against only the saved targeted criterion and exact
@@ -40,7 +43,8 @@ originating rubric response, and the unchanged generated follow-up. Saved
 answers and source-linked feedback restore after reload and never advance
 concept progress.
 
-Automated evidence covers strict identifiers and source references,
+Provider provenance is reserved with both calls and live configuration fails
+closed without its binding and gateway. Automated evidence covers strict identifiers and source references,
 deterministic gap priority, private server-built context, owner isolation,
 idempotent replay, one-success enforcement, invalid provider output, changed
 grade rejection, concurrent reservation, explicit retry, answer/feedback
@@ -49,6 +53,14 @@ Before an explicit browser retry creates a new grade request, it reloads saved
 state so a ready grade whose HTTP response was lost is restored without another
 provider call.
 
-Still open are live-provider and quota integration, broader quantitative
-generation, content quality review, and live cost, latency and retention
-evidence.
+Per-call quotas cover both live tasks. Still open are quantitative generation,
+content quality review, and live cost, latency and retention evidence. Calculation
+follow-up prompts pass the same deterministic expected-value and worked-solution
+concealment gate as tutor help before persistence.
+
+Verification on 12 October 2026 passed 22 focused follow-up and quota tests, 12
+Workers AI adapter boundary tests, type checking, the 350-line limit across 241
+authored files, a fresh migration chain through `0022`, and the production web
+build plus Worker deployment dry run. Migration `0022` was also applied to
+remote D1 database `tai`. Two full-suite attempts encountered unrelated test
+isolation and timeout failures; affected follow-up tests passed independently.

@@ -6,6 +6,7 @@ import {
 } from "../../../packages/contracts/activity-followup-grade";
 import type { Clock } from "../../../packages/domain/concept-progress";
 import type { Env } from "./env";
+import type { ActivityFollowupGradeProviderMetadata } from "../../../packages/adapters/fake-activity-followup-grade";
 
 export type FollowupGradeRow = {
   request_hash: string;
@@ -108,11 +109,12 @@ export async function reserveFollowupGrade(
   },
   followupJson: string,
   hash: string,
+  metadata: ActivityFollowupGradeProviderMetadata,
   clock: Clock,
 ) {
   const now = clock.now().toISOString();
   const result = await env.DB.prepare(
-    "INSERT OR IGNORE INTO activity_followup_grade_requests(user_id,space_id,request_id,attempt_id,followup_request_id,pack_id,question_id,followup_response_json,request_hash,state,response_json,error,created_at,updated_at) VALUES(?,?,?,?,?,?,?,?,?,'pending',NULL,NULL,?,?)",
+    "INSERT OR IGNORE INTO activity_followup_grade_requests(user_id,space_id,request_id,attempt_id,followup_request_id,pack_id,question_id,followup_response_json,request_hash,state,response_json,error,created_at,updated_at,provider,model,prompt_version,output_schema_version) VALUES(?,?,?,?,?,?,?,?,?,'pending',NULL,NULL,?,?,?,?,?,?)",
   )
     .bind(
       keys.userId,
@@ -126,6 +128,10 @@ export async function reserveFollowupGrade(
       hash,
       now,
       now,
+      metadata.provider,
+      metadata.model,
+      metadata.promptVersion,
+      metadata.schemaVersion,
     )
     .run();
   return result.meta.changes === 1;

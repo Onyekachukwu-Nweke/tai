@@ -12,9 +12,10 @@ import { generateFollowup, FollowupFailure } from "./activity-followup-service";
 import { loadFollowupState } from "./activity-followup-store";
 import type { Env, Variables } from "./env";
 import { aiCallErrorResponse } from "./ai-quota-http";
+import { activityFollowupProviderForEnv } from "./activity-followup-provider";
 
 export const activityFollowupRoutes = (
-  provider: ActivityFollowupProvider,
+  provider: ActivityFollowupProvider | undefined,
   clock: Clock,
 ) =>
   new Hono<{ Bindings: Env; Variables: Variables }>()
@@ -80,7 +81,7 @@ export const activityFollowupRoutes = (
       return c.json(
         await generateFollowup(
           c.env,
-          provider,
+          provider ?? activityFollowupProviderForEnv(c.env),
           c.get("user").id,
           c.req.param("id"),
           parsed.data,

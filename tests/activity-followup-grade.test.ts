@@ -106,6 +106,17 @@ describe("follow-up answer and grade routes", () => {
     expect(JSON.stringify(provider.calls[0])).not.toMatch(
       /userId|Original answer/,
     );
+    const provenance = await env.DB.prepare(
+      "SELECT provider,model,prompt_version,output_schema_version FROM activity_followup_grade_requests WHERE request_id=?",
+    )
+      .bind(grade.requestId)
+      .first();
+    expect(provenance).toEqual({
+      provider: "fake",
+      model: null,
+      prompt_version: "injected-fake-v1",
+      output_schema_version: 1,
+    });
     expect(
       (
         await request(

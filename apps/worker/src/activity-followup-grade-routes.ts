@@ -17,9 +17,10 @@ import {
 import { loadFollowupGradeState } from "./activity-followup-grade-store";
 import type { Env, Variables } from "./env";
 import { aiCallErrorResponse } from "./ai-quota-http";
+import { activityFollowupGradeProviderForEnv } from "./activity-followup-provider";
 
 export const activityFollowupGradeRoutes = (
-  provider: ActivityFollowupGradeProvider,
+  provider: ActivityFollowupGradeProvider | undefined,
   clock: Clock,
 ) => {
   const routes = new Hono<{ Bindings: Env; Variables: Variables }>();
@@ -94,7 +95,7 @@ export const activityFollowupGradeRoutes = (
     c.json(
       await gradeFollowup(
         c.env,
-        provider,
+        provider ?? activityFollowupGradeProviderForEnv(c.env),
         c.get("user").id,
         c.req.param("id"),
         await parse(c, followupGradeRequestSchema),

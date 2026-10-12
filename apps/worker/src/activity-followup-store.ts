@@ -4,6 +4,7 @@ import {
 } from "../../../packages/contracts/activity-followup";
 import type { Clock } from "../../../packages/domain/concept-progress";
 import type { Env } from "./env";
+import type { ActivityFollowupProviderMetadata } from "../../../packages/adapters/fake-activity-followup";
 
 export type FollowupRequestRow = {
   request_hash: string;
@@ -36,12 +37,13 @@ export async function reserveFollowupRequest(
   },
   hash: string,
   gradeJson: string,
+  metadata: ActivityFollowupProviderMetadata,
   clock: Clock,
 ) {
   const now = clock.now().toISOString();
   const result = await env.DB.prepare(
-    `INSERT OR IGNORE INTO activity_followup_requests(user_id,space_id,request_id,attempt_id,pack_id,question_id,grade_request_id,grade_response_json,request_hash,state,response_json,error,created_at,updated_at)
-     SELECT ?,?,?,?,?,?,?,?,?,'pending',NULL,NULL,?,?
+    `INSERT OR IGNORE INTO activity_followup_requests(user_id,space_id,request_id,attempt_id,pack_id,question_id,grade_request_id,grade_response_json,request_hash,state,response_json,error,created_at,updated_at,provider,model,prompt_version,output_schema_version)
+     SELECT ?,?,?,?,?,?,?,?,?,'pending',NULL,NULL,?,?,?,?,?,?
      WHERE NOT EXISTS(SELECT 1 FROM activity_followup_requests
        WHERE user_id=? AND space_id=? AND attempt_id=? AND state IN ('pending','ready'))`,
   )
@@ -57,6 +59,10 @@ export async function reserveFollowupRequest(
       hash,
       now,
       now,
+      metadata.provider,
+      metadata.model,
+      metadata.promptVersion,
+      metadata.schemaVersion,
       keys.userId,
       keys.spaceId,
       keys.attemptId,
