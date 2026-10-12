@@ -1,4 +1,7 @@
-import type { PracticalTaskProvider } from "../../../packages/adapters/fake-practical-tasks";
+import {
+  practicalTaskProviderMetadata,
+  type PracticalTaskProvider,
+} from "../../../packages/adapters/fake-practical-tasks";
 import { practicalTaskDraftSchema } from "../../../packages/contracts/practical-tasks";
 import type { Clock } from "../../../packages/domain/concept-progress";
 import type { Env } from "./env";
@@ -59,6 +62,7 @@ export async function generatePracticalTask(
     context,
     now,
     staleAt,
+    practicalTaskProviderMetadata(provider),
   );
   if (!reserved) {
     const owner = await env.DB.prepare(

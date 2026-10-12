@@ -34,7 +34,7 @@ export function createStudySpaces(
   rubricProvider: ActivityRubricProvider | undefined,
   followupProvider: ActivityFollowupProvider | undefined,
   followupGradeProvider: ActivityFollowupGradeProvider | undefined,
-  practicalProvider: PracticalTaskProvider,
+  practicalProvider: PracticalTaskProvider | undefined,
 ) {
   const studySpaces = new Hono<{ Bindings: Env; Variables: Variables }>();
 

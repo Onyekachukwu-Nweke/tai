@@ -4,8 +4,24 @@ import type {
 } from "../contracts/practical-tasks";
 
 export interface PracticalTaskProvider {
+  readonly metadata?: PracticalTaskProviderMetadata;
   generate(context: PracticalContext): Promise<unknown>;
 }
+export interface PracticalTaskProviderMetadata {
+  provider: "fake" | "workers_ai";
+  model: string | null;
+  promptVersion: string;
+  schemaVersion: 1;
+}
+export const practicalTaskProviderMetadata = (
+  provider: PracticalTaskProvider,
+): PracticalTaskProviderMetadata =>
+  provider.metadata ?? {
+    provider: "fake",
+    model: null,
+    promptVersion: "injected-fake-v1",
+    schemaVersion: 1,
+  };
 const variant = (label: string, minutes: number) => ({
   modality: "written_analysis" as const,
   objective: `Demonstrate ${label} using a written desk-based example.`,
@@ -28,6 +44,12 @@ const variant = (label: string, minutes: number) => ({
   cost: { kind: "none" as const },
 });
 export class FakePracticalTaskProvider implements PracticalTaskProvider {
+  readonly metadata = {
+    provider: "fake",
+    model: null,
+    promptVersion: "deterministic-fake-v1",
+    schemaVersion: 1,
+  } as const;
   async generate(context: PracticalContext): Promise<PracticalTaskDraft> {
     const first = context.concepts[0]!;
     return {

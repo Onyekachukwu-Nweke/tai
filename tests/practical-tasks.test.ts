@@ -113,6 +113,13 @@ describe("source-grounded practical tasks", () => {
     expect(first.task?.simpler).not.toBeNull();
     expect(first.task?.freeAlternative).not.toBeNull();
     expect(provider.context?.materialId).toBe(owner.preview.documentId);
+    expect(
+      await env.DB.prepare(
+        "SELECT provider||':'||coalesce(model,'null')||':'||prompt_version||':'||output_schema_version value FROM practical_task_requests WHERE user_id=?",
+      )
+        .bind(owner.userId)
+        .first("value"),
+    ).toBe("fake:null:deterministic-fake-v1:1");
     expect((await call(owner, provider)).status).toBe(200);
     expect(provider.calls).toBe(1);
     expect(
