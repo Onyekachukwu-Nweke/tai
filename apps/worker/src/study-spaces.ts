@@ -32,8 +32,8 @@ export function createStudySpaces(
   clock: Clock,
   tutorProvider: ActivityTutorProvider | undefined,
   rubricProvider: ActivityRubricProvider | undefined,
-  followupProvider: ActivityFollowupProvider,
-  followupGradeProvider: ActivityFollowupGradeProvider,
+  followupProvider: ActivityFollowupProvider | undefined,
+  followupGradeProvider: ActivityFollowupGradeProvider | undefined,
   practicalProvider: PracticalTaskProvider,
 ) {
   const studySpaces = new Hono<{ Bindings: Env; Variables: Variables }>();

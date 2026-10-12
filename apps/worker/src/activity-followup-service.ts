@@ -1,4 +1,7 @@
-import type { ActivityFollowupProvider } from "../../../packages/adapters/fake-activity-followup";
+import {
+  activityFollowupProviderMetadata,
+  type ActivityFollowupProvider,
+} from "../../../packages/adapters/fake-activity-followup";
 import {
   activityFollowupResponseSchema,
   validateFollowupResponse,
@@ -27,6 +30,7 @@ import {
   failAiCall,
   reserveAiCall,
 } from "./ai-quota-service";
+import { assertTutorAnswerConcealed } from "./activity-tutor-safety";
 
 export class FollowupFailure extends Error {
   constructor(
@@ -150,7 +154,14 @@ export async function generateFollowup(
     gradeRequestId: row.grade_request_id,
   };
   if (
-    !(await reserveFollowupRequest(env, keys, hash, row.response_json, clock))
+    !(await reserveFollowupRequest(
+      env,
+      keys,
+      hash,
+      row.response_json,
+      activityFollowupProviderMetadata(provider),
+      clock,
+    ))
   )
     throw new FollowupFailure(
       409,
@@ -182,6 +193,7 @@ export async function generateFollowup(
       await provider.generate(context),
       context,
     );
+    assertTutorAnswerConcealed(response.prompt, question);
     if (
       !(await finishFollowupRequest(
         env,

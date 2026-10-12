@@ -190,8 +190,9 @@ export function ActivityPack({
         the saved answer and cited excerpts to the configured AI provider; its
         outcome does not advance review progress. Requesting a hint or alternate
         explanation sends the question and cited excerpts to the configured AI
-        provider without the learner draft or hidden answer keys. Follow-up
-        responses currently use deterministic development providers.
+        provider without the learner draft or hidden answer keys. Targeted
+        follow-up generation sends the assessed criterion, feedback, question,
+        and cited excerpts; grading also sends the saved follow-up answer.
       </p>
       <button
         type="button"

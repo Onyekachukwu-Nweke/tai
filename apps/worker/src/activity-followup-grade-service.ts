@@ -1,4 +1,7 @@
-import type { ActivityFollowupGradeProvider } from "../../../packages/adapters/fake-activity-followup-grade";
+import {
+  activityFollowupGradeProviderMetadata,
+  type ActivityFollowupGradeProvider,
+} from "../../../packages/adapters/fake-activity-followup-grade";
 import {
   followupAttemptSchema,
   followupGradeResponseSchema,
@@ -200,7 +203,14 @@ export async function gradeFollowup(
   };
   await expireStaleFollowupGrade(env, userId, spaceId, input.attemptId, clock);
   if (
-    !(await reserveFollowupGrade(env, keys, current.response_json, hash, clock))
+    !(await reserveFollowupGrade(
+      env,
+      keys,
+      current.response_json,
+      hash,
+      activityFollowupGradeProviderMetadata(provider),
+      clock,
+    ))
   ) {
     const raced = await loadFollowupGrade(
       env,

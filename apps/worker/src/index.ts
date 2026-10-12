@@ -10,14 +10,8 @@ import {
 } from "../../../packages/domain/concept-progress";
 import type { ActivityTutorProvider } from "../../../packages/adapters/fake-activity-tutor";
 import type { ActivityRubricProvider } from "../../../packages/adapters/fake-activity-rubric";
-import {
-  FakeActivityFollowupProvider,
-  type ActivityFollowupProvider,
-} from "../../../packages/adapters/fake-activity-followup";
-import {
-  FakeActivityFollowupGradeProvider,
-  type ActivityFollowupGradeProvider,
-} from "../../../packages/adapters/fake-activity-followup-grade";
+import type { ActivityFollowupProvider } from "../../../packages/adapters/fake-activity-followup";
+import type { ActivityFollowupGradeProvider } from "../../../packages/adapters/fake-activity-followup-grade";
 import { accountRoutes } from "./account-routes";
 import {
   FakePracticalTaskProvider,
@@ -30,8 +24,8 @@ export function createApp(
   clock: Clock = systemClock,
   tutorProvider?: ActivityTutorProvider,
   rubricProvider?: ActivityRubricProvider,
-  followupProvider: ActivityFollowupProvider = new FakeActivityFollowupProvider(),
-  followupGradeProvider: ActivityFollowupGradeProvider = new FakeActivityFollowupGradeProvider(),
+  followupProvider?: ActivityFollowupProvider,
+  followupGradeProvider?: ActivityFollowupGradeProvider,
   practicalProvider: PracticalTaskProvider = new FakePracticalTaskProvider(),
 ) {
   const app = new Hono<{ Bindings: Env; Variables: Variables }>();

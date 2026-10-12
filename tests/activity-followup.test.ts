@@ -14,6 +14,7 @@ class InspectingProvider implements ActivityFollowupProvider {
   calls: FollowupContext[] = [];
   mutateCitation = false;
   changeGrade = false;
+  prompt = "Apply the cited point to a new example.";
   async generate(context: FollowupContext) {
     this.calls.push(context);
     if (this.changeGrade)
@@ -31,7 +32,7 @@ class InspectingProvider implements ActivityFollowupProvider {
       targetedCriterion: context.targetedCriterion,
       gapOutcome: context.gapOutcome,
       conceptIds: context.conceptIds,
-      prompt: "Apply the cited point to a new example.",
+      prompt: this.prompt,
       sources: [
         {
           ...context.sources[0]!,
@@ -189,6 +190,17 @@ describe("activity follow-up routes", () => {
     expect(JSON.stringify(provider.calls[0])).not.toMatch(
       /userId|correctOptionId/,
     );
+    const provenance = await env.DB.prepare(
+      "SELECT provider,model,prompt_version,output_schema_version FROM activity_followup_requests WHERE request_id=?",
+    )
+      .bind(input.requestId)
+      .first();
+    expect(provenance).toEqual({
+      provider: "fake",
+      model: null,
+      prompt_version: "injected-fake-v1",
+      output_schema_version: 1,
+    });
     expect((await call(input)).status).toBe(201);
     expect(provider.calls).toHaveLength(1);
     expect(
@@ -239,4 +251,90 @@ describe("activity follow-up routes", () => {
     provider.changeGrade = true;
     expect((await post(crypto.randomUUID())).status).toBe(409);
   });
+
+  it.each([
+    ["The expected result is 12 m/s.", 503, "failed"],
+    ["Check whether your result is +12.0 metres per second.", 503, "failed"],
+    ["Divide 120 m by 10 s to obtain 12 m/s!", 503, "failed"],
+    [
+      "Start by choosing the relationship between distance and time.",
+      201,
+      "ready",
+    ],
+  ] as const)(
+    "conceals calculation answers before persistence: %s",
+    async (prompt, status, state) => {
+      const { fixture, question, attemptId } = await gradedFixture();
+      const row = await env.DB.prepare(
+        "SELECT canonical_json FROM activity_packs WHERE user_id=? AND space_id=? AND id=?",
+      )
+        .bind(fixture.owner.userId, fixture.owner.spaceId, fixture.pack.packId)
+        .first<{ canonical_json: string }>();
+      const canonical = JSON.parse(row!.canonical_json);
+      const index = canonical.questions.findIndex(
+        (item: { id: string }) => item.id === question.id,
+      );
+      canonical.questions[index] = {
+        ...canonical.questions[index],
+        type: "calculation",
+        notation: "v=d/t",
+        givens: ["d=120m", "t=10s"],
+        numericKey: {
+          expectedValue: 12,
+          absoluteTolerance: 0.01,
+          relativeTolerance: 0.001,
+          unitPolicy: "required",
+          expectedUnit: "m/s",
+          allowedUnits: ["m/s"],
+        },
+        workedExplanation: "Divide 120 m by 10 s to obtain 12 m/s.",
+      };
+      delete canonical.questions[index].assumptions;
+      await env.DB.prepare(
+        "UPDATE activity_packs SET canonical_json=? WHERE user_id=? AND space_id=? AND id=?",
+      )
+        .bind(
+          JSON.stringify(canonical),
+          fixture.owner.userId,
+          fixture.owner.spaceId,
+          fixture.pack.packId,
+        )
+        .run();
+      const provider = new InspectingProvider();
+      provider.prompt = prompt;
+      const app = createApp(
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        provider,
+      );
+      const requestId = crypto.randomUUID();
+      const response = await app.request(
+        `http://localhost:8787/api/study-spaces/${fixture.owner.spaceId}/activity-followup`,
+        {
+          method: "POST",
+          body: JSON.stringify({ schemaVersion: 1, requestId, attemptId }),
+          headers: {
+            cookie: fixture.owner.cookie,
+            origin: env.APP_ORIGIN,
+            "content-type": "application/json",
+          },
+        },
+        env,
+      );
+      expect(response.status).toBe(status);
+      expect(
+        await env.DB.prepare(
+          "SELECT state,response_json FROM activity_followup_requests WHERE request_id=?",
+        )
+          .bind(requestId)
+          .first(),
+      ).toMatchObject({
+        state,
+        response_json: state === "ready" ? expect.any(String) : null,
+      });
+    },
+  );
 });
