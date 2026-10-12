@@ -81,6 +81,9 @@ export function PracticalTask({
       <h3 id="practical-title">Learn by doing</h3>
       <p className="fine-print">
         Completion is self-reported and is kept separate from quiz performance.
+        Preparing a task sends the selected concept label and bounded cited
+        excerpts to the configured AI service. Your original file, account
+        details, internal IDs, and completion status are not sent.
       </p>
       <button
         type="button"

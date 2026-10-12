@@ -14,9 +14,10 @@ import {
   generatePracticalTask,
 } from "./practical-task-service";
 import { loadPracticalTask } from "./practical-task-store";
+import { practicalTaskProviderForEnv } from "./practical-task-provider";
 
 export function practicalTaskRoutes(
-  provider: PracticalTaskProvider,
+  provider: PracticalTaskProvider | undefined,
   clock: Clock,
 ) {
   const routes = new Hono<{ Bindings: Env; Variables: Variables }>();
@@ -62,7 +63,7 @@ export function practicalTaskRoutes(
     return c.json(
       await generatePracticalTask(
         c.env,
-        provider,
+        provider ?? practicalTaskProviderForEnv(c.env),
         c.get("user").id,
         c.req.param("id"),
         parsed.data.requestId,

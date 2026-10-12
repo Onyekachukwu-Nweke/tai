@@ -4,6 +4,7 @@ import {
   type PracticalContext,
 } from "../../../packages/contracts/practical-tasks";
 import type { Env } from "./env";
+import type { PracticalTaskProviderMetadata } from "../../../packages/adapters/fake-practical-tasks";
 
 export const practicalSelectionKey = (ids: string[]) =>
   [...ids].sort().join(":");
@@ -31,10 +32,11 @@ export async function reservePracticalRequest(
   context: PracticalContext,
   createdAt: string,
   staleAt: string,
+  metadata: PracticalTaskProviderMetadata,
 ) {
   const key = practicalSelectionKey(context.concepts.map(({ id }) => id));
   const result = await env.DB.prepare(
-    "INSERT INTO practical_task_requests(user_id,space_id,request_id,document_id,concept_request_id,selection_key,state,error,canonical_json,created_at) SELECT ?,?,?,?,?,?,'pending',NULL,NULL,? WHERE NOT EXISTS(SELECT 1 FROM account_deletions WHERE user_id=?) ON CONFLICT(user_id,space_id) DO UPDATE SET request_id=excluded.request_id,document_id=excluded.document_id,concept_request_id=excluded.concept_request_id,selection_key=excluded.selection_key,state='pending',error=NULL,canonical_json=NULL,created_at=excluded.created_at WHERE practical_task_requests.state IN ('ready','failed','notSuitable') OR (practical_task_requests.state='pending' AND practical_task_requests.created_at<=?)",
+    "INSERT INTO practical_task_requests(user_id,space_id,request_id,document_id,concept_request_id,selection_key,state,error,canonical_json,created_at,provider,model,prompt_version,output_schema_version) SELECT ?,?,?,?,?,?,'pending',NULL,NULL,?,?,?,?,? WHERE NOT EXISTS(SELECT 1 FROM account_deletions WHERE user_id=?) ON CONFLICT(user_id,space_id) DO UPDATE SET request_id=excluded.request_id,document_id=excluded.document_id,concept_request_id=excluded.concept_request_id,selection_key=excluded.selection_key,state='pending',error=NULL,canonical_json=NULL,created_at=excluded.created_at,provider=excluded.provider,model=excluded.model,prompt_version=excluded.prompt_version,output_schema_version=excluded.output_schema_version WHERE practical_task_requests.state IN ('ready','failed','notSuitable') OR (practical_task_requests.state='pending' AND practical_task_requests.created_at<=?)",
   )
     .bind(
       userId,
@@ -44,6 +46,10 @@ export async function reservePracticalRequest(
       context.conceptRequestId,
       key,
       createdAt,
+      metadata.provider,
+      metadata.model,
+      metadata.promptVersion,
+      metadata.schemaVersion,
       userId,
       staleAt,
     )
