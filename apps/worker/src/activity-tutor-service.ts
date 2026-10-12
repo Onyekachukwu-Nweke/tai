@@ -1,4 +1,7 @@
-import type { ActivityTutorProvider } from "../../../packages/adapters/fake-activity-tutor";
+import {
+  activityTutorProviderMetadata,
+  type ActivityTutorProvider,
+} from "../../../packages/adapters/fake-activity-tutor";
 import {
   activityTutorResponseSchema,
   validateTutorResponse,
@@ -20,6 +23,7 @@ import {
   loadTutorRequest,
   reserveTutorRequest,
 } from "./activity-tutor-store";
+import { assertTutorAnswerConcealed } from "./activity-tutor-safety";
 
 export class TutorFailure extends Error {
   constructor(
@@ -76,11 +80,13 @@ export async function requestTutorHelp(
   );
   if (!question)
     throw new TutorFailure(404, "The current activity question was not found.");
+  const metadata = activityTutorProviderMetadata(provider);
   const reserved = await reserveTutorRequest(
     env,
     { userId, spaceId, ...input },
     hash,
     clock,
+    metadata,
   );
   if (!reserved) {
     const raced = await loadTutorRequest(env, userId, spaceId, input.requestId);
@@ -116,6 +122,7 @@ export async function requestTutorHelp(
       await provider.generate(context),
       context,
     );
+    assertTutorAnswerConcealed(response.text, question);
     if (
       !(await finishTutorRequest(
         env,

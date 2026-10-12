@@ -9,7 +9,7 @@ Concept generation can use Workers AI through a named AI Gateway. Local developm
 
 Requests send bounded saved source chunks, request JSON schema output, cap output tokens, bypass caching, and set per-request gateway log collection off. Returned data still passes application schema and source-association validation before persistence. D1 stores the provider, exact model, prompt version, and output schema version with the concept request so a later configuration change cannot relabel saved content.
 
-Activity packs and source-grounded rubric grading use the same live path and persist provider, model, prompt and schema provenance. Calculation-question creation remains excluded from the pack adapter until numeric keys receive deterministic review; rubric feedback for an existing calculation assesses working steps only and cannot override application-controlled final-answer correctness. Hints, follow-up, and practical tasks still use fake providers.
+Activity packs, source-grounded rubric grading, hints and alternate explanations use the same live path and persist provider, model, prompt and schema provenance. Calculation-question creation remains excluded from the pack adapter until numeric keys receive deterministic review; rubric feedback for an existing calculation assesses working steps only and cannot override application-controlled final-answer correctness. Follow-up and practical tasks still use fake providers.
 
 ## Automated evidence
 
@@ -17,7 +17,7 @@ Synthetic binding tests cover the request shape, named gateway, disabled log col
 
 ## Live gate still open
 
-The account API token was verified on 11 October 2026. Remote R2 bucket `tai-originals`, D1 database `tai`, and AI Gateway `tai` exist. All migrations through `0020` were applied remotely. The gateway reports body logging disabled, authentication enabled, zero-data-retention enabled, no cache TTL, and a bounded rate limit. Better Auth and Google OAuth values were uploaded as encrypted production Worker secrets. No secret values were recorded.
+The account API token was verified on 11 October 2026. Remote R2 bucket `tai-originals`, D1 database `tai`, and AI Gateway `tai` exist. All migrations through `0021` were applied remotely. The gateway reports body logging disabled, authentication enabled, zero-data-retention enabled, no cache TTL, and a bounded rate limit. Better Auth and Google OAuth values were uploaded as encrypted production Worker secrets. No secret values were recorded.
 
 A minimal direct invocation of `@cf/meta/llama-3.3-70b-instruct-fp8-fast` through gateway `tai` returned structured JSON successfully on 11 October 2026. It used synthetic content and establishes authenticated model access only; latency, usage, cost, source fidelity, and comparative quality were not measured.
 

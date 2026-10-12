@@ -4,11 +4,16 @@ import {
 } from "../../../packages/contracts/activity-tutor";
 import type { Clock } from "../../../packages/domain/concept-progress";
 import type { Env } from "./env";
+import type { ActivityTutorProviderMetadata } from "../../../packages/adapters/fake-activity-tutor";
 
 export type TutorRequestRow = {
   request_hash: string;
   state: "pending" | "ready" | "failed";
   response_json: string | null;
+  provider: "fake" | "workers_ai";
+  model: string | null;
+  prompt_version: string;
+  output_schema_version: 1;
 };
 
 export async function loadTutorRequest(
@@ -18,7 +23,7 @@ export async function loadTutorRequest(
   requestId: string,
 ) {
   return env.DB.prepare(
-    "SELECT request_hash,state,response_json FROM activity_tutor_requests WHERE user_id=? AND space_id=? AND request_id=?",
+    "SELECT request_hash,state,response_json,provider,model,prompt_version,output_schema_version FROM activity_tutor_requests WHERE user_id=? AND space_id=? AND request_id=?",
   )
     .bind(userId, spaceId, requestId)
     .first<TutorRequestRow>();
@@ -36,10 +41,11 @@ export async function reserveTutorRequest(
   },
   requestHash: string,
   clock: Clock,
+  metadata: ActivityTutorProviderMetadata,
 ) {
   const now = clock.now().toISOString();
   const result = await env.DB.prepare(
-    "INSERT OR IGNORE INTO activity_tutor_requests(user_id,space_id,request_id,pack_id,question_id,kind,request_hash,state,response_json,error,created_at,updated_at) VALUES(?,?,?,?,?,?,?,'pending',NULL,NULL,?,?)",
+    "INSERT OR IGNORE INTO activity_tutor_requests(user_id,space_id,request_id,pack_id,question_id,kind,request_hash,state,response_json,error,created_at,updated_at,provider,model,prompt_version,output_schema_version) VALUES(?,?,?,?,?,?,?,'pending',NULL,NULL,?,?,?,?,?,?)",
   )
     .bind(
       keys.userId,
@@ -51,6 +57,10 @@ export async function reserveTutorRequest(
       requestHash,
       now,
       now,
+      metadata.provider,
+      metadata.model,
+      metadata.promptVersion,
+      metadata.schemaVersion,
     )
     .run();
   return result.meta.changes === 1;
