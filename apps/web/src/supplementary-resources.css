@@ -1,0 +1,48 @@
+.supplementary-resources {
+  margin-top: 2rem;
+  border-top: 1px solid #d7dfd5;
+  padding-top: 1.5rem;
+}
+
+.resource-list {
+  display: grid;
+  gap: 1rem;
+  padding: 0;
+  list-style: none;
+}
+
+.resource-list > li {
+  border: 1px solid #d7dfd5;
+  border-radius: 0.75rem;
+  padding: 1rem;
+}
+
+.resource-list h4 {
+  margin-top: 0;
+}
+
+.resource-list dl {
+  display: grid;
+  gap: 0.4rem;
+}
+
+.resource-list dl div {
+  display: grid;
+  grid-template-columns: minmax(6rem, 8rem) 1fr;
+  gap: 0.5rem;
+}
+
+.resource-list dt {
+  font-weight: 700;
+}
+
+.resource-list dd {
+  margin: 0;
+}
+
+@media (max-width: 32rem) {
+  .resource-list dl div {
+    grid-template-columns: 1fr;
+    gap: 0.1rem;
+  }
+}

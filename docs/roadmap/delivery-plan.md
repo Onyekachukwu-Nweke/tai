@@ -58,7 +58,7 @@ M0 is **in progress**, with the local authenticated study-space foundation and b
 **Depends on:** M2 packs and M3 persistence. Practical-task and resource catalog work can proceed in parallel with separate file ownership. **Coverage:** FR-08, FR-09, FR-11 completion, Resources and Settings, accessibility/language completion.
 
 - M4.1: Source-grounded practical tasks with objective, instructions, output, tools, duration and self-check; simpler variant, costs/connectivity disclosure, feasible free alternative; no hazardous procedures. Record completion separately from quiz evidence.
-- M4.2: Dated checked resource catalog with all metadata, relevance reason, free/access disclosure and honest no-match. No autoplay or automatic external navigation.
+- M4.2 (implemented and reviewed): A small dated catalog matches complete words/keyphrases against current selected concepts. It includes checked educational websites and video, all required metadata, free/account disclosure, relevance reasons and honest no-match behavior, with learner-chosen safe new-tab navigation only and no autoplay.
 - M4.3 (in progress): Account deletion removes application-controlled D1/R2 data with explicit retry for pending cleanup; deleted spaces reject late AI results; per-user quota messages and provider-processing disclosure are present. Production provider-retention validation remains open.
 - M4.4: Complete keyboard, focus, labels, contrast, touch targets, text sizing and plain-language flows. Disclose English-only support and actionable unsupported-language limitations, preserve terminology/units, label supplementary examples and support simpler English.
 
