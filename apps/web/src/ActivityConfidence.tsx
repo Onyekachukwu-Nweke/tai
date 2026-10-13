@@ -10,7 +10,7 @@ export function ActivityConfidence({
   onChange: (value: ActivityDraft["confidence"]) => void;
 }) {
   return (
-    <label>
+    <label className="confidence-field">
       Confidence (optional)
       <select
         value={value}

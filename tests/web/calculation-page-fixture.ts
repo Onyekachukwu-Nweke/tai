@@ -100,7 +100,7 @@ export async function routeCalculationPage(page: Page) {
           schemaVersion: 1,
           status: "ready",
           requestId: "33333333-3333-4333-8333-333333333333",
-          location: 1,
+          scope: { startLocation: 1, endLocation: 1 },
           error: null,
           provider: "fake",
           relations: [],

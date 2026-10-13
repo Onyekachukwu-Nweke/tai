@@ -29,7 +29,8 @@ const sources = [
 export const liveConceptFixture: SourceContext = {
   studySpaceId,
   materialId,
-  location: 1,
+  startLocation: 1,
+  endLocation: 1,
   chunks: sources.map((source) => ({
     ...source,
     studySpaceId,

@@ -39,7 +39,7 @@ async function generate(limit: "disabled" | "zero") {
       body: JSON.stringify({
         schemaVersion: 1,
         requestId: crypto.randomUUID(),
-        selection: { location: 1 },
+        selection: { startLocation: 1, endLocation: 1 },
       }),
     },
     {

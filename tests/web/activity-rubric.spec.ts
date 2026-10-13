@@ -1,3 +1,4 @@
+import { openFirstSpacePractice } from "./shell-navigation";
 import { expect, test } from "@playwright/test";
 import { routeRubricPage } from "./rubric-page-fixture";
 
@@ -6,13 +7,13 @@ test("preserves an explanation across grading failure and restores rubric feedba
 }) => {
   await routeRubricPage(page);
   await page.goto("/");
-  await page.getByRole("button", { name: "Preview material" }).click();
+  await openFirstSpacePractice(page);
   await expect(page.getByText("Scenario · about 3 min")).toBeVisible();
   await expect(
     page.getByText("Water and temperature remain unchanged."),
   ).toBeVisible();
   await page.getByLabel("Your response").fill("Light supplies energy.");
-  await page.getByRole("button", { name: "Save scenario response" }).click();
+  await page.getByRole("button", { name: "Check answer" }).click();
   await expect(
     page.getByText(/Grading interrupted.*saved response/),
   ).toBeVisible();
@@ -52,7 +53,7 @@ test("preserves an explanation across grading failure and restores rubric feedba
     "Light supplies energy.",
   );
   await page.reload();
-  await page.getByRole("button", { name: "Preview material" }).click();
+  await openFirstSpacePractice(page);
   await expect(
     page.getByText("Add the role described in the cited source."),
   ).toBeVisible();
@@ -81,13 +82,13 @@ test("keeps a flagged scenario draft while disabling rubric submission", async (
 }) => {
   await routeRubricPage(page, { flagged: true });
   await page.goto("/");
-  await page.getByRole("button", { name: "Preview material" }).click();
+  await openFirstSpacePractice(page);
   await page.getByLabel("Your response").fill("My retained scenario draft");
   await expect(
     page.getByText(/cannot be submitted for rubric feedback/),
   ).toBeVisible();
   await expect(
-    page.getByRole("button", { name: "Save scenario response" }),
+    page.getByRole("button", { name: "Check answer" }),
   ).toBeDisabled();
   expect(await page.evaluate(() => JSON.stringify(localStorage))).toContain(
     "My retained scenario draft",
@@ -102,9 +103,9 @@ test("restores a completed follow-up grade after its response is lost", async ({
     lostFollowupGradeResponse: true,
   });
   await page.goto("/");
-  await page.getByRole("button", { name: "Preview material" }).click();
+  await openFirstSpacePractice(page);
   await page.getByLabel("Your response").fill("Light supplies energy.");
-  await page.getByRole("button", { name: "Save scenario response" }).click();
+  await page.getByRole("button", { name: "Check answer" }).click();
   await expect(page.getByText(/Source-supported rubric outcome/)).toBeVisible();
   await page.getByRole("button", { name: "Practise this gap" }).click();
   await page

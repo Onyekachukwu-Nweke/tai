@@ -56,7 +56,7 @@ export function conceptRoutes(
     if (!parsed.success)
       throw new ConceptFailure(
         400,
-        "Provide a request ID and saved section location.",
+        "Provide a request ID and a saved page range.",
       );
     const { requestId, selection } = parsed.data;
     return c.json(
@@ -66,7 +66,7 @@ export function conceptRoutes(
         c.get("user").id,
         c.req.param("id"),
         requestId,
-        selection.location,
+        selection,
         clock,
       ),
     );

@@ -4,12 +4,14 @@ Status: **in progress**. This slice does not complete M2 or FR-02.
 
 ## Implemented
 
-- An explicit learner action requests concepts for the selected saved page or TXT section. The browser sends a request UUID and location only; the Worker resolves the owner and loads current chunks from D1.
+- An explicit learner action requests concepts for a page range: the whole document by default, or one chapter when the PDF has top-level bookmarks. The browser sends a request UUID and start/end page only; the Worker resolves the owner and loads current chunks from D1.
+- Chapters come only from the PDF's own outline, read locally during extraction and saved with the material (`outline_json`). Text is not scanned for headings. TXT files, PDFs without bookmarks and materials saved before this change use the whole document.
+- The Worker bounds model context to 16 chunks and 24,000 characters. Pages under 200 characters (cover, contents or near-blank pages) are skipped unless the whole range is thin, and chunks are sampled evenly across the remaining pages in reading order. Prompt version `concept-organization-v2` names the page range and each excerpt's page.
 - Provider drafts have a strict bounded schema. Source IDs and relation indexes are validated against loaded context before persistence. The Worker assigns stable UUID concept IDs.
 - Request state, citations, editable labels, selection, and suggested relations persist in D1 and cascade with the material. Replaying the same successful request ID avoids another provider call.
 - Writes require the same active space, ready material revision and pending request. Deletion or a material change prevents a late result from creating concepts.
 - List and map modes expose the same concepts. Suggested connections do not disable selection. Citations focus the exact extracted chunk; PDF citations explicitly open the private reader on the cited page.
-- Provider failure and sections without usable text show an explicit limitation and retry path. Provider exception details and source text are not returned in errors or logged.
+- Provider failure and page ranges without usable text show an explicit limitation and retry path. Provider exception details and source text are not returned in errors or logged.
 
 ## Current limitation
 

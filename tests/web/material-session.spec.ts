@@ -1,3 +1,4 @@
+import { openFirstStudySpace } from "./shell-navigation";
 import { expect, test, type Page } from "@playwright/test";
 
 const id = "11111111-1111-4111-8111-111111111111";
@@ -37,7 +38,7 @@ async function open(page: Page) {
     }),
   );
   await page.goto("/");
-  await page.getByRole("button", { name: "Preview material" }).click();
+  await openFirstStudySpace(page);
 }
 
 async function failedSignIn(page: Page) {
@@ -86,21 +87,25 @@ test("401 material save retains preview and filename after failed sign-in withou
     mimeType: "text/plain",
     buffer: Buffer.from("Synthetic source evidence."),
   });
-  await expect(page.locator("pre")).toHaveText("Synthetic source evidence.");
+  await expect(
+    page.getByRole("region", { name: "Selected material" }),
+  ).toContainText("reviewed-notes.txt");
   await page
     .getByRole("button", { name: "Save material", exact: true })
     .click();
   await expect(page.getByRole("alert")).toContainText(/session|sign in/i);
   await failedSignIn(page);
-  await expect(page.locator("pre")).toHaveText("Synthetic source evidence.");
+  await expect(
+    page.getByRole("region", { name: "Selected material" }),
+  ).toContainText("reviewed-notes.txt");
   await expect(
     page.getByRole("heading", { name: "reviewed-notes.txt" }),
   ).toBeVisible();
   await expect(
     page.getByRole("button", { name: "Save material", exact: true }),
   ).toBeEnabled();
-  await expect(page.getByRole("link", { name: "Open original" })).toHaveCount(
-    0,
-  );
+  await expect(
+    page.getByRole("heading", { name: "Your material" }),
+  ).toHaveCount(0);
   expect(posts).toBe(1);
 });

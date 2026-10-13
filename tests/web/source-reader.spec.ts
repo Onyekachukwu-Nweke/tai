@@ -1,3 +1,4 @@
+import { openFirstStudySpace } from "./shell-navigation";
 import { expect, test, type Page } from "@playwright/test";
 import { readFile } from "node:fs/promises";
 import { resolve } from "node:path";
@@ -63,10 +64,10 @@ async function openSavedPdf(
     route.fulfill({ json: { schemaVersion: 1, material: savedMaterial } }),
   );
   await page.goto("/");
-  await page.getByRole("button", { name: "Preview material" }).click();
-  await expect(page.locator("pre")).toContainText(
-    savedMaterial.sections[0].text,
-  );
+  await openFirstStudySpace(page);
+  await expect(
+    page.getByRole("heading", { name: "Your material" }),
+  ).toBeVisible();
 }
 
 async function servePdf(page: Page) {
@@ -83,7 +84,7 @@ async function servePdf(page: Page) {
   );
 }
 
-test("saved PDF fetch is explicit and page navigation stays aligned with extracted text", async ({
+test("saved PDF opens once and page navigation re-renders without refetching", async ({
   page,
 }) => {
   let fetches = 0;
@@ -92,28 +93,24 @@ test("saved PDF fetch is explicit and page navigation stays aligned with extract
     if (new URL(request.url()).pathname === originalUrl) fetches += 1;
   });
   await openSavedPdf(page);
-  expect(fetches).toBe(0);
-  await page.getByRole("button", { name: "View PDF page" }).click();
   await expect(page.getByLabel("Rendered PDF page 1")).toBeVisible({
     timeout: 15_000,
   });
-  await expect(page.getByText("PDF page 1 of 2 ready.")).toBeVisible({
-    timeout: 15_000,
-  });
-  expect(fetches).toBe(1);
-
+  await expect(page.getByText("Page 1 of 2")).toBeVisible();
   await page.getByRole("button", { name: "Next page" }).click();
   await expect(page.getByLabel("Rendered PDF page 1")).toBeHidden();
   await expect(page.getByLabel("Rendered PDF page 2")).toBeVisible({
     timeout: 15_000,
   });
-  await expect(page.locator("pre")).toContainText(texts[1]);
-  await page.getByLabel("PDF page", { exact: true }).selectOption("1");
-  await expect(page.locator("pre")).toContainText(texts[0]);
+  await expect(page.getByRole("button", { name: "Next page" })).toBeDisabled();
+  await page.getByRole("button", { name: "Previous page" }).click();
+  await expect(page.getByLabel("Rendered PDF page 1")).toBeVisible({
+    timeout: 15_000,
+  });
   expect(fetches).toBe(1);
 });
 
-test("reader failure keeps extracted text and retries only when requested", async ({
+test("reader failure keeps the workspace and retries only when requested", async ({
   page,
 }) => {
   const pdf = await readFile(resolve("tests/fixtures/materials/two-page.pdf"));
@@ -125,16 +122,15 @@ test("reader failure keeps extracted text and retries only when requested", asyn
       : route.fulfill({ body: pdf, contentType: "application/pdf" });
   });
   await openSavedPdf(page);
-  await page.getByRole("button", { name: "View PDF page" }).click();
   await expect(page.getByRole("alert")).toBeVisible();
-  await expect(page.locator("pre")).toContainText(texts[0]);
+  await expect(page.getByRole("heading", { name: "Concepts" })).toBeVisible();
   expect(requests).toBe(1);
   await page.getByRole("button", { name: "Retry opening PDF" }).click();
   await expect(page.getByLabel("Rendered PDF page 1")).toBeVisible();
   expect(requests).toBe(2);
 });
 
-test("closing during a pending fetch aborts the reader without hiding text", async ({
+test("closing during a pending fetch aborts the reader without an error", async ({
   page,
 }) => {
   let release: (() => void) | undefined;
@@ -145,14 +141,12 @@ test("closing during a pending fetch aborts the reader without hiding text", asy
     await route.abort("failed").catch(() => undefined);
   });
   await openSavedPdf(page);
-  await page.getByRole("button", { name: "View PDF page" }).click();
-  await expect(page.getByText("Loading saved PDF…")).toBeVisible();
-  await page.getByRole("button", { name: "Close PDF reader" }).click();
+  await expect(page.getByText("Loading PDF…")).toBeVisible();
+  await page.getByRole("button", { name: "Close preview" }).click();
   release?.();
   await expect(
-    page.getByRole("button", { name: "View PDF page" }),
-  ).toBeVisible();
-  await expect(page.locator("pre")).toContainText(texts[0]);
+    page.getByRole("heading", { name: "Your material" }),
+  ).toHaveCount(0);
   await expect(page.getByRole("alert")).toHaveCount(0);
 });
 
@@ -160,9 +154,8 @@ test("reader fits a mobile viewport", async ({ page }) => {
   await page.setViewportSize({ width: 375, height: 812 });
   await servePdf(page);
   await openSavedPdf(page);
-  await page.getByRole("button", { name: "View PDF page" }).click();
   const canvas = page.getByLabel("Rendered PDF page 1");
-  await expect(canvas).toBeVisible();
+  await expect(canvas).toBeVisible({ timeout: 15_000 });
   expect(
     await canvas.evaluate((node) => node.getBoundingClientRect().width),
   ).toBeLessThanOrEqual(325);
@@ -171,7 +164,7 @@ test("reader fits a mobile viewport", async ({ page }) => {
   ).toBeLessThanOrEqual(375);
 });
 
-test("saved TXT remains text-only and does not fetch the original", async ({
+test("saved TXT shows its summary and does not fetch the original", async ({
   page,
 }) => {
   const text = "Synthetic text source.";
@@ -196,9 +189,9 @@ test("saved TXT remains text-only and does not fetch the original", async ({
     if (new URL(request.url()).pathname === originalUrl) originals += 1;
   });
   await openSavedPdf(page, txt);
-  await expect(page.locator("pre")).toContainText(text);
-  await expect(page.getByRole("button", { name: "View PDF page" })).toHaveCount(
-    0,
-  );
+  await expect(
+    page.getByRole("region", { name: "Selected material" }),
+  ).toContainText("source.txt");
+  await expect(page.getByRole("button", { name: "Next page" })).toHaveCount(0);
   expect(originals).toBe(0);
 });

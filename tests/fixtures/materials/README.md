@@ -8,5 +8,6 @@ Regenerate with `node scripts/generate-material-fixtures.mjs` from the repositor
 - `mixed.pdf`: a text page and a blank page.
 - `equation.pdf`: simple ASCII notation only. This does not establish reliable extraction of real mathematical fonts, tables, or complex layouts.
 - `password.pdf`: synthetic encryption dictionary with an intentionally unavailable password verifier. It exercises encrypted-envelope rejection, not successful decryption or a broad real-world encrypted-PDF audit.
+- `chapters.pdf`: a title page, a contents page and two chapters with top-level bookmarks starting on pages 3 and 5.
 - `malformed.pdf`: invalid document with a PDF header.
 - `notes.txt`: short UTF-8 text.

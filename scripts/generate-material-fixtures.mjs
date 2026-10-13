@@ -3,7 +3,7 @@ import { mkdir, writeFile } from "node:fs/promises";
 // Synthetic PDF 1.4 fixtures; offsets and stream lengths are byte-exact ASCII.
 const directory = new URL("../tests/fixtures/materials/", import.meta.url);
 await mkdir(directory, { recursive: true });
-function pdf(pages, encrypted = false) {
+function pdf(pages, encrypted = false, outline = []) {
   const objects = [
     "<< /Type /Catalog /Pages 2 0 R >>",
     "",
@@ -25,6 +25,26 @@ function pdf(pages, encrypted = false) {
     );
   }
   objects[1] = `<< /Type /Pages /Kids [${references.join(" ")}] /Count ${pages.length} >>`;
+  if (outline.length) {
+    // Top-level bookmarks: { title, page } with 1-based page numbers.
+    const root = objects.length + 1;
+    const first = root + 1;
+    const last = root + outline.length;
+    objects.push(
+      `<< /Type /Outlines /First ${first} 0 R /Last ${last} 0 R /Count ${outline.length} >>`,
+    );
+    outline.forEach(({ title, page }, index) => {
+      const own = first + index;
+      const links = [
+        index > 0 ? `/Prev ${own - 1} 0 R` : "",
+        index < outline.length - 1 ? `/Next ${own + 1} 0 R` : "",
+      ].join(" ");
+      objects.push(
+        `<< /Title (${title}) /Parent ${root} 0 R ${links} /Dest [${references[page - 1]} /XYZ 0 792 0] >>`,
+      );
+    });
+    objects[0] = `<< /Type /Catalog /Pages 2 0 R /Outlines ${root} 0 R >>`;
+  }
   if (encrypted)
     objects.push(
       "<< /Filter /Standard /V 1 /R 2 /Length 40 /O <0000000000000000000000000000000000000000000000000000000000000000> /U <0000000000000000000000000000000000000000000000000000000000000000> /P -4 >>",
@@ -72,6 +92,29 @@ for (const [filename, pages] of Object.entries(fixtures))
 await writeFile(
   new URL("password.pdf", directory),
   pdf([["Protected synthetic content."]], true),
+);
+const chapterText = (topic) =>
+  Array.from(
+    { length: 8 },
+    (_, line) => `${topic} synthetic study line ${line + 1} with enough words.`,
+  );
+await writeFile(
+  new URL("chapters.pdf", directory),
+  pdf(
+    [
+      ["Synthetic Course Notes"],
+      ["Contents"],
+      chapterText("Cells"),
+      chapterText("Cells continued"),
+      chapterText("Energy"),
+      chapterText("Energy continued"),
+    ],
+    false,
+    [
+      { title: "Chapter 1: Cells", page: 3 },
+      { title: "Chapter 2: Energy", page: 5 },
+    ],
+  ),
 );
 await writeFile(
   new URL("malformed.pdf", directory),

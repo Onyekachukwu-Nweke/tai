@@ -50,7 +50,7 @@ The LLM does the teaching work; the application supplies memory, grounding and s
 
 | Stage | Task kind | When it runs | Output |
 | --- | --- | --- | --- |
-| Read | `concepts` | Once per selected section | Concepts with descriptions and source IDs |
+| Read | `concepts` | Once per whole document or chapter (page range, bounded sample) | Concepts with descriptions and source IDs |
 | Write | `pack` | Per 3–5 question pack, plus at most one prefetch | Mixed recall, MCQ, explain, scenario and calculation items with keys/rubrics, explanations and source IDs |
 | Grade | `grade` | Only for explain, scenario and calculation working | Supported/missing elements, rubric outcome or `uncertain`, source references |
 | Follow-up | `followup`, `hint`, `explain_again` | After an incorrect/uncertain result, or on learner request | One targeted question, a hint, or an alternate explanation |

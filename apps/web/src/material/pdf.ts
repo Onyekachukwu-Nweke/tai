@@ -4,13 +4,15 @@ import {
   checkCancelled,
   type ExtractionOptions,
   type MaterialSection,
+  type OutlineEntry,
 } from "./types";
 import { readPageText } from "./pdf-text";
+import { readOutline } from "./pdf-outline";
 
 export async function extractPdf(
   bytes: Uint8Array,
   options: ExtractionOptions,
-): Promise<MaterialSection[]> {
+): Promise<{ sections: MaterialSection[]; outline: OutlineEntry[] }> {
   const pdfjs = await import("pdfjs-dist");
   const { default: workerUrl } =
     await import("pdfjs-dist/build/pdf.worker.min.mjs?url");
@@ -52,7 +54,9 @@ export async function extractPdf(
         page.cleanup();
       }
     }
-    return sections;
+    const outline = await readOutline(document);
+    checkCancelled(options.signal);
+    return { sections, outline };
   } catch (error) {
     checkCancelled(options.signal);
     if (error instanceof MaterialError) throw error;

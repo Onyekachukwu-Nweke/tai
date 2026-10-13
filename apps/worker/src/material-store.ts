@@ -13,6 +13,7 @@ export interface ImportRecord {
   filename: string;
   format: "pdf" | "txt";
   warnings_json: string;
+  outline_json: string;
 }
 
 export async function activeSpace(
@@ -34,7 +35,7 @@ export function getImport(
   spaceId: string,
 ): Promise<ImportRecord | null> {
   return env.DB.prepare(
-    "SELECT document_id, fingerprint, object_key, state, filename, format, warnings_json FROM material_imports WHERE user_id = ? AND space_id = ?",
+    "SELECT document_id, fingerprint, object_key, state, filename, format, warnings_json, outline_json FROM material_imports WHERE user_id = ? AND space_id = ?",
   )
     .bind(userId, spaceId)
     .first<ImportRecord>();
@@ -61,6 +62,7 @@ export async function getMaterial(
   ]);
   if (!(await activeSpace(env, userId, spaceId)))
     throw new MaterialFailure(404, "Study space not found.");
+  const outline: unknown[] = JSON.parse(record.outline_json);
   return materialPreviewSchema.parse({
     schemaVersion: 1,
     documentId: record.document_id,
@@ -69,6 +71,7 @@ export async function getMaterial(
     warnings: JSON.parse(record.warnings_json),
     sections: sections.results,
     chunks: chunks.results,
+    ...(outline.length ? { outline } : {}),
   });
 }
 
@@ -117,7 +120,7 @@ export async function reserveImport(
         .run();
     } else {
       await env.DB.prepare(
-        "INSERT INTO material_imports (user_id, space_id, document_id, fingerprint, object_key, state, filename, format, warnings_json) SELECT ?, ?, ?, ?, ?, 'writing', ?, ?, ? WHERE EXISTS (SELECT 1 FROM study_spaces WHERE user_id = ? AND id = ? AND deleted_at IS NULL) AND NOT EXISTS (SELECT 1 FROM account_deletions WHERE user_id = ?) ON CONFLICT DO NOTHING",
+        "INSERT INTO material_imports (user_id, space_id, document_id, fingerprint, object_key, state, filename, format, warnings_json, outline_json) SELECT ?, ?, ?, ?, ?, 'writing', ?, ?, ?, ? WHERE EXISTS (SELECT 1 FROM study_spaces WHERE user_id = ? AND id = ? AND deleted_at IS NULL) AND NOT EXISTS (SELECT 1 FROM account_deletions WHERE user_id = ?) ON CONFLICT DO NOTHING",
       )
         .bind(
           userId,
@@ -128,6 +131,7 @@ export async function reserveImport(
           preview.filename,
           preview.format,
           JSON.stringify(preview.warnings),
+          JSON.stringify(preview.outline ?? []),
           userId,
           spaceId,
           userId,

@@ -29,9 +29,9 @@ export async function extractMaterial(
       "format",
       "This file does not have a PDF header. Choose the original PDF or a UTF-8 TXT export.",
     );
-  const sections =
+  const { sections, outline } =
     format === "txt"
-      ? [{ location: 1, text: decodeText(bytes) }]
+      ? { sections: [{ location: 1, text: decodeText(bytes) }], outline: [] }
       : await (await import("./pdf")).extractPdf(bytes, options);
   checkCancelled(options.signal);
   const chunks = buildChunks(options.documentId, sections);
@@ -60,5 +60,6 @@ export async function extractMaterial(
     sections,
     chunks,
     warnings,
+    ...(outline.length ? { outline } : {}),
   };
 }

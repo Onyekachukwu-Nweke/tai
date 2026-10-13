@@ -48,8 +48,9 @@ test("keeps a selected size active and announces when storage cannot save", asyn
   );
   await routeEmptySpaces(page);
   await page.goto("/");
+  await page.getByRole("button", { name: "Settings" }).click();
 
-  const large = page.getByRole("radio", { name: "Large (112.5%)" });
+  const large = page.getByRole("radio", { name: /^A\+ large$/i });
   await large.check();
   await expect(large).toBeChecked();
   await expect(page.locator("html")).toHaveAttribute("data-text-size", "large");

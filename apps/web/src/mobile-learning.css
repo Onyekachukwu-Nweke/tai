@@ -1,0 +1,69 @@
+/* Keep learning controls inside the narrow content column at enlarged text sizes. */
+.concept-row,
+.concept-row *,
+.activity-card,
+.activity-card *,
+.session-card,
+.session-card * {
+  min-width: 0;
+}
+.concept-title-line strong {
+  overflow-wrap: anywhere;
+}
+.concept-edit-form {
+  align-items: stretch;
+  flex-direction: column;
+}
+.concept-edit-form label,
+.concept-edit-form input {
+  min-width: 0;
+  max-width: 100%;
+}
+.concept-statuses li {
+  align-items: flex-start;
+  flex-wrap: wrap;
+}
+.concept-statuses li > span {
+  min-width: 0;
+  max-width: 100%;
+}
+.status-chip {
+  max-width: 100%;
+  white-space: normal;
+  text-align: left;
+  overflow-wrap: anywhere;
+}
+.flag-control {
+  flex-wrap: wrap;
+}
+.source-link {
+  max-width: 100%;
+  overflow-wrap: anywhere;
+}
+.activity-toolbar > * {
+  min-width: 0;
+}
+.activity-toolbar strong,
+.activity-toolbar span {
+  overflow-wrap: anywhere;
+}
+@media (max-width: 420px) {
+  .session-controls {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .session-controls button {
+    grid-column: auto;
+  }
+  .question-nav {
+    flex-wrap: wrap;
+  }
+  .question-nav button {
+    flex: 1 1 100%;
+  }
+  .concept-row {
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+  .concept-sources {
+    grid-column: 2;
+  }
+}

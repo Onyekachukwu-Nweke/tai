@@ -10,16 +10,14 @@ import {
 type Source = ConceptCollection["concepts"][number]["sources"][number];
 type Props = {
   spaceId: string;
-  conceptIds: string[];
+  concepts: { id: string; label: string }[];
   sources: Source[];
   onSource: (source: Source) => void;
 };
-export function PracticalTask({
-  spaceId,
-  conceptIds,
-  sources,
-  onSource,
-}: Props) {
+export function PracticalTask({ spaceId, concepts, sources, onSource }: Props) {
+  const [chosenId, setChosenId] = useState("");
+  const chosen =
+    concepts.find((concept) => concept.id === chosenId) ?? concepts[0];
   const [state, setState] = useState<PracticalTaskState>();
   const [variant, setVariant] = useState<
     "task" | "simpler" | "freeAlternative"
@@ -41,11 +39,11 @@ export function PracticalTask({
     return () => controller.abort();
   }, [spaceId]);
   const generate = async () => {
-    if (conceptIds.length !== 1) return;
+    if (!chosen) return;
     setGenerating(true);
     setError("");
     try {
-      setState(await generatePracticalTask(spaceId, [conceptIds[0]!]));
+      setState(await generatePracticalTask(spaceId, [chosen.id]));
       setVariant("task");
     } catch (e) {
       setError(
@@ -85,10 +83,25 @@ export function PracticalTask({
         excerpts to the configured AI service. Your original file, account
         details, internal IDs, and completion status are not sent.
       </p>
+      {concepts.length > 1 && (
+        <label className="compact-field">
+          Concept for this task
+          <select
+            value={chosen?.id ?? ""}
+            onChange={(event) => setChosenId(event.target.value)}
+          >
+            {concepts.map((concept) => (
+              <option key={concept.id} value={concept.id}>
+                {concept.label}
+              </option>
+            ))}
+          </select>
+        </label>
+      )}
       <button
         type="button"
         onClick={() => void generate()}
-        disabled={conceptIds.length !== 1 || generating}
+        disabled={!chosen || generating}
       >
         {generating
           ? "Preparing practical task…"
@@ -98,9 +111,10 @@ export function PracticalTask({
               ? "Prepare another task"
               : "Prepare practical task"}
       </button>
-      {conceptIds.length !== 1 && (
+      {!chosen && (
         <p className="fine-print">
-          Select exactly one concept to prepare a practical task.
+          Include at least one concept in your study space to prepare a
+          practical task.
         </p>
       )}
       {state?.status === "notSuitable" && (
@@ -180,17 +194,18 @@ export function PracticalTask({
             ))}
           </ul>
           <h5>Supporting sources</h5>
-          <ul>
+          <ul className="source-chips">
             {task.sourceIds.map((id) => {
               const source = sources.find((item) => item.id === id);
               return source ? (
                 <li key={id}>
                   <button
                     type="button"
-                    className="source-link"
+                    className="source-chip"
+                    aria-label={`Open source page ${source.location}`}
                     onClick={() => onSource(source)}
                   >
-                    Open source section {source.location}
+                    Page {source.location}
                   </button>
                 </li>
               ) : (

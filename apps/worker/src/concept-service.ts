@@ -2,7 +2,10 @@ import {
   conceptProviderMetadata,
   type ConceptProvider,
 } from "../../../packages/adapters/fake-concepts";
-import { validateConceptDrafts } from "../../../packages/contracts/concepts";
+import {
+  validateConceptDrafts,
+  type PageRange,
+} from "../../../packages/contracts/concepts";
 import type { Clock } from "../../../packages/domain/concept-progress";
 import type { Env } from "./env";
 import {
@@ -33,17 +36,17 @@ export async function generateConcepts(
   userId: string,
   spaceId: string,
   requestId: string,
-  location: number,
+  range: PageRange,
   clock: Clock,
 ) {
   const previous = await requestState(env, userId, spaceId);
   if (previous?.request_id === requestId && previous.state !== "failed")
     return loadConcepts(env, userId, spaceId);
-  const context = await loadContext(env, userId, spaceId, location);
+  const context = await loadContext(env, userId, spaceId, range);
   if (!context)
     throw new ConceptFailure(
       409,
-      "The selected section has no usable saved text.",
+      "The selected pages have no usable saved text.",
     );
   const metadata = conceptProviderMetadata(provider);
   await reserveRequest(env, userId, spaceId, requestId, context, metadata);

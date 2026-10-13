@@ -57,7 +57,7 @@ describe("source-backed concept organization", () => {
     const body = JSON.stringify({
       schemaVersion: 1,
       requestId,
-      selection: { location: 1 },
+      selection: { startLocation: 1, endLocation: 1 },
     });
     const first = await conceptCall(
       provider,
@@ -146,7 +146,7 @@ describe("source-backed concept organization", () => {
         body: JSON.stringify({
           schemaVersion: 1,
           requestId: "55555555-5555-4555-8555-555555555555",
-          selection: { location: 1 },
+          selection: { startLocation: 1, endLocation: 1 },
         }),
       },
     );
@@ -224,7 +224,7 @@ describe("source-backed concept organization", () => {
     const input = JSON.stringify({
       schemaVersion: 1,
       requestId,
-      selection: { location: 2 },
+      selection: { startLocation: 2, endLocation: 2 },
     });
     expect(
       (
@@ -249,7 +249,7 @@ describe("source-backed concept organization", () => {
         body: JSON.stringify({
           schemaVersion: 1,
           requestId,
-          selection: { location: 1 },
+          selection: { startLocation: 1, endLocation: 1 },
         }),
         headers: { origin: "https://evil.example" },
       },
@@ -280,7 +280,7 @@ describe("source-backed concept organization", () => {
     const body = JSON.stringify({
       schemaVersion: 1,
       requestId,
-      selection: { location: 1 },
+      selection: { startLocation: 1, endLocation: 1 },
     });
     const failed = await conceptCall(
       broken,

@@ -1,8 +1,10 @@
 import {
   conceptCollectionSchema,
   type ConceptCollection,
+  type PageRange,
   type SourceContext,
 } from "../../../packages/contracts/concepts";
+import { selectContextChunks } from "./concept-context";
 import type { Env } from "./env";
 import type { ConceptProviderMetadata } from "../../../packages/adapters/fake-concepts";
 
@@ -10,6 +12,7 @@ type RequestRow = {
   request_id: string;
   document_id: string;
   location: number;
+  end_location: number | null;
   state: "pending" | "ready" | "failed";
   error: string | null;
   provider: "fake" | "workers_ai";
@@ -23,7 +26,7 @@ export async function loadConcepts(
   spaceId: string,
 ): Promise<ConceptCollection> {
   const request = await env.DB.prepare(
-    "SELECT request_id,document_id,location,state,error,provider,model,prompt_version,output_schema_version FROM concept_requests WHERE user_id=? AND space_id=?",
+    "SELECT request_id,document_id,location,end_location,state,error,provider,model,prompt_version,output_schema_version FROM concept_requests WHERE user_id=? AND space_id=?",
   )
     .bind(userId, spaceId)
     .first<RequestRow>();
@@ -32,7 +35,7 @@ export async function loadConcepts(
       schemaVersion: 1,
       status: "empty",
       requestId: null,
-      location: null,
+      scope: null,
       concepts: [],
       relations: [],
       error: null,
@@ -72,7 +75,10 @@ export async function loadConcepts(
     schemaVersion: 1,
     status: request.state,
     requestId: request.request_id,
-    location: request.location,
+    scope: {
+      startLocation: request.location,
+      endLocation: request.end_location ?? request.location,
+    },
     concepts: conceptRows.results.map((row) => ({
       ...row,
       selected: Boolean(row.selected),
@@ -96,7 +102,7 @@ export async function loadContext(
   env: Env,
   userId: string,
   spaceId: string,
-  location: number,
+  range: PageRange,
 ): Promise<SourceContext | null> {
   const material = await env.DB.prepare(
     "SELECT m.document_id FROM material_imports m JOIN study_spaces s ON s.id=m.space_id AND s.user_id=m.user_id WHERE m.user_id=? AND m.space_id=? AND m.state='ready' AND s.deleted_at IS NULL",
@@ -105,9 +111,15 @@ export async function loadContext(
     .first<{ document_id: string }>();
   if (!material) return null;
   const chunks = await env.DB.prepare(
-    "SELECT id,location,start_offset AS start,end_offset AS end,text FROM material_chunks WHERE user_id=? AND space_id=? AND document_id=? AND location=? ORDER BY start_offset LIMIT 20",
+    "SELECT id,location,start_offset AS start,end_offset AS end,text FROM material_chunks WHERE user_id=? AND space_id=? AND document_id=? AND location BETWEEN ? AND ? ORDER BY location,start_offset LIMIT 500",
   )
-    .bind(userId, spaceId, material.document_id, location)
+    .bind(
+      userId,
+      spaceId,
+      material.document_id,
+      range.startLocation,
+      range.endLocation,
+    )
     .all<{
       id: string;
       location: number;
@@ -115,12 +127,13 @@ export async function loadContext(
       end: number;
       text: string;
     }>();
-  if (!chunks.results.length) return null;
+  const selected = selectContextChunks(chunks.results);
+  if (!selected.length) return null;
   return {
     studySpaceId: spaceId,
     materialId: material.document_id,
-    location,
-    chunks: chunks.results.map((chunk) => ({
+    ...range,
+    chunks: selected.map((chunk) => ({
       ...chunk,
       studySpaceId: spaceId,
       materialId: material.document_id,
@@ -134,7 +147,7 @@ export async function requestState(
   spaceId: string,
 ): Promise<RequestRow | null> {
   return env.DB.prepare(
-    "SELECT request_id,document_id,location,state,error,provider,model,prompt_version,output_schema_version FROM concept_requests WHERE user_id=? AND space_id=?",
+    "SELECT request_id,document_id,location,end_location,state,error,provider,model,prompt_version,output_schema_version FROM concept_requests WHERE user_id=? AND space_id=?",
   )
     .bind(userId, spaceId)
     .first<RequestRow>();
@@ -149,14 +162,15 @@ export async function reserveRequest(
   metadata: ConceptProviderMetadata,
 ): Promise<void> {
   await env.DB.prepare(
-    "INSERT INTO concept_requests(user_id,space_id,request_id,document_id,location,state,error,provider,model,prompt_version,output_schema_version) VALUES(?,?,?,?,?,'pending',NULL,?,?,?,?) ON CONFLICT(user_id,space_id) DO UPDATE SET request_id=excluded.request_id,document_id=excluded.document_id,location=excluded.location,state='pending',error=NULL",
+    "INSERT INTO concept_requests(user_id,space_id,request_id,document_id,location,end_location,state,error,provider,model,prompt_version,output_schema_version) VALUES(?,?,?,?,?,?,'pending',NULL,?,?,?,?) ON CONFLICT(user_id,space_id) DO UPDATE SET request_id=excluded.request_id,document_id=excluded.document_id,location=excluded.location,end_location=excluded.end_location,state='pending',error=NULL",
   )
     .bind(
       userId,
       spaceId,
       requestId,
       context.materialId,
-      context.location,
+      context.startLocation,
+      context.endLocation,
       metadata.provider,
       metadata.model,
       metadata.promptVersion,

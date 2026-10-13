@@ -1,3 +1,4 @@
+import { openFirstStudySpace } from "./shell-navigation";
 import { expect, test, type Page, type Route } from "@playwright/test";
 
 const spaceId = "11111111-1111-4111-8111-111111111111";
@@ -9,7 +10,7 @@ const concepts = {
   schemaVersion: 1,
   status: "ready",
   requestId: "44444444-4444-4444-8444-444444444444",
-  location: 1,
+  scope: { startLocation: 1, endLocation: 1 },
   concepts: [
     {
       id: conceptId,
@@ -89,7 +90,7 @@ async function openResources(
   );
   await page.route(`**/api/study-spaces/${spaceId}/resources`, respond);
   await page.goto("/");
-  await page.getByRole("button", { name: "Preview material" }).click();
+  await openFirstStudySpace(page);
 }
 
 test("states honest no-match and limited catalog coverage", async ({
@@ -108,8 +109,8 @@ test("states honest no-match and limited catalog coverage", async ({
     page.getByText("No suitable checked resource was found", { exact: false }),
   ).toBeVisible();
   await expect(
-    page.getByText("The catalog is intentionally limited."),
-  ).toBeVisible();
+    page.getByLabel("Concepts without a checked match"),
+  ).toContainText("Project management");
 });
 
 test("shows an error and succeeds only after explicit retry", async ({
@@ -168,7 +169,7 @@ test("contacts an external resource only after keyboard activation", async ({
     }),
   );
   const originalUrl = page.url();
-  const link = page.getByRole("link", { name: /opens in a new tab/ });
+  const link = page.getByRole("link", { name: /Open resource/ });
   await link.focus();
   await expect(link).toBeFocused();
   expect(externalRequests).toEqual([]);
@@ -197,7 +198,7 @@ test("keeps resource metadata and its link usable on mobile", async ({
     }),
   );
   const section = page.getByRole("region", { name: "Supplementary resources" });
-  const link = section.getByRole("link", { name: /opens in a new tab/ });
+  const link = section.getByRole("link", { name: /Open resource/ });
   await expect(section).toContainText("Free to read without an account");
   await link.scrollIntoViewIfNeeded();
   await expect(link).toBeInViewport();

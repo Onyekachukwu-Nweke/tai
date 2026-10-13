@@ -1,3 +1,4 @@
+import { openFirstPractice, openFirstSpacePractice } from "./shell-navigation";
 import { expect, test } from "@playwright/test";
 import {
   activeStudySession,
@@ -68,7 +69,7 @@ test("keeps the in-memory draft when browser storage rejects writes", async ({
         schemaVersion: 1,
         status: "ready",
         requestId: "33333333-3333-4333-8333-333333333333",
-        location: 1,
+        scope: { startLocation: 1, endLocation: 1 },
         error: null,
         provider: "fake",
         relations: [],
@@ -174,7 +175,7 @@ test("keeps the in-memory draft when browser storage rejects writes", async ({
       }),
   );
   await page.goto("/");
-  await page.getByRole("button", { name: "Preview material" }).click();
+  await openFirstSpacePractice(page);
   await expect(
     page.getByText("Welcome back. Your saved progress is still here."),
   ).toBeVisible();
@@ -187,7 +188,7 @@ test("keeps the in-memory draft when browser storage rejects writes", async ({
   ).toBeHidden();
   await expect(page.getByLabel("Your response")).toBeVisible();
   await page.reload();
-  await page.getByRole("button", { name: "Preview material" }).click();
+  await openFirstSpacePractice(page);
   await page.getByRole("button", { name: "Start a 10-minute review" }).click();
   await expect(
     page.getByRole("heading", { name: "Welcome back" }),
@@ -199,10 +200,15 @@ test("keeps the in-memory draft when browser storage rejects writes", async ({
   await expect(
     page.getByText(/could not persist your draft/).first(),
   ).toBeVisible();
-  await page.getByLabel("Time available").selectOption("30");
-  await page.getByLabel("What would you like to do?").selectOption("review");
+  await openFirstPractice(page);
   await page
-    .getByLabel("Concept (optional)")
+    .getByRole("combobox", { name: "Time", exact: true })
+    .selectOption("30");
+  await page
+    .getByRole("combobox", { name: "Activity", exact: true })
+    .selectOption("review");
+  await page
+    .getByRole("combobox", { name: "Concept", exact: true })
     .selectOption("54444444-4444-4444-8444-444444444444");
   await page
     .getByRole("button", { name: "Replace with these settings" })
@@ -214,7 +220,7 @@ test("keeps the in-memory draft when browser storage rejects writes", async ({
   await expect(
     page.getByRole("heading", { name: "Session saved" }),
   ).toBeVisible();
-  await expect(page.getByLabel("Time available")).toBeVisible();
+  await expect(page.getByLabel("Time")).toBeVisible();
   expect(sessionBodies[1]).toMatchObject({
     budgetMinutes: 30,
     mode: "review",
@@ -222,7 +228,7 @@ test("keeps the in-memory draft when browser storage rejects writes", async ({
     replaceActive: true,
   });
   expect(sessionBodies[1]?.sessionId).toBe(sessionBodies[0]?.sessionId);
-  await page.getByRole("button", { name: "Prepare today’s session" }).click();
+  await page.getByRole("button", { name: /Start session/ }).click();
   expect(sessionBodies[2]?.replaceActive).toBe(false);
   expect(sessionBodies[2]?.sessionId).not.toBe(sessionBodies[1]?.sessionId);
 });
