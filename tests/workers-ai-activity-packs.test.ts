@@ -160,6 +160,28 @@ describe("Workers AI activity-pack provider", () => {
     ).toThrow("Invalid AI provider configuration");
   });
 
+  it("rejects a pack containing only one question type", async () => {
+    const ai = new RecordingAi();
+    const provider = new WorkersAiActivityPackProvider(ai, {
+      gatewayId: "tai",
+      model: "@cf/example/model",
+    });
+    const oneType = validResponse();
+    oneType.questions = oneType.questions.map((question, index) => ({
+      draftId: `recall-${index}`,
+      type: "recall" as const,
+      conceptIds: question.conceptIds,
+      sourceIds: question.sourceIds,
+      prompt: question.prompt,
+      estimatedMinutes: question.estimatedMinutes,
+      supportedAnswer: "Supported by the cited excerpt.",
+    }));
+    ai.response = { response: JSON.stringify(oneType) };
+    await expect(provider.generate(context)).rejects.toThrow(
+      "at least two question types",
+    );
+  });
+
   it("exposes exact provenance metadata", () => {
     expect(
       new WorkersAiActivityPackProvider(new RecordingAi(), {
@@ -169,7 +191,7 @@ describe("Workers AI activity-pack provider", () => {
     ).toEqual({
       provider: "workers_ai",
       model: "@cf/example/model",
-      promptVersion: "activity-pack-v1",
+      promptVersion: "activity-pack-v2",
       schemaVersion: 1,
     });
   });

@@ -1,7 +1,7 @@
 # M0 Workers AI live-provider evidence
 
 **Date:** 11 October 2026  
-**Status:** concept and activity-pack adapters and synthetic-binding verification complete; Cloudflare authentication, core remote resources and a minimal live model invocation are verified. Deployed OAuth remains blocked by the public production origin and callback.
+**Status:** concept and activity-pack adapters, synthetic-binding verification, and a bounded live-evaluation tool are complete; Cloudflare authentication, core remote resources and a four-call two-model comparison are verified. Both model candidates failed the first manual pack-quality audit, so selection remains open. Deployed OAuth remains blocked by the public production origin and callback.
 
 ## Implemented slice
 
@@ -15,6 +15,8 @@ Activity packs, source-grounded rubric grading, hints, alternate explanations, t
 
 Synthetic binding tests cover the request shape, named gateway, disabled log collection and cache, model rejection, malformed JSON, invented citations, ambiguous draft IDs, invalid configuration, and exact provider metadata. Integration tests cover quota reservation, idempotent replay, ownership, late-write rejection, retry behavior, provenance reload, and retention of the last successful provenance after a failed retry. Automated tests use an isolated Wrangler config without an AI binding and make no paid calls.
 
+The [live-provider evaluator](live-provider-evaluation.md) provides a separate exact-consent path for four sequential synthetic calls across two models and the production concept/activity-pack adapters. It produces an ignored, sanitized report and cannot be reached by normal tests. Its fake-transport tests do not establish live model quality, usage, cost, or availability.
+
 ## Live gate still open
 
 The account API token was verified on 11 October 2026. Remote R2 bucket `tai-originals`, D1 database `tai`, and AI Gateway `tai` exist. All migrations through `0023` were applied remotely. The gateway reports body logging disabled, authentication enabled, zero-data-retention enabled, no cache TTL, and a bounded rate limit. Better Auth and Google OAuth values were uploaded as encrypted production Worker secrets. No secret values were recorded.
@@ -23,13 +25,13 @@ On 12 October 2026, the local Worker loaded the configured Better Auth and Googl
 
 A minimal direct invocation of `@cf/meta/llama-3.3-70b-instruct-fp8-fast` through gateway `tai` returned structured JSON successfully on 11 October 2026. It used synthetic content and establishes authenticated model access only; latency, usage, cost, source fidelity, and comparative quality were not measured.
 
-The Cloudflare account does not yet have a `workers.dev` subdomain, so the production HTTPS origin and matching Google OAuth callback cannot be finalized. `APP_ORIGIN` remains local and no application deployment has been made. Token/cost measurement, model comparison, activity-pack content audit, and deployed end-to-end behavior remain unverified.
+The Cloudflare account does not yet have a `workers.dev` subdomain, so the production HTTPS origin and matching Google OAuth callback cannot be finalized. `APP_ORIGIN` remains local and no application deployment has been made. The comparison measured latency, tokens and neurons, but Cloudflare returned no dollar cost. Both v1 packs failed manual quality review; `activity-pack-v2` now fails closed on single-type packs and strengthens source-only instructions, but it has not received another live run. Deployed end-to-end behavior remains unverified.
 
 Before the deployed walkthrough:
 
 1. Open Workers & Pages in the Cloudflare dashboard once to register the account's `workers.dev` subdomain, or choose a custom domain.
 2. Set the deployed HTTPS `APP_ORIGIN` and matching Google OAuth callback.
 3. Keep the checked-in low daily quotas and recheck deployed bindings and privacy settings before learner use.
-4. Run the same bounded quantitative and scenario fixtures against accessible Workers AI JSON-capable models and record exact model IDs, prompt/schema version, latency, usage, cost, schema compliance, and source fidelity.
+4. Run the bounded evaluator against the two configured Workers AI models, then manually audit its validated output for source fidelity and usefulness. Record provider-reported usage and cost only when available; do not replace missing values with estimates.
 
 Live evaluation must remain separate from CI and must use synthetic, non-sensitive material until the privacy gate passes.
