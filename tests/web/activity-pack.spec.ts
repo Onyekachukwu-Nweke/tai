@@ -153,7 +153,7 @@ test("prepares an ID-only learner-safe pack, reloads it and opens exact evidence
   releaseTutor();
   await expect(page.getByText(restoredHint.text)).toBeVisible();
   await page
-    .getByRole("button", { name: "Explain another way" })
+    .getByRole("button", { name: "Explain in simpler English" })
     .first()
     .click();
   await expect(page.getByText("Saved alternate explanation.")).toBeVisible();

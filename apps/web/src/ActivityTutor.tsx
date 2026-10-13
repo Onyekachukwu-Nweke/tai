@@ -23,7 +23,7 @@ export function ActivityTutor({
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const resultRef = useRef<HTMLDivElement>(null);
-  const label = kind === "hint" ? "Hint" : "Explain another way";
+  const label = kind === "hint" ? "Hint" : "Explain in simpler English";
   useEffect(() => {
     if (initial) setResult(initial);
   }, [initial]);

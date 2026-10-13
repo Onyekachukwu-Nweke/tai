@@ -34,6 +34,12 @@ describe("fake activity tutor", () => {
       );
       expect(response.text).not.toContain(text);
       expect(response.text).not.toBe(text);
+      if (kind === "explain_again") {
+        expect(response.text).toContain("shorter sentences");
+        expect(response.text).toContain(
+          "terminology, symbols, numbers, and units",
+        );
+      }
     }
   });
 });

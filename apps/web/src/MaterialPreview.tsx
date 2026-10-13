@@ -161,7 +161,10 @@ export function MaterialPreview({
       </p>
       <p id="material-help">
         Text-based PDF or UTF-8 TXT, up to 10 MB (10,000,000 bytes) and 50 PDF
-        pages. English only. Scanned PDFs and OCR are not supported.
+        pages. English only. TAI does not detect or translate other languages.
+        If needed, upload a trusted English translation after checking its
+        terminology, symbols, numbers, and units against the original. Scanned
+        PDFs and OCR are not supported.
       </p>
       <p className="notice">
         Check equations, symbols, tables, and reading order against your

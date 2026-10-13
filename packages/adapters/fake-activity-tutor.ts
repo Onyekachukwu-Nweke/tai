@@ -47,7 +47,7 @@ export class FakeActivityTutorProvider implements ActivityTutorProvider {
       text:
         context.kind === "hint"
           ? `Use the cited section ${source.location} to identify the key relationship before choosing or writing your answer.`
-          : `Reframe the question in your own words, then connect each part of your response to the cited section ${source.location}.`,
+          : `Use shorter sentences to restate the idea from section ${source.location}. Keep its terminology, symbols, numbers, and units unchanged.`,
       sources: [source],
       supportedByMaterial: true,
     };

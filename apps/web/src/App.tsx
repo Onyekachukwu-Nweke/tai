@@ -3,6 +3,7 @@ import { sessionSchema } from "../../../packages/contracts/study-spaces";
 import { api, authClient } from "./api";
 import { StudySpaces } from "./StudySpaces";
 import { DeleteAccount } from "./DeleteAccount";
+import { AccessibilitySettings } from "./AccessibilitySettings";
 
 type User = { id: string; name: string; email: string };
 
@@ -119,6 +120,7 @@ export function App() {
         ) : user ? (
           <>
             <StudySpaces key={user.id} userId={user.id} />
+            <AccessibilitySettings />
             <DeleteAccount userId={user.id} onDeleted={accountDeleted} />
           </>
         ) : (
