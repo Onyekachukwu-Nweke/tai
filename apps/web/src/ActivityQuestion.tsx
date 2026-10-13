@@ -22,6 +22,9 @@ import { ActivityGradedFeedback } from "./ActivityGradedFeedback";
 import { CalculationAnswer } from "./CalculationAnswer";
 import { MultipleChoiceAnswer } from "./MultipleChoiceAnswer";
 import { ActivityConfidence } from "./ActivityConfidence";
+import { RecallCheck } from "./RecallCheck";
+import { QuestionActions } from "./QuestionActions";
+import { useKeydown } from "./use-keydown";
 type Question = LearnerActivityPack["questions"][number];
 export function ActivityQuestion({
   userId,
@@ -150,11 +153,33 @@ export function ActivityQuestion({
   function update(update: Partial<ActivityDraft>) {
     setDraft((value) => ({ ...value, ...update }));
   }
+  const recall = question.type === "recall";
+  const written = question.type === "explain" || question.type === "scenario";
+  const hasAnswer = Boolean(draft.answer.trim());
+  function seeAnswer() {
+    if (hasAnswer) setCheckingRecall(true);
+    else void submit({ ...base(), interaction: "reveal" });
+  }
+  function checkWritten() {
+    void submit({
+      ...base(),
+      interaction: "explain_submit",
+      answer: draft.answer,
+    });
+  }
+  useKeydown((event) => {
+    if (!(event.ctrlKey || event.metaKey) || event.key !== "Enter" || busy)
+      return;
+    if (recall && !checkingRecall) {
+      event.preventDefault();
+      seeAnswer();
+    } else if (written && hasAnswer && !flag) {
+      event.preventDefault();
+      checkWritten();
+    }
+  }, active && !result);
   return (
-    <li className="activity-card" hidden={!active}>
-      <span className={`activity-type type-${question.type}`}>
-        {question.type === "mcq" ? "Multiple choice" : question.type}
-      </span>
+    <li className="activity-card focus-card" hidden={!active}>
       <ActivityQuestionPrompt question={question} />
       {!result && question.type === "mcq" && (
         <MultipleChoiceAnswer
@@ -175,35 +200,21 @@ export function ActivityQuestion({
           }}
         />
       )}
-      {!result &&
-        question.type !== "mcq" &&
-        question.type !== "calculation" && (
-          <label>
-            Your response
-            <textarea
-              value={draft.answer}
-              disabled={busy}
-              maxLength={8000}
-              onChange={(e) => update({ answer: e.target.value })}
-            />
-          </label>
-        )}
-      {!result && (
-        <ActivityConfidence
-          value={draft.confidence}
-          disabled={busy}
-          onChange={(confidence) => update({ confidence })}
-        />
-      )}
-      {!result && (
-        <ActivityTutorActions
-          spaceId={spaceId}
-          packId={packId}
-          questionId={question.id}
-          initial={initialTutor}
-          onSource={onSource}
-          onSaved={onTutorSaved}
-        />
+      {!result && (recall || written) && (
+        <label className="response-field">
+          {recall ? "Your response (optional)" : "Your response"}
+          <textarea
+            value={draft.answer}
+            disabled={busy || checkingRecall}
+            maxLength={8000}
+            placeholder={
+              recall
+                ? "Write what you remember before you look…"
+                : "Write your answer…"
+            }
+            onChange={(e) => update({ answer: e.target.value })}
+          />
+        </label>
       )}
       {!result && question.type === "calculation" && (
         <CalculationAnswer
@@ -225,82 +236,47 @@ export function ActivityQuestion({
           }}
         />
       )}
-      {!result &&
-        (question.type === "explain" || question.type === "scenario") && (
-          <>
-            <button
-              disabled={busy || Boolean(flag) || !draft.answer.trim()}
-              onClick={() =>
-                void submit({
-                  ...base(),
-                  interaction: "explain_submit",
-                  answer: draft.answer,
-                })
-              }
-            >
-              Check answer
-            </button>
-            {flag && (
-              <p>
-                This flagged question cannot be submitted for rubric feedback.
-                Your draft remains available.
-              </p>
-            )}
-          </>
-        )}
-      {!result && question.type === "recall" && !checkingRecall && (
-        <button
-          disabled={busy || !draft.answer.trim()}
-          onClick={() => setCheckingRecall(true)}
-        >
-          Check against supported answer
-        </button>
-      )}
-      {!result && question.type === "recall" && checkingRecall && (
-        <div className="notice">
-          <p>
-            <strong>Supported by your material:</strong>{" "}
-            {question.review.supportedAnswer}
-          </p>
-          <p>How did your answer compare?</p>
-          {(["remembered", "partial", "not_yet"] as const).map((value) => (
-            <button
-              key={value}
-              disabled={busy}
-              className="secondary"
-              onClick={() =>
-                void submit({
-                  ...base(),
-                  interaction: "recall_self_check",
-                  answer: draft.answer,
-                  selfAssessment: value,
-                })
-              }
-            >
-              {value === "not_yet"
-                ? "Not yet"
-                : value[0]!.toUpperCase() + value.slice(1)}
-            </button>
-          ))}
-        </div>
+      {!result && recall && checkingRecall && (
+        <RecallCheck
+          supportedAnswer={question.review.supportedAnswer}
+          busy={busy}
+          active={active}
+          onAssess={(selfAssessment) =>
+            void submit({
+              ...base(),
+              interaction: "recall_self_check",
+              answer: draft.answer,
+              selfAssessment,
+            })
+          }
+        />
       )}
       {!result && (
-        <div className="preview-actions">
-          <button
-            className="secondary"
+        <QuestionActions
+          type={question.type}
+          busy={busy}
+          flagged={Boolean(flag)}
+          hasAnswer={hasAnswer}
+          checkingRecall={checkingRecall}
+          onSkip={() => void submit({ ...base(), interaction: "skip" })}
+          onReveal={() => void submit({ ...base(), interaction: "reveal" })}
+          onSeeAnswer={seeAnswer}
+          onCheckWritten={checkWritten}
+        >
+          <ActivityConfidence
+            value={draft.confidence}
             disabled={busy}
-            onClick={() => void submit({ ...base(), interaction: "reveal" })}
-          >
-            Reveal answer
-          </button>
-          <button
-            className="secondary"
-            disabled={busy}
-            onClick={() => void submit({ ...base(), interaction: "skip" })}
-          >
-            Skip
-          </button>
-        </div>
+            onChange={(confidence) => update({ confidence })}
+          />
+          <ActivityTutorActions
+            spaceId={spaceId}
+            packId={packId}
+            questionId={question.id}
+            initial={initialTutor}
+            onSource={onSource}
+            onSaved={onTutorSaved}
+          />
+        </QuestionActions>
       )}
       {busy && <p role="status">Saving before completion…</p>}
       {error && (

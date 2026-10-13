@@ -1,4 +1,7 @@
-import { openFirstSpacePractice } from "./shell-navigation";
+import {
+  openFirstSpacePractice,
+  resumePracticeSession,
+} from "./shell-navigation";
 import { expect, test } from "@playwright/test";
 import { routeCalculationPage } from "./calculation-page-fixture";
 
@@ -8,6 +11,7 @@ test("checks a calculation locally, saves authoritative numeric and separate wor
   const state = await routeCalculationPage(page);
   await page.goto("/");
   await openFirstSpacePractice(page);
+  await resumePracticeSession(page);
   await expect(page.getByText("Distance d = 120 m")).toBeVisible();
   await expect(page.locator(".katex-mathml math")).toBeVisible();
   await page.getByLabel("Final answer (one number and unit)").fill("12 km");
@@ -31,6 +35,7 @@ test("checks a calculation locally, saves authoritative numeric and separate wor
   expect(state.saves()).toBe(1);
   await page.reload();
   await openFirstSpacePractice(page);
+  await resumePracticeSession(page);
   await expect(page.getByText(/Numeric result: correct/)).toBeVisible();
   await expect(page.getByText(/Accepted key: 12 m\/s/)).toBeVisible();
   await expect(

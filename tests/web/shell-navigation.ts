@@ -13,13 +13,16 @@ export async function showStudySpaces(page: Page) {
   await page.getByRole("button", { name: "Study Space", exact: true }).click();
 }
 
-export async function openFirstPractice(page: Page) {
-  await page.getByRole("button", { name: "Practice", exact: true }).click();
-  const open = page.getByRole("button", { name: "▶ Open" }).first();
-  if (await open.isVisible().catch(() => false)) await open.click();
-}
-
 export async function openFirstSpacePractice(page: Page) {
   await openFirstStudySpace(page);
   await page.getByRole("button", { name: "Start practice ▶" }).click();
+}
+
+export async function resumePracticeSession(page: Page) {
+  await page.getByRole("button", { name: /^Resume session/ }).click();
+}
+
+export async function exitFocusForSessionSettings(page: Page) {
+  await page.getByRole("button", { name: /^Exit/ }).click();
+  await page.getByText("Start a different session").click();
 }

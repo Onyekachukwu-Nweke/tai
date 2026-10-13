@@ -23,7 +23,12 @@ async function request(
         ? body.error
         : "The concept request could not be completed. Retry explicitly.",
     );
-  return conceptCollectionSchema.parse(body);
+  const parsed = conceptCollectionSchema.safeParse(body);
+  if (!parsed.success)
+    throw new Error(
+      "Saved concepts could not be read. Reload the page and retry explicitly.",
+    );
+  return parsed.data;
 }
 const path = (spaceId: string) =>
   `/api/study-spaces/${encodeURIComponent(spaceId)}/concepts`;

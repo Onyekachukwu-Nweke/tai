@@ -7,7 +7,12 @@ const source = z
     location: z.number().int().min(1).max(50),
     start: z.number().int().min(0),
     end: z.number().int().positive(),
-    text: z.string().trim().min(1).max(12_000),
+    // Exact chunk text: chunk boundaries can start or end on whitespace.
+    text: z
+      .string()
+      .min(1)
+      .max(12_000)
+      .refine((value) => value.trim().length > 0, "Source text is blank"),
   })
   .strict()
   .refine(

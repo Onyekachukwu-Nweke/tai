@@ -8,7 +8,11 @@ const source = z
     location: z.number().int().min(1).max(50),
     start: z.number().int().min(0),
     end: z.number().int().positive(),
-    text: text(12_000),
+    text: z
+      .string()
+      .min(1)
+      .max(12_000)
+      .refine((value) => value.trim().length > 0, "Source text is blank"),
   })
   .strict()
   .refine(

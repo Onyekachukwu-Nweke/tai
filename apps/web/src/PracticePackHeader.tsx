@@ -17,9 +17,11 @@ export function PracticePackHeader({
   const modal = useModalDialog();
   return (
     <>
-      <h3 id="activity-heading">Practice activities</h3>
+      <p className="eyebrow">AI-prepared</p>
+      <h3 id="activity-heading">Practice questions</h3>
       <p className="practice-disclosure">
-        AI-prepared · Multiple choice graded locally ·{" "}
+        Recall, multiple choice, explain and scenario questions from your
+        concepts. Multiple choice is graded locally ·{" "}
         <button ref={modal.triggerRef} className="ghost" onClick={modal.open}>
           How this works
         </button>
@@ -43,7 +45,7 @@ export function PracticePackHeader({
         <button onClick={modal.close}>Close</button>
       </dialog>
       <button
-        className="secondary"
+        className="secondary small"
         type="button"
         disabled={busy || selectedCount < 2}
         onClick={onPrepare}
@@ -55,7 +57,9 @@ export function PracticePackHeader({
             : "Prepare activity pack"}
       </button>
       {selectedCount < 2 && (
-        <p>Select at least two concepts to prepare a pack.</p>
+        <p className="fine-print">
+          Select at least two concepts to prepare a pack.
+        </p>
       )}
       {failed && (
         <p>

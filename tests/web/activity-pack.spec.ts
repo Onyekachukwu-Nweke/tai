@@ -1,4 +1,8 @@
-import { openFirstSpacePractice } from "./shell-navigation";
+import {
+  exitFocusForSessionSettings,
+  openFirstSpacePractice,
+  resumePracticeSession,
+} from "./shell-navigation";
 import { expect, test } from "@playwright/test";
 import { routeRecoveryOffer } from "./study-session-fixture";
 import {
@@ -146,6 +150,7 @@ test("prepares an ID-only learner-safe pack, reloads it and opens exact evidence
   await page.goto("/");
   await openFirstSpacePractice(page);
   await page.getByRole("button", { name: "Prepare activity pack" }).click();
+  await resumePracticeSession(page);
   expect(Object.keys(body).sort()).toEqual(["requestId", "schemaVersion"]);
   expect(JSON.stringify(body)).not.toContain("source");
   await expect(
@@ -158,6 +163,7 @@ test("prepares an ID-only learner-safe pack, reloads it and opens exact evidence
     .first()
     .click();
   await expect(page.getByText("Saved alternate explanation.")).toBeVisible();
+  await exitFocusForSessionSettings(page);
   await page
     .getByRole("button", { name: "Replace with these settings" })
     .click();
@@ -176,14 +182,15 @@ test("prepares an ID-only learner-safe pack, reloads it and opens exact evidence
   await page.reload();
   await openFirstSpacePractice(page);
   await expect(
-    page.getByRole("list", { name: "Saved activity pack" }),
-  ).toBeVisible();
-  await expect(
     page.getByRole("button", { name: "Not reviewed" }).first(),
   ).toBeVisible();
   await page.getByText("How review status works").click();
   await expect(
     page.getByText(/not a validated prediction of memory/),
+  ).toBeVisible();
+  await resumePracticeSession(page);
+  await expect(
+    page.getByRole("list", { name: "Saved activity pack" }),
   ).toBeVisible();
   await page.getByRole("button", { name: "Open source page 1" }).last().click();
   await expect(page.locator("mark")).toHaveText(source.text);

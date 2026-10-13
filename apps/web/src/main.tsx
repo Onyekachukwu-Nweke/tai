@@ -7,6 +7,8 @@ import "./styles.css";
 import "./learning-ui.css";
 import "./material-ui.css";
 import "./concept-map.css";
+import "./focus-mode.css";
+import "./flashcards.css";
 import "./mobile-learning.css";
 import "./layout-responsive.css";
 

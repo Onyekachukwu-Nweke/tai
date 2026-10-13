@@ -1,8 +1,7 @@
 import { useEffect, useState } from "react";
 import type { ConceptCollection } from "../../../packages/contracts/concepts";
 import { generateConcepts, loadConcepts, updateConcept } from "./concept-api";
-import { ActivityPack } from "./ActivityPack";
-import { PracticalTask } from "./PracticalTask";
+import { PracticeHome } from "./PracticeHome";
 import { SupplementaryResources } from "./SupplementaryResources";
 import { ConceptCard } from "./ConceptCard";
 import { ConceptMap } from "./ConceptMap";
@@ -81,44 +80,13 @@ export function ConceptExplorer({
   const concepts = collection?.concepts ?? [];
   if (practiceOnly)
     return (
-      <section className="concept-explorer" aria-label="Practice">
-        <p className="fine-print">
-          Practice uses your saved selected concepts and source references.
-        </p>
-        {loadError && (
-          <p role="alert" className="error">
-            {loadError}
-          </p>
-        )}
-        {concepts.length > 0 ? (
-          <ActivityPack
-            userId={userId}
-            spaceId={spaceId}
-            selectedCount={
-              concepts.filter((concept) => concept.selected).length
-            }
-            concepts={concepts
-              .filter((concept) => concept.selected)
-              .map(({ id, label }) => ({ id, label }))}
-            onSource={onSource}
-          />
-        ) : (
-          <p role="status">
-            No saved concepts are ready. Open the Study Space view to prepare
-            concepts first.
-          </p>
-        )}
-        {concepts.length > 0 && (
-          <PracticalTask
-            spaceId={spaceId}
-            concepts={concepts
-              .filter((concept) => concept.selected)
-              .map(({ id, label }) => ({ id, label }))}
-            sources={concepts.flatMap((concept) => concept.sources)}
-            onSource={onSource}
-          />
-        )}
-      </section>
+      <PracticeHome
+        spaceId={spaceId}
+        userId={userId}
+        concepts={concepts}
+        loadError={loadError}
+        onSource={onSource}
+      />
     );
   return (
     <section className="concept-explorer" aria-labelledby="concept-heading">

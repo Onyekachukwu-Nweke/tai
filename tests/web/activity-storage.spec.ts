@@ -1,4 +1,7 @@
-import { openFirstPractice, openFirstSpacePractice } from "./shell-navigation";
+import {
+  exitFocusForSessionSettings,
+  openFirstSpacePractice,
+} from "./shell-navigation";
 import { expect, test } from "@playwright/test";
 import {
   activeStudySession,
@@ -187,6 +190,7 @@ test("keeps the in-memory draft when browser storage rejects writes", async ({
     page.getByRole("heading", { name: "Welcome back" }),
   ).toBeHidden();
   await expect(page.getByLabel("Your response")).toBeVisible();
+  await page.getByRole("button", { name: /^Exit/ }).click();
   await page.reload();
   await openFirstSpacePractice(page);
   await page.getByRole("button", { name: "Start a 10-minute review" }).click();
@@ -200,7 +204,7 @@ test("keeps the in-memory draft when browser storage rejects writes", async ({
   await expect(
     page.getByText(/could not persist your draft/).first(),
   ).toBeVisible();
-  await openFirstPractice(page);
+  await exitFocusForSessionSettings(page);
   await page
     .getByRole("combobox", { name: "Time", exact: true })
     .selectOption("30");
