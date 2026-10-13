@@ -23,6 +23,8 @@ Before using learner material, record non-secret evidence that:
 
 Automated tests use fake bindings and never make paid calls. Live evaluation is a separate, opt-in activity using synthetic, non-sensitive fixtures.
 
+The implemented [live-provider evaluator](live-provider-evaluation.md) enforces exact cost consent, the operator kill switch, two distinct `@cf/` models, four sequential calls, no retry or fallback, and a 30-second timeout. Its report is sanitized and ignored by Git. Implementation and fake-transport tests do not close the live gate; an authorized run and manual content review are still required.
+
 ## Model evaluation
 
 Compare at least two current Workers AI models that support the required structured response. Use the same prompt version, schemas, token budgets, quantitative fixture, and scenario/reasoning fixture. Record:

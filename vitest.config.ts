@@ -22,6 +22,10 @@ export default defineConfig({
   ],
   test: {
     include: ["tests/**/*.test.ts"],
+    exclude: [
+      "tests/live-evaluation.test.ts",
+      "tests/live-evaluation-boundaries.test.ts",
+    ],
     setupFiles: ["./tests/setup.ts"],
   },
 });

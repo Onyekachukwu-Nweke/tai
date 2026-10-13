@@ -207,8 +207,10 @@ export function validateActivityPack(
     ),
   );
   const covered = new Set<string>();
+  const questionTypes = new Set<string>();
   const questionIds = new Set<string>();
   for (const question of pack.questions) {
+    questionTypes.add(question.type);
     if (
       questionIds.has(question.id) ||
       new Set(question.conceptIds).size !== question.conceptIds.length
@@ -261,6 +263,8 @@ export function validateActivityPack(
     }
   }
   if (covered.size < 2) throw new Error("Activity pack needs two concepts");
+  if (questionTypes.size < 2)
+    throw new Error("Activity pack needs at least two question types");
   return pack;
 }
 

@@ -19,14 +19,15 @@
     "format:check": "prettier --check .",
     "check:lines": "node scripts/check-lines.mjs",
     "check:links": "node scripts/check-links.mjs",
-    "test": "vitest run",
+    "test": "vitest run && vitest run --config vitest.live-evaluation-tests.config.ts",
     "check": "npm run format:check && npm run lint && npm run typecheck && npm run check:lines && npm run check:links && npm run test:maintenance && npm test && npm run test:web && npm run build",
     "test:web": "playwright test",
     "postinstall": "node scripts/patch-pdf-lib.mjs",
     "prebuild": "node scripts/patch-pdf-lib.mjs",
     "pretest": "node scripts/patch-pdf-lib.mjs",
     "materials:recover": "node scripts/recover-materials.mjs",
-    "test:maintenance": "node --test tests/node/*.test.mjs"
+    "test:maintenance": "node --test tests/node/*.test.mjs",
+    "eval:live-ai": "vitest run --config vitest.live-evaluation.config.ts"
   },
   "dependencies": {
     "better-auth": "1.7.7",
