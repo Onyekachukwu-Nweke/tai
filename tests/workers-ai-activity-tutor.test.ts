@@ -92,7 +92,19 @@ describe("Workers AI activity tutor provider", () => {
     const scoped = { ...context, kind: "explain_again" as const };
     const result = await provider(ai).generate(scoped);
     expect(result.kind).toBe("explain_again");
-    expect(JSON.stringify(ai.call?.input.messages)).toContain("another way");
+    const messages = JSON.stringify(ai.call?.input.messages);
+    for (const required of [
+      "simpler English",
+      "exact terminology",
+      "symbols",
+      "numbers",
+      "units",
+      "course conventions",
+      "without solving",
+      "Do not add facts, analogies, or examples",
+    ])
+      expect(messages).toContain(required);
+    expect(messages).not.toMatch(/correctOptionId|supportedAnswer|rubric/);
   });
 
   it("rejects invalid citations, duplicates, oversized hints and malformed JSON", async () => {
@@ -137,7 +149,7 @@ describe("Workers AI activity tutor provider", () => {
     expect(provider(new RecordingAi()).metadata).toEqual({
       provider: "workers_ai",
       model: "@cf/example/model",
-      promptVersion: "activity-tutor-v1",
+      promptVersion: "activity-tutor-v2",
       schemaVersion: 1,
     });
     expect(

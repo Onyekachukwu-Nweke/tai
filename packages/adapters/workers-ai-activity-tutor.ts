@@ -39,7 +39,7 @@ function jsonSchema(maximumTextLength: number) {
 const instruction = (kind: TutorContext["kind"]) =>
   kind === "hint"
     ? "Give one concise, source-grounded directional clue without stating a final answer, identifying an MCQ choice, giving a final calculation value, or providing a worked solution."
-    : "Explain the relevant idea another way using only the supplied source excerpts, without solving the current question or claiming facts absent from them.";
+    : "Explain the relevant idea in simpler English using shorter sentences and less complex wording. Preserve the source's exact terminology, symbols, numbers, units, and course conventions. Use only the supplied source excerpts, without solving the current question. Do not add facts, analogies, or examples.";
 
 export class WorkersAiActivityTutorProvider implements ActivityTutorProvider {
   readonly metadata;
@@ -51,7 +51,7 @@ export class WorkersAiActivityTutorProvider implements ActivityTutorProvider {
     this.metadata = {
       provider: "workers_ai" as const,
       model: config.model,
-      promptVersion: "activity-tutor-v1",
+      promptVersion: "activity-tutor-v2",
       schemaVersion: 1 as const,
     };
   }
