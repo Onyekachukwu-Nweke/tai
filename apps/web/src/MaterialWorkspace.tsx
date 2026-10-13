@@ -10,11 +10,13 @@ export function MaterialWorkspace({
   userId,
   title,
   onClose,
+  practiceOnly = false,
 }: {
   spaceId: string;
   userId: string;
   title: string;
   onClose: () => void;
+  practiceOnly?: boolean;
 }) {
   const [loading, setLoading] = useState(true);
   const [saved, setSaved] = useState<Preview | null>(null);
@@ -65,6 +67,7 @@ export function MaterialWorkspace({
       title={title}
       initialPreview={saved}
       onClose={onClose}
+      practiceOnly={practiceOnly}
     />
   );
 }

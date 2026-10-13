@@ -1,3 +1,4 @@
+import { openFirstSpacePractice } from "./shell-navigation";
 import { expect, test } from "@playwright/test";
 import { routeRecoveryOffer } from "./study-session-fixture";
 import {
@@ -135,7 +136,7 @@ test("keeps an unacknowledged draft for explicit retry and hides review keys in 
     },
   );
   await page.goto("/");
-  await page.getByRole("button", { name: "Preview material" }).click();
+  await openFirstSpacePractice(page);
   await page.getByLabel("Your response").first().fill("Light supports growth");
   await page.getByLabel("Confidence (optional)").first().selectOption("high");
   await page
@@ -148,7 +149,7 @@ test("keeps an unacknowledged draft for explicit retry and hides review keys in 
   expect(stored).not.toContain("Plants need light and water");
   expect(stored).not.toContain("aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa");
   await page.reload();
-  await page.getByRole("button", { name: "Preview material" }).click();
+  await openFirstSpacePractice(page);
   await expect(page.getByLabel("Your response").first()).toHaveValue(
     "Light supports growth",
   );
@@ -162,11 +163,12 @@ test("keeps an unacknowledged draft for explicit retry and hides review keys in 
   expect(await page.evaluate(() => JSON.stringify(localStorage))).not.toContain(
     "Light supports growth",
   );
-  await page.getByRole("button", { name: "Flag ambiguous" }).first().click();
+  await page.getByLabel("Flag reason").first().selectOption("ambiguous");
+  await page.getByRole("button", { name: /Flag/ }).first().click();
   await expect(page.getByText(/Flagged as ambiguous/)).toBeVisible();
   await expect(page.getByText("Saved.")).toBeVisible();
   await page.reload();
-  await page.getByRole("button", { name: "Preview material" }).click();
+  await openFirstSpacePractice(page);
   await expect(page.getByText("Saved.")).toBeVisible();
   await expect(page.getByText(/Flagged as ambiguous/)).toBeVisible();
 });

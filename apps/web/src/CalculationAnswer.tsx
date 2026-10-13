@@ -64,7 +64,7 @@ export function CalculationAnswer({
           else onSubmit(checked.outcome);
         }}
       >
-        Check and save calculation
+        Check answer
       </button>
       {flagged && (
         <p>This flagged question cannot be submitted for a scored result.</p>

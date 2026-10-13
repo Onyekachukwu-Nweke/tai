@@ -1,0 +1,110 @@
+.pdf-nav-bar {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  align-items: center;
+  margin: 8px 0 10px;
+}
+.pdf-page-label {
+  min-width: 90px;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+.pdf-canvas-wrap {
+  border: 1px solid #e3e8e5;
+  border-radius: 8px;
+  overflow: hidden;
+  background: #f0f0ee;
+}
+.pdf-canvas-wrap canvas {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+.material-summary {
+  margin: 12px 0;
+  padding: 14px 16px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: #f8faf8;
+}
+.material-file {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+.material-file h3 {
+  margin: 0;
+  font-size: 0.95rem;
+  overflow-wrap: anywhere;
+}
+.material-file .fine-print {
+  margin: 2px 0 0;
+}
+.file-badge {
+  flex: none;
+  padding: 6px 7px;
+  border-radius: 6px;
+  background: var(--green);
+  color: #fff;
+  font-size: 0.7rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+}
+.material-warnings {
+  margin: 10px 0 0;
+  padding: 8px 12px 8px 28px;
+  border-radius: 8px;
+  background: #f3eddd;
+  font-size: 0.85rem;
+}
+.citation-panel {
+  position: fixed;
+  z-index: 30;
+  right: 24px;
+  bottom: 24px;
+  width: min(420px, calc(100vw - 32px));
+  max-height: 50vh;
+  overflow: auto;
+  padding: 12px 14px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: #fff;
+  box-shadow: 0 12px 32px #17352c2e;
+}
+.citation-label {
+  color: var(--muted);
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+.citation-panel blockquote {
+  margin: 8px 0 0;
+  padding-left: 12px;
+  border-left: 3px solid var(--green);
+  font-size: 0.92rem;
+  line-height: 1.55;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.citation-panel mark {
+  background: #fff3c4;
+  color: inherit;
+}
+@media (max-width: 420px) {
+  .citation-panel {
+    right: 16px;
+    bottom: 16px;
+  }
+}
+.source-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  list-style: none;
+  margin: 10px 0 0;
+  padding: 0;
+}

@@ -1,4 +1,5 @@
 import { expect, test, type Page } from "@playwright/test";
+import { showStudySpaces } from "./shell-navigation";
 
 const user = {
   id: "synthetic-user",
@@ -26,7 +27,7 @@ test("signed-out learners see Google sign-in and keyboard-accessible content", a
     page.getByRole("button", { name: "Continue with Google" }),
   ).toBeVisible();
   await expect(
-    page.getByRole("button", { name: "Create study space" }),
+    page.getByRole("button", { name: "Create", exact: true }),
   ).toHaveCount(0);
   await page.keyboard.press("Tab");
   await expect(
@@ -81,6 +82,7 @@ test("authenticated learners create and reload a saved space", async ({
     }
   });
   await page.goto("/");
+  await showStudySpaces(page);
   await expect(
     page.getByText("No study spaces yet.", { exact: false }),
   ).toBeVisible();
@@ -93,6 +95,7 @@ test("authenticated learners create and reload a saved space", async ({
   await expect(title).toHaveValue("");
   await expect(page.getByRole("heading", { name: space.title })).toBeVisible();
   await page.reload();
+  await showStudySpaces(page);
   await expect(page.getByRole("heading", { name: space.title })).toBeVisible();
 });
 
@@ -110,11 +113,12 @@ test("failed saves retain the title and reconnection never replays creation", as
     }
   });
   await page.goto("/");
+  await showStudySpaces(page);
   const title = page.getByRole("textbox", {
     name: "What would you like to learn?",
   });
   await title.fill(space.title);
-  await page.getByRole("button", { name: "Create study space" }).click();
+  await page.getByRole("button", { name: "Create", exact: true }).click();
   await expect(page.getByRole("alert")).toContainText(
     "Your title is still here",
   );
@@ -141,9 +145,11 @@ test("mobile layout keeps creation controls within the viewport", async ({
     route.fulfill({ json: { schemaVersion: 1, spaces: [] } }),
   );
   await page.goto("/");
+  await showStudySpaces(page);
+  await page.getByRole("textbox").scrollIntoViewIfNeeded();
   await expect(page.getByRole("textbox")).toBeInViewport();
   await expect(
-    page.getByRole("button", { name: "Create study space" }),
+    page.getByRole("button", { name: "Create", exact: true }),
   ).toBeInViewport();
   expect(
     await page.evaluate(() => document.documentElement.scrollWidth),
@@ -169,9 +175,10 @@ test("pending saves prevent duplicate requests and protect newer input", async (
     }
   });
   await page.goto("/");
+  await showStudySpaces(page);
   const title = page.getByRole("textbox");
   await title.fill(space.title);
-  await page.getByRole("button", { name: "Create study space" }).click();
+  await page.getByRole("button", { name: "Create", exact: true }).click();
   await expect(page.getByRole("button", { name: "Saving…" })).toBeDisabled();
   const editable = await title.isEnabled();
   if (editable) await title.fill("A second subject");
@@ -194,9 +201,10 @@ test("expired sessions offer sign-in and retain the unsaved title if sign-in fai
     route.fulfill({ status: 503, json: { message: "Synthetic auth outage" } }),
   );
   await page.goto("/");
+  await showStudySpaces(page);
   const title = page.getByRole("textbox");
   await title.fill(space.title);
-  await page.getByRole("button", { name: "Create study space" }).click();
+  await page.getByRole("button", { name: "Create", exact: true }).click();
   await expect(page.getByRole("alert")).toContainText("Your session has ended");
   await expect(title).toHaveValue(space.title);
   await page.getByRole("button", { name: "Sign in again" }).click();
@@ -224,6 +232,7 @@ test("account deletion discloses processing and retries pending cleanup", async 
       : route.fulfill({ status: 204, body: "" });
   });
   await page.goto("/");
+  await page.getByRole("button", { name: "Settings" }).click();
   await page.evaluate(() => {
     localStorage.setItem("tai:activity-draft:synthetic-user:space:pack:q", "x");
     localStorage.setItem("tai:activity-draft:other-user:space:pack:q", "y");

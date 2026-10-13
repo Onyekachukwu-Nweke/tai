@@ -66,7 +66,7 @@ async function conceptRequest(
       body: JSON.stringify({
         schemaVersion: 1,
         requestId: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
-        selection: { location: 1 },
+        selection: { startLocation: 1, endLocation: 1 },
       }),
     },
     env,

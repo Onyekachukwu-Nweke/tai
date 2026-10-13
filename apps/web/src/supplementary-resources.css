@@ -3,46 +3,35 @@
   border-top: 1px solid #d7dfd5;
   padding-top: 1.5rem;
 }
-
 .resource-list {
   display: grid;
   gap: 1rem;
   padding: 0;
   list-style: none;
 }
-
 .resource-list > li {
   border: 1px solid #d7dfd5;
   border-radius: 0.75rem;
-  padding: 1rem;
+  padding: 1.25rem;
+  background: #fff;
 }
-
 .resource-list h4 {
   margin-top: 0;
 }
-
-.resource-list dl {
-  display: grid;
-  gap: 0.4rem;
+.resource-meta {
+  padding-top: 0.75rem;
+  border-top: 1px solid #e4eae6;
 }
-
-.resource-list dl div {
-  display: grid;
-  grid-template-columns: minmax(6rem, 8rem) 1fr;
-  gap: 0.5rem;
+.resource-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  color: #52635b;
+  font-size: 0.875rem;
 }
-
-.resource-list dt {
-  font-weight: 700;
-}
-
-.resource-list dd {
-  margin: 0;
-}
-
-@media (max-width: 32rem) {
-  .resource-list dl div {
-    grid-template-columns: 1fr;
-    gap: 0.1rem;
-  }
+.resource-list a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  font-size: 0.9rem;
 }

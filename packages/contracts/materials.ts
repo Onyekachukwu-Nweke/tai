@@ -16,6 +16,23 @@ const chunkSchema = sectionSchema
   })
   .strict();
 
+const outlineEntrySchema = z
+  .object({
+    title: z
+      .string()
+      .trim()
+      .min(1)
+      .max(120)
+      .refine((title) =>
+        Array.from(title).every((character) => {
+          const code = character.charCodeAt(0);
+          return code >= 32 && (code < 127 || code > 159);
+        }),
+      ),
+    location: z.number().int().min(1).max(50),
+  })
+  .strict();
+
 export const materialPreviewSchema = z
   .object({
     schemaVersion: z.literal(1),
@@ -34,6 +51,7 @@ export const materialPreviewSchema = z
     sections: z.array(sectionSchema).min(1).max(50),
     chunks: z.array(chunkSchema).min(1).max(500),
     warnings: z.array(z.string().max(512)).max(100),
+    outline: z.array(outlineEntrySchema).min(1).max(30).optional(),
   })
   .strict()
   .superRefine((preview, context) => {
@@ -43,6 +61,15 @@ export const materialPreviewSchema = z
         message: "Invalid material source references or limits.",
       });
     if (preview.format === "txt" && preview.sections.length !== 1) issue();
+    if (
+      preview.outline?.some(
+        (entry, index, all) =>
+          entry.location > preview.sections.length ||
+          (index > 0 && entry.location <= all[index - 1]!.location),
+      ) ||
+      (preview.format === "txt" && preview.outline)
+    )
+      issue();
     if (
       preview.sections.reduce((sum, section) => sum + section.text.length, 0) >
       500_000

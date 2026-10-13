@@ -57,7 +57,7 @@ export function ActivityTutor({
     <div className="tutor-action">
       {!result && (
         <button
-          className="secondary"
+          className="ghost"
           disabled={busy}
           onClick={() => void request()}
         >
@@ -79,15 +79,19 @@ export function ActivityTutor({
           <p>
             <strong>Supported by your material:</strong> {result.text}
           </p>
-          <ul aria-label={`Sources for ${label.toLowerCase()}`}>
+          <ul
+            className="source-chips"
+            aria-label={`Sources for ${label.toLowerCase()}`}
+          >
             {result.sources.map((source) => (
               <li key={source.id}>
                 <button
-                  className="source-link"
+                  type="button"
+                  className="source-chip"
+                  aria-label={`Open source page ${source.location}`}
                   onClick={() => onSource(source)}
                 >
-                  Open source section {source.location}:{" "}
-                  {source.text.slice(0, 80)}
+                  Page {source.location}
                 </button>
               </li>
             ))}

@@ -1,9 +1,11 @@
+import { openFirstStudySpace } from "./shell-navigation";
 import { expect, test, type Page } from "@playwright/test";
 import { resolve } from "node:path";
 
 const fixture = (name: string) => resolve("tests/fixtures/materials", name);
 const fileInput = (page: Page) => page.getByLabel("Choose a PDF or TXT file");
-const extracted = (page: Page) => page.locator("pre");
+const summary = (page: Page) =>
+  page.getByRole("region", { name: "Selected material" });
 
 async function openPreview(page: Page) {
   await page.route("**/api/study-spaces/*/material", (route) =>
@@ -36,9 +38,9 @@ async function openPreview(page: Page) {
     }),
   );
   await page.goto("/");
-  await page.getByRole("button", { name: "Preview material" }).click();
+  await openFirstStudySpace(page);
   await expect(
-    page.getByRole("heading", { name: /Material preview/ }),
+    page.getByRole("heading", { name: "Upload material" }),
   ).toBeVisible();
 }
 
@@ -50,7 +52,7 @@ async function selectText(page: Page, text: string, name = "lesson.txt") {
   });
 }
 
-test("TXT stays local, displays source markup literally, and discloses preview limits", async ({
+test("TXT stays local, never renders source markup, and discloses preview limits", async ({
   page,
 }) => {
   const unexpected: string[] = [];
@@ -61,36 +63,38 @@ test("TXT stays local, displays source markup literally, and discloses preview l
     }
   });
   await openPreview(page);
+  await page.getByText("Supported files and safety details").click();
   await expect(page.getByText(/10 MB/)).toBeVisible();
   await expect(page.getByText(/50 PDF pages/)).toBeVisible();
   await expect(page.getByText(/not uploaded or saved/i)).toBeVisible();
   const text =
     '<script>window.materialExecuted=true</script>\n<img src="https://example.test/private" onerror="alert(1)">\nCells contain DNA.';
   await selectText(page, text);
-  await expect(extracted(page)).toContainText(text);
-  await expect(extracted(page).locator("script, img, a")).toHaveCount(0);
+  await expect(summary(page)).toContainText("lesson.txt");
+  await expect(summary(page)).toContainText("1 section");
+  await expect(page.locator("main script, main img")).toHaveCount(0);
   expect(await page.evaluate(() => "materialExecuted" in window)).toBe(false);
   expect(unexpected).toEqual([]);
   await page.reload();
-  await page.getByRole("button", { name: "Preview material" }).click();
-  await expect(extracted(page)).toHaveCount(0);
+  await openFirstStudySpace(page);
+  await expect(summary(page)).toHaveCount(0);
 });
 
-test("failed replacement preserves readable material and the same file can be selected again", async ({
+test("failed replacement preserves the ready material and the same file can be selected again", async ({
   page,
 }) => {
   await openPreview(page);
   await selectText(page, "Cells contain DNA.");
-  await expect(extracted(page)).toContainText("Cells contain DNA.");
+  await expect(summary(page)).toContainText("lesson.txt");
   await selectText(page, "   \n\t", "blank.txt");
   await expect(page.getByRole("alert")).toBeVisible();
-  await expect(extracted(page)).toContainText("Cells contain DNA.");
+  await expect(summary(page)).toContainText("lesson.txt");
   await page.getByRole("button", { name: "Retry extraction" }).click();
   await expect(page.getByRole("alert")).toBeVisible();
-  await expect(extracted(page)).toContainText("Cells contain DNA.");
+  await expect(summary(page)).toContainText("lesson.txt");
   await selectText(page, "Cells contain DNA.");
   await expect(page.getByRole("alert")).toHaveCount(0);
-  await expect(extracted(page)).toContainText("Cells contain DNA.");
+  await expect(summary(page)).toContainText("lesson.txt");
 });
 
 for (const input of [
@@ -127,17 +131,17 @@ for (const input of [
     await expect(page.getByRole("alert")).toContainText(
       /choose|export|try|limit|smaller|supported/i,
     );
-    await expect(extracted(page)).toHaveCount(0);
+    await expect(summary(page)).toHaveCount(0);
   });
 }
 
-test("mobile preview wraps long source lines and keeps file controls accessible", async ({
+test("mobile preview fits long files and keeps file controls accessible", async ({
   page,
 }) => {
   await page.setViewportSize({ width: 375, height: 812 });
   await openPreview(page);
   await selectText(page, "Synthetic source " + "A".repeat(500));
-  await expect(extracted(page)).toContainText("Synthetic source");
+  await expect(summary(page)).toContainText("lesson.txt");
   await fileInput(page).focus();
   await expect(fileInput(page)).toBeFocused();
   expect(
@@ -145,28 +149,19 @@ test("mobile preview wraps long source lines and keeps file controls accessible"
   ).toBeLessThanOrEqual(375);
   await page.getByRole("button", { name: "Close preview" }).click();
   await expect(
-    page.getByRole("heading", { name: /Material preview/ }),
+    page.getByRole("heading", { name: "Upload material" }),
   ).toHaveCount(0);
 });
 
-test("extracts real PDF pages using a local worker and preserves page selection", async ({
-  page,
-}) => {
+test("extracts real PDF pages using a local worker", async ({ page }) => {
   const requests: { url: string; method: string }[] = [];
   page.on("request", (request) => {
     requests.push({ url: request.url(), method: request.method() });
   });
   await openPreview(page);
   await fileInput(page).setInputFiles(fixture("two-page.pdf"));
-  await expect(extracted(page)).toContainText(
-    "Photosynthesis uses light energy.",
-  );
-  const sections = page.getByLabel("Page or section");
-  await expect(sections.locator("option")).toHaveCount(2);
-  await sections.selectOption({ index: 1 });
-  await expect(extracted(page)).toContainText(
-    "Plants produce glucose and oxygen.",
-  );
+  await expect(summary(page)).toContainText("two-page.pdf");
+  await expect(summary(page)).toContainText("2 pages");
   expect(requests.some(({ url }) => url.includes("pdf.worker"))).toBe(true);
   expect(
     requests.every(
@@ -176,17 +171,21 @@ test("extracts real PDF pages using a local worker and preserves page selection"
   ).toBe(true);
 });
 
-test("equation text is inspectable with an explicit fidelity warning", async ({
+test("PDF bookmarks are read as chapters during local extraction", async ({
   page,
 }) => {
   await openPreview(page);
+  await fileInput(page).setInputFiles(fixture("chapters.pdf"));
+  await expect(summary(page)).toContainText("6 pages · 2 chapters");
+});
+
+test("equation PDF extracts locally and is ready to save", async ({ page }) => {
+  await openPreview(page);
   await fileInput(page).setInputFiles(fixture("equation.pdf"));
-  await expect(extracted(page)).toContainText("Force = mass x acceleration");
-  await expect(extracted(page)).toContainText("F = m a; 2 kg x 3 m/s^2 = 6 N");
+  await expect(summary(page)).toContainText("equation.pdf");
   await expect(
-    page.getByText(/Check equations, symbols, tables, and reading order/),
-  ).toBeVisible();
-  await expect(page.getByText(/does not verify correctness/)).toBeVisible();
+    page.getByRole("button", { name: "Save material" }),
+  ).toBeEnabled();
 });
 
 test("accepts exactly 50 PDF pages and rejects 51 without erasing the preview", async ({
@@ -194,13 +193,10 @@ test("accepts exactly 50 PDF pages and rejects 51 without erasing the preview", 
 }) => {
   await openPreview(page);
   await fileInput(page).setInputFiles(fixture("fifty-pages.pdf"));
-  const sections = page.getByLabel("Page or section");
-  await expect(sections.locator("option")).toHaveCount(50);
-  await sections.selectOption({ index: 49 });
-  await expect(extracted(page)).toContainText(/Page 50/i);
+  await expect(summary(page)).toContainText("50 pages");
   await fileInput(page).setInputFiles(fixture("fifty-one-pages.pdf"));
   await expect(page.getByRole("alert")).toContainText(/50/);
-  await expect(extracted(page)).toContainText(/Page 50/i);
+  await expect(summary(page)).toContainText("fifty-pages.pdf");
 });
 
 test("textless PDF reports that a text-based source is needed", async ({
@@ -211,7 +207,7 @@ test("textless PDF reports that a text-based source is needed", async ({
   await expect(page.getByRole("alert")).toContainText(
     /text-based PDF|extractable text/i,
   );
-  await expect(extracted(page)).toHaveCount(0);
+  await expect(summary(page)).toHaveCount(0);
 });
 
 test("password-protected PDF is rejected without asking for credentials", async ({
@@ -222,21 +218,19 @@ test("password-protected PDF is rejected without asking for credentials", async 
   await expect(page.getByRole("alert")).toContainText(
     /password-protected|unlocked/i,
   );
-  await expect(extracted(page)).toHaveCount(0);
+  await expect(summary(page)).toHaveCount(0);
   await expect(page.locator('input[type="password"]')).toHaveCount(0);
 });
 
-test("mixed PDF retains the blank page location and warns about missing text", async ({
+test("mixed PDF keeps the blank page and warns about missing text", async ({
   page,
 }) => {
   await openPreview(page);
   await fileInput(page).setInputFiles(fixture("mixed.pdf"));
-  await expect(extracted(page)).toContainText("Readable first page.");
+  await expect(summary(page)).toContainText("2 pages");
   await expect(
     page.getByRole("list", { name: "Extraction warnings" }),
   ).toContainText(/2|text/i);
-  await page.getByLabel("Page or section").selectOption({ label: "Page 2" });
-  await expect(extracted(page)).toContainText(/No text/);
 });
 
 test("cancelling a pending PDF preserves the old preview and explicit retry can finish", async ({
@@ -244,7 +238,7 @@ test("cancelling a pending PDF preserves the old preview and explicit retry can 
 }) => {
   await openPreview(page);
   await selectText(page, "Keep these earlier notes.");
-  await expect(extracted(page)).toContainText("Keep these earlier notes.");
+  await expect(summary(page)).toContainText("lesson.txt");
   let releaseWorker: () => void = () => undefined;
   const held = new Promise<void>((resolve) => {
     releaseWorker = resolve;
@@ -259,9 +253,7 @@ test("cancelling a pending PDF preserves the old preview and explicit retry can 
   await expect(
     page.getByText("Extraction cancelled.", { exact: false }),
   ).toBeVisible();
-  await expect(extracted(page)).toContainText("Keep these earlier notes.");
+  await expect(summary(page)).toContainText("lesson.txt");
   await page.getByRole("button", { name: "Retry extraction" }).click();
-  await expect(extracted(page)).toContainText(
-    "Photosynthesis uses light energy.",
-  );
+  await expect(summary(page)).toContainText("two-page.pdf");
 });

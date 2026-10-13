@@ -4,21 +4,28 @@ import { generateConcepts, loadConcepts, updateConcept } from "./concept-api";
 import { ActivityPack } from "./ActivityPack";
 import { PracticalTask } from "./PracticalTask";
 import { SupplementaryResources } from "./SupplementaryResources";
+import { ConceptCard } from "./ConceptCard";
+import { ConceptMap } from "./ConceptMap";
+import type { ConceptScope } from "./concept-scopes";
 
 type Source = ConceptCollection["concepts"][number]["sources"][number];
 export function ConceptExplorer({
   spaceId,
   userId,
-  location,
+  scopes,
   onSource,
+  practiceOnly = false,
 }: {
   spaceId: string;
   userId: string;
-  location: number;
+  scopes: ConceptScope[];
   onSource: (source: Source) => void;
+  practiceOnly?: boolean;
 }) {
   const [collection, setCollection] = useState<ConceptCollection | null>(null);
   const [mode, setMode] = useState<"list" | "map">("list");
+  const [scopeId, setScopeId] = useState("document");
+  const scope = scopes.find((item) => item.id === scopeId) ?? scopes[0]!;
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const [loadError, setLoadError] = useState("");
@@ -26,11 +33,12 @@ export function ConceptExplorer({
     const controller = new AbortController();
     loadConcepts(spaceId, controller.signal)
       .then(setCollection)
-      .catch(() =>
-        setLoadError(
-          "Saved concepts could not be loaded. Generate explicitly when ready.",
-        ),
-      );
+      .catch(() => {
+        if (!controller.signal.aborted)
+          setLoadError(
+            "Saved concepts could not be loaded. Generate explicitly when ready.",
+          );
+      });
     return () => controller.abort();
   }, [spaceId]);
   async function generate() {
@@ -38,7 +46,14 @@ export function ConceptExplorer({
     setError("");
     try {
       setCollection(
-        await generateConcepts(spaceId, location, crypto.randomUUID()),
+        await generateConcepts(
+          spaceId,
+          {
+            startLocation: scope.startLocation,
+            endLocation: scope.endLocation,
+          },
+          crypto.randomUUID(),
+        ),
       );
     } catch (reason) {
       setError(
@@ -64,130 +79,18 @@ export function ConceptExplorer({
     }
   }
   const concepts = collection?.concepts ?? [];
-  return (
-    <section className="concept-explorer" aria-labelledby="concept-heading">
-      <h3 id="concept-heading">Concept explorer</h3>
-      <p className="notice">
-        {collection === null
-          ? "Concept generation details will appear after saved concepts load."
-          : collection.provider === "workers_ai"
-            ? "Cloudflare Workers AI produced the concepts below. They have not been reviewed for teaching quality. Selected source excerpts are sent only when generation is requested."
-            : "Development preview: concepts below come from a deterministic fake provider and have not been reviewed for teaching quality. Selected source excerpts are sent only when generation is requested."}
-      </p>
-      <button type="button" disabled={busy} onClick={() => void generate()}>
-        {busy
-          ? "Preparing concepts…"
-          : collection?.status === "ready"
-            ? `Generate again from section ${location}`
-            : `Generate concepts from section ${location}`}
-      </button>
-      {collection?.status === "failed" && (
-        <p>Previous generation failed. Use the button to retry explicitly.</p>
-      )}
-      {loadError && <p role="status">{loadError}</p>}
-      {error && (
-        <p role="alert" className="error">
-          {error}
+  if (practiceOnly)
+    return (
+      <section className="concept-explorer" aria-label="Practice">
+        <p className="fine-print">
+          Practice uses your saved selected concepts and source references.
         </p>
-      )}
-      {concepts.length > 0 && (
-        <>
-          <div
-            className="preview-actions"
-            role="group"
-            aria-label="Concept view"
-          >
-            <button
-              type="button"
-              className={mode === "list" ? "" : "secondary"}
-              onClick={() => setMode("list")}
-            >
-              List
-            </button>
-            <button
-              type="button"
-              className={mode === "map" ? "" : "secondary"}
-              onClick={() => setMode("map")}
-            >
-              Map
-            </button>
-          </div>
-          <p className="fine-print">
-            Suggested relationships are ideas to inspect. They never lock
-            concepts or study order.
+        {loadError && (
+          <p role="alert" className="error">
+            {loadError}
           </p>
-          <ul
-            className={mode === "map" ? "concept-map" : "concept-list"}
-            aria-label={`${mode === "map" ? "Map" : "List"} of concepts`}
-          >
-            {concepts.map((concept) => (
-              <li key={concept.id} className="concept-card">
-                <label className="concept-toggle">
-                  <input
-                    type="checkbox"
-                    checked={concept.selected}
-                    onChange={(event) =>
-                      void change(concept.id, {
-                        selected: event.target.checked,
-                      })
-                    }
-                  />
-                  Include {concept.label}
-                </label>
-                <form
-                  onSubmit={(event) => {
-                    event.preventDefault();
-                    const data = new FormData(event.currentTarget);
-                    void change(concept.id, {
-                      label: String(data.get("label")),
-                    });
-                  }}
-                >
-                  <label>
-                    Concept label
-                    <input
-                      name="label"
-                      defaultValue={concept.label}
-                      maxLength={120}
-                    />
-                  </label>
-                  <button type="submit" className="secondary">
-                    Save label
-                  </button>
-                </form>
-                <p>{concept.description}</p>
-                <ul aria-label={`Sources for ${concept.label}`}>
-                  {concept.sources.map((source) => (
-                    <li key={source.id}>
-                      <button
-                        type="button"
-                        className="source-link"
-                        onClick={() => onSource(source)}
-                      >
-                        Open source section {source.location}:{" "}
-                        {source.text.slice(0, 80)}
-                      </button>
-                    </li>
-                  ))}
-                </ul>
-                {collection?.relations
-                  .filter((relation) => relation.fromId === concept.id)
-                  .map((relation) => (
-                    <p className="suggestion" key={relation.toId}>
-                      Suggested connection →{" "}
-                      {
-                        concepts.find((item) => item.id === relation.toId)
-                          ?.label
-                      }
-                    </p>
-                  ))}
-              </li>
-            ))}
-          </ul>
-        </>
-      )}
-      {concepts.length > 0 && (
-        <>
+        )}
+        {concepts.length > 0 ? (
           <ActivityPack
             userId={userId}
             spaceId={spaceId}
@@ -199,14 +102,119 @@ export function ConceptExplorer({
               .map(({ id, label }) => ({ id, label }))}
             onSource={onSource}
           />
+        ) : (
+          <p role="status">
+            No saved concepts are ready. Open the Study Space view to prepare
+            concepts first.
+          </p>
+        )}
+        {concepts.length > 0 && (
           <PracticalTask
             spaceId={spaceId}
-            conceptIds={concepts
+            concepts={concepts
               .filter((concept) => concept.selected)
-              .map((concept) => concept.id)}
+              .map(({ id, label }) => ({ id, label }))}
             sources={concepts.flatMap((concept) => concept.sources)}
             onSource={onSource}
           />
+        )}
+      </section>
+    );
+  return (
+    <section className="concept-explorer" aria-labelledby="concept-heading">
+      <div className="section-header">
+        <h3 id="concept-heading">Concepts</h3>
+        <button
+          type="button"
+          className={concepts.length > 0 ? "secondary small" : "small"}
+          disabled={busy}
+          onClick={() => void generate()}
+        >
+          {busy
+            ? "Preparing…"
+            : concepts.length > 0
+              ? "Regenerate concepts"
+              : "Generate concepts"}
+        </button>
+      </div>
+      {scopes.length > 1 ? (
+        <label className="compact-field">
+          Generate from
+          <select
+            value={scope.id}
+            disabled={busy}
+            onChange={(event) => setScopeId(event.target.value)}
+          >
+            {scopes.map((item) => (
+              <option key={item.id} value={item.id}>
+                {item.label}
+              </option>
+            ))}
+          </select>
+        </label>
+      ) : (
+        <p className="fine-print">From the {scope.label.toLowerCase()}</p>
+      )}
+      <details className="disclosure">
+        <summary>How are concepts generated?</summary>
+        <p>
+          {collection === null
+            ? "Generation details appear after concepts load."
+            : collection.provider === "workers_ai"
+              ? "Cloudflare Workers AI produced these source-backed suggestions. They have not been reviewed for teaching quality. Suggested relationships never lock concepts or study order."
+              : "A deterministic development provider produced these source-backed suggestions."}
+        </p>
+      </details>
+      {collection?.status === "failed" && (
+        <p>Previous generation failed. Use the button to retry explicitly.</p>
+      )}
+      {loadError && <p role="status">{loadError}</p>}
+      {error && (
+        <p role="alert" className="error">
+          {error}
+        </p>
+      )}
+      {concepts.length > 0 && (
+        <div className="segmented small" role="group" aria-label="Concept view">
+          <button
+            type="button"
+            aria-pressed={mode === "list"}
+            onClick={() => setMode("list")}
+          >
+            List
+          </button>
+          <button
+            type="button"
+            aria-pressed={mode === "map"}
+            onClick={() => setMode("map")}
+          >
+            Map
+          </button>
+        </div>
+      )}
+      {concepts.length > 0 && mode === "map" && (
+        <ConceptMap
+          concepts={concepts}
+          relations={collection?.relations ?? []}
+          onSource={onSource}
+        />
+      )}
+      {concepts.length > 0 && mode === "list" && (
+        <ul className="concept-list" aria-label="List of concepts">
+          {concepts.map((concept) => (
+            <ConceptCard
+              key={concept.id}
+              concept={concept}
+              relations={collection?.relations ?? []}
+              allConcepts={concepts}
+              onChange={(id, update) => void change(id, update)}
+              onSource={onSource}
+            />
+          ))}
+        </ul>
+      )}
+      {concepts.length > 0 && (
+        <>
           <SupplementaryResources
             spaceId={spaceId}
             selectedConceptKey={JSON.stringify({

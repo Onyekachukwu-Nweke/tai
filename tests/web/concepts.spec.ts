@@ -1,3 +1,4 @@
+import { openFirstStudySpace } from "./shell-navigation";
 import { expect, test, type Page } from "@playwright/test";
 import { readFile } from "node:fs/promises";
 import { resolve } from "node:path";
@@ -12,7 +13,7 @@ const empty = {
   schemaVersion: 1,
   status: "empty",
   requestId: null,
-  location: null,
+  scope: null,
   concepts: [],
   relations: [],
   error: null,
@@ -22,7 +23,7 @@ const ready = {
   schemaVersion: 1,
   status: "ready",
   requestId: "44444444-4444-4444-8444-444444444444",
-  location: 1,
+  scope: { startLocation: 1, endLocation: 1 },
   concepts: [
     {
       id: conceptId,
@@ -108,10 +109,10 @@ async function open(
     }),
   );
   await page.goto("/");
-  await page.getByRole("button", { name: "Preview material" }).click();
+  await openFirstStudySpace(page);
 }
 
-test("generates from IDs, offers map/list parity, saves edits and focuses exact TXT evidence", async ({
+test("generates from IDs, saves edits and shows the exact cited TXT evidence", async ({
   page,
 }) => {
   test.setTimeout(15_000);
@@ -149,33 +150,42 @@ test("generates from IDs, offers map/list parity, saves edits and focuses exact 
     },
   );
   await open(page);
-  await page
-    .getByRole("button", { name: "Generate concepts from section 1" })
-    .click();
+  await page.getByRole("button", { name: "Generate concepts" }).click();
   expect(Object.keys(generationBody).sort()).toEqual([
     "requestId",
     "schemaVersion",
     "selection",
   ]);
+  expect(generationBody.selection).toEqual({
+    startLocation: 1,
+    endLocation: 1,
+  });
   expect(generationBody).not.toHaveProperty("text");
   await expect(
     page.getByRole("list", { name: "List of concepts" }),
   ).toContainText("Photosynthesis");
-  await page.getByRole("button", { name: "Map" }).click();
+  await expect(page.getByText("Learn by doing")).toHaveCount(0);
+  await expect(page.getByText("Today’s session")).toHaveCount(0);
+  await page.getByRole("button", { name: "Map", exact: true }).click();
+  const map = page.getByRole("list", { name: "Map of concepts" });
+  await expect(map).toContainText("Photosynthesis");
+  await map.getByRole("button", { name: /Photosynthesis/ }).click();
   await expect(
-    page.getByRole("list", { name: "Map of concepts" }),
-  ).toContainText("Photosynthesis");
+    page.getByRole("complementary", { name: "Cited passage" }),
+  ).toBeVisible();
+  await page.keyboard.press("Escape");
+  await page.getByRole("button", { name: "List", exact: true }).click();
+  await page.getByRole("button", { name: /Edit/ }).first().click();
   await page.getByLabel("Concept label").fill("Plant energy");
   await page.getByRole("button", { name: "Save label" }).click();
   await expect(page.getByLabel("Include Plant energy")).toBeVisible();
-  await page.getByRole("button", { name: /Open source section 1/ }).click();
-  await expect(page.locator("mark")).toHaveText(excerpt);
-  expect(
-    await page
-      .locator("mark")
-      .evaluate((mark) => mark.previousSibling?.textContent),
-  ).toBe(`${excerpt} `);
-  await expect(page.locator(".source-text")).toBeFocused();
+  await page.getByRole("button", { name: "Open source page 1" }).click();
+  const cited = page.getByRole("complementary", { name: "Cited passage" });
+  await expect(cited).toBeFocused();
+  await expect(cited).toContainText("Cited from section 1");
+  await expect(cited.locator("mark")).toHaveText(excerpt);
+  await page.keyboard.press("Escape");
+  await expect(cited).toHaveCount(0);
 });
 
 test("a PDF citation explicitly opens the matching rendered page", async ({
@@ -190,11 +200,13 @@ test("a PDF citation explicitly opens the matching rendered page", async ({
     (route) => route.fulfill({ body: pdf, contentType: "application/pdf" }),
   );
   await open(page, "pdf");
-  await page.getByRole("button", { name: /Open source section 1/ }).click();
+  await page.getByRole("button", { name: "Open source page 1" }).click();
   await expect(page.getByLabel("Rendered PDF page 1")).toBeVisible({
     timeout: 15_000,
   });
-  await expect(page.locator("mark")).toHaveText(excerpt);
+  await expect(
+    page.getByRole("complementary", { name: "Cited passage" }).locator("mark"),
+  ).toHaveText(excerpt);
 });
 
 test("keeps each concept selection control aligned at desktop and mobile widths", async ({
@@ -205,7 +217,10 @@ test("keeps each concept selection control aligned at desktop and mobile widths"
   );
   await open(page);
   const control = page.getByLabel("Include Photosynthesis");
-  const label = control.locator("..");
+  const label = page
+    .getByRole("listitem")
+    .filter({ has: control })
+    .locator("strong");
 
   for (const viewport of [
     { width: 1000, height: 800 },
@@ -257,7 +272,7 @@ test("shows checked supplementary metadata before a learner-chosen new-tab link"
   const section = page.getByRole("region", { name: "Supplementary resources" });
   await expect(section).toContainText("Free to read without an account");
   await expect(section).toContainText("2026-10-12");
-  const link = section.getByRole("link", { name: /opens in a new tab/ });
+  const link = section.getByRole("link", { name: /Open resource/ });
   await expect(link).toHaveAttribute("target", "_blank");
   await expect(link).toHaveAttribute("rel", "noopener noreferrer");
   await expect(link).toHaveAttribute("referrerpolicy", "no-referrer");
@@ -299,12 +314,13 @@ test("refreshes resources after a selected concept is renamed", async ({
     };
   });
   await expect(
-    page.getByText("No checked match for: Photosynthesis"),
+    page.getByLabel("Concepts without a checked match"),
   ).toBeVisible();
+  await page.getByRole("button", { name: /Edit/ }).first().click();
   await page.getByLabel("Concept label").fill("Plant energy");
   await page.getByRole("button", { name: "Save label" }).click();
   await expect(
-    page.getByText("No checked match for: Plant energy"),
-  ).toBeVisible();
+    page.getByLabel("Concepts without a checked match"),
+  ).toContainText("Plant energy");
   expect(resourceCalls).toBeGreaterThanOrEqual(2);
 });

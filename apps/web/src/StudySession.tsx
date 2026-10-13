@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useId, useState } from "react";
 import type { StudySession as SavedSession } from "../../../packages/contracts/study-sessions";
 import { createStudySession } from "./study-session-api";
 import { SessionSummary } from "./SessionSummary";
@@ -15,6 +15,7 @@ export function StudySession({
   concepts: Concept[];
   onChange: (session: SavedSession) => void;
 }) {
+  const fieldId = useId();
   const [budget, setBudget] = useState<5 | 15 | 30>(15);
   const [mode, setMode] = useState<"learn" | "review" | "practise">("learn");
   const [conceptId, setConceptId] = useState("");
@@ -56,8 +57,8 @@ export function StudySession({
   return (
     <>
       {session.status === "completed" && <SessionSummary session={session} />}
-      <section className="card" aria-labelledby="session-heading">
-        <h4 id="session-heading">Today’s session</h4>
+      <section className="card session-card" aria-labelledby="session-heading">
+        <h3 id="session-heading">Today’s session</h3>
         {session.status === "active" && (
           <p>
             Resume your {session.mode} session: about {session.estimatedMinutes}{" "}
@@ -65,54 +66,59 @@ export function StudySession({
             you want to replace it.
           </p>
         )}
-        <label>
-          Time available
-          <select
-            value={budget}
-            onChange={(event) =>
-              setBudget(Number(event.target.value) as 5 | 15 | 30)
-            }
+        <div className="session-controls">
+          <label htmlFor={`${fieldId}-time`}>
+            Time
+            <select
+              id={`${fieldId}-time`}
+              value={budget}
+              onChange={(event) =>
+                setBudget(Number(event.target.value) as 5 | 15 | 30)
+              }
+            >
+              <option value={5}>5 minutes</option>
+              <option value={15}>15 minutes</option>
+              <option value={30}>30 minutes</option>
+            </select>
+          </label>
+          <label htmlFor={`${fieldId}-activity`}>
+            Activity
+            <select
+              id={`${fieldId}-activity`}
+              value={mode}
+              onChange={(event) => setMode(event.target.value as typeof mode)}
+            >
+              <option value="learn">Learn</option>
+              <option value="review">Review</option>
+              <option value="practise">Practise</option>
+            </select>
+          </label>
+          <label htmlFor={`${fieldId}-concept`}>
+            Concept
+            <select
+              id={`${fieldId}-concept`}
+              value={conceptId}
+              onChange={(event) => setConceptId(event.target.value)}
+            >
+              <option value="">Use the recommendation</option>
+              {concepts.map((concept) => (
+                <option key={concept.id} value={concept.id}>
+                  {concept.label}
+                </option>
+              ))}
+            </select>
+          </label>
+          <button
+            disabled={busy}
+            onClick={() => void prepare(session.status === "active")}
           >
-            <option value={5}>5 minutes</option>
-            <option value={15}>15 minutes</option>
-            <option value={30}>30 minutes</option>
-          </select>
-        </label>
-        <label>
-          What would you like to do?
-          <select
-            value={mode}
-            onChange={(event) => setMode(event.target.value as typeof mode)}
-          >
-            <option value="learn">Learn</option>
-            <option value="review">Review</option>
-            <option value="practise">Practise</option>
-          </select>
-        </label>
-        <label>
-          Concept (optional)
-          <select
-            value={conceptId}
-            onChange={(event) => setConceptId(event.target.value)}
-          >
-            <option value="">Use the recommendation</option>
-            {concepts.map((concept) => (
-              <option key={concept.id} value={concept.id}>
-                {concept.label}
-              </option>
-            ))}
-          </select>
-        </label>
-        <button
-          disabled={busy}
-          onClick={() => void prepare(session.status === "active")}
-        >
-          {busy
-            ? "Preparing session…"
-            : session.status === "active"
-              ? "Replace with these settings"
-              : "Prepare today’s session"}
-        </button>
+            {busy
+              ? "Preparing session…"
+              : session.status === "active"
+                ? "Replace with these settings"
+                : "Start session ▶"}
+          </button>
+        </div>
         {error && (
           <p role="alert" className="error">
             {error}

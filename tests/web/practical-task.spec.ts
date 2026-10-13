@@ -1,3 +1,4 @@
+import { openFirstSpacePractice } from "./shell-navigation";
 import { expect, test, type Page } from "@playwright/test";
 import {
   concepts as baseConcepts,
@@ -183,14 +184,12 @@ test("prepares, inspects and persists a practical task accessibly", async ({
   await page.setViewportSize({ width: 375, height: 812 });
   const observed = await routePage(page);
   await page.goto("/");
-  await page.getByRole("button", { name: "Preview material" }).click();
+  await openFirstSpacePractice(page);
   const prepare = page.getByRole("button", { name: "Prepare practical task" });
-  await expect(prepare).toBeDisabled();
-  await expect(page.getByText("Select exactly one concept")).toBeVisible();
-  await page.getByLabel(`Include ${baseConcepts.concepts[1]!.label}`).click();
-  await expect(
-    page.getByLabel(`Include ${baseConcepts.concepts[1]!.label}`),
-  ).not.toBeChecked();
+  const picker = page.getByLabel("Concept for this task");
+  await expect(picker.locator("option")).toHaveCount(2);
+  await picker.selectOption({ label: baseConcepts.concepts[0]!.label });
+  await expect(page.getByLabel(/^Include /)).toHaveCount(0);
   await expect(prepare).toBeEnabled();
   await prepare.press("Enter");
   await expect(page.getByText("paper, pen")).toBeVisible();
@@ -202,10 +201,7 @@ test("prepares, inspects and persists a practical task accessibly", async ({
   await page.getByRole("button", { name: "No-cost alternative" }).click();
   await expect(page.getByText("10 minutes")).toBeVisible();
   expect(observed.generateCalls()).toBe(1);
-  await page
-    .getByRole("button", { name: "Open source section 1" })
-    .last()
-    .click();
+  await page.getByRole("button", { name: "Open source page 1" }).last().click();
   await expect(page.locator("mark")).toHaveText(source.text);
   await page.getByRole("button", { name: "Mark task complete" }).click();
   await expect(page.getByText("Completed by you")).toBeVisible();
@@ -215,7 +211,7 @@ test("prepares, inspects and persists a practical task accessibly", async ({
   await page.getByRole("button", { name: "Retry saving completion" }).click();
   expect(observed.completionCalls()).toBe(2);
   await page.reload();
-  await page.getByRole("button", { name: "Preview material" }).click();
+  await openFirstSpacePractice(page);
   await expect(page.getByText("Completed by you")).toBeVisible();
   await page.getByRole("button", { name: "Undo completion" }).click();
   await expect(page.getByText("Completed by you")).toHaveCount(0);

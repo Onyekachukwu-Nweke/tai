@@ -1,26 +1,31 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { deleteSpace } from "./material-storage";
-
+import { useModalDialog } from "./use-modal-dialog";
 export function DeleteStudySpace({
   spaceId,
   deletionPending,
   title,
   onDeleted,
   onDeleting,
+  restoreFocus,
 }: {
   spaceId: string;
   deletionPending?: boolean;
   title: string;
   onDeleted: () => void;
   onDeleting: () => void;
+  restoreFocus?: () => void;
 }) {
-  const [confirming, setConfirming] = useState(Boolean(deletionPending));
+  const modal = useModalDialog();
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState(
     deletionPending
       ? "Deletion has not finished. Retry to remove remaining data."
       : "",
   );
+  useEffect(() => {
+    if (deletionPending) modal.open();
+  }, [deletionPending]);
   async function remove() {
     if (busy) return;
     setBusy(true);
@@ -28,40 +33,68 @@ export function DeleteStudySpace({
     onDeleting();
     try {
       await deleteSpace(spaceId);
+      modal.close();
+      restoreFocus?.();
       onDeleted();
     } catch {
       setError(
-        "Deletion could not be confirmed. The space may already be hidden. Retry deletion to finish removing its data.",
+        "Deletion could not be confirmed. Retry deletion to finish removing its data.",
       );
     } finally {
       setBusy(false);
     }
   }
-  if (!confirming)
-    return (
-      <button className="secondary" onClick={() => setConfirming(true)}>
-        Delete study space
-      </button>
-    );
   return (
-    <div>
-      <p>
-        Delete “{title}” and its original file and extracted text? This cannot
-        be undone.
-      </p>
-      {error && <p role="alert">{error}</p>}
-      <button disabled={busy} onClick={remove}>
-        {busy ? "Deleting…" : error ? "Retry deletion" : "Delete permanently"}
+    <>
+      <button
+        ref={modal.triggerRef}
+        className="destructive"
+        onClick={modal.open}
+      >
+        Delete
       </button>
-      {!error && (
-        <button
-          className="secondary"
-          disabled={busy}
-          onClick={() => setConfirming(false)}
-        >
-          Keep study space
-        </button>
-      )}
-    </div>
+      <dialog
+        ref={modal.dialogRef}
+        aria-labelledby={`delete-${spaceId}`}
+        onKeyDown={(event) => {
+          if (event.key === "Escape") event.stopPropagation();
+          modal.trap(event);
+        }}
+        onCancel={(event) => {
+          event.preventDefault();
+          if (!busy) {
+            modal.close();
+            restoreFocus?.();
+          }
+        }}
+      >
+        <h2 id={`delete-${spaceId}`}>Delete “{title}”?</h2>
+        <p>This removes the file and all progress. This cannot be undone.</p>
+        {error && (
+          <p role="alert" className="error">
+            {error}
+          </p>
+        )}
+        <div className="button-row">
+          <button
+            className="destructive"
+            disabled={busy}
+            onClick={() => void remove()}
+          >
+            {busy ? "Deleting…" : error ? "Retry deletion" : "Delete"}
+          </button>
+          <button
+            className="secondary"
+            disabled={busy || Boolean(error)}
+            onClick={() => {
+              modal.close();
+              restoreFocus?.();
+            }}
+          >
+            Cancel
+          </button>
+        </div>
+      </dialog>
+    </>
   );
 }

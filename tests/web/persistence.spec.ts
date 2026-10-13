@@ -1,3 +1,4 @@
+import { openFirstStudySpace } from "./shell-navigation";
 import {
   expect,
   test,
@@ -41,9 +42,12 @@ async function open(page: Page) {
     }),
   );
   await page.goto("/");
-  await page.getByRole("button", { name: "Preview material" }).click();
+  await openFirstStudySpace(page);
   await expect(input(page)).toBeEnabled();
 }
+
+const selected = (page: Page) =>
+  page.getByRole("region", { name: "Selected material" });
 
 async function selectSource(page: Page) {
   await input(page).setInputFiles({
@@ -51,7 +55,7 @@ async function selectSource(page: Page) {
     mimeType: "text/plain",
     buffer: Buffer.from(sourceText),
   });
-  await expect(page.locator("pre")).toHaveText(sourceText);
+  await expect(selected(page)).toContainText("source.txt");
 }
 
 async function readUpload(request: BrowserRequest) {
@@ -81,6 +85,13 @@ async function reconnectWithoutReplay(page: Page) {
   await page.clock.runFor(30_000);
 }
 
+async function requestDeletion(page: Page) {
+  const close = page.getByRole("button", { name: "Close preview" });
+  if (await close.isVisible().catch(() => false)) await close.click();
+  await page.getByLabel("More actions for Synthetic biology").click();
+  await page.getByRole("button", { name: "Delete", exact: true }).click();
+}
+
 test("saving persists the reviewed original and reload opens one immutable material", async ({
   page,
 }) => {
@@ -102,11 +113,11 @@ test("saving persists the reviewed original and reload opens one immutable mater
   expect(posts).toBe(0);
   await saveButton(page).click();
   await expect(
-    page.getByRole("link", { name: "Open original" }),
-  ).toHaveAttribute("href", `/api/study-spaces/${id}/material/original`);
+    page.getByRole("heading", { name: "Your material" }),
+  ).toBeVisible();
   await page.reload();
-  await page.getByRole("button", { name: "Preview material" }).click();
-  await expect(page.locator("pre")).toHaveText(sourceText);
+  await openFirstStudySpace(page);
+  await expect(selected(page)).toContainText("source.txt");
   await expect(input(page)).toHaveCount(0);
   await expect(saveButton(page)).toHaveCount(0);
   expect(posts).toBe(1);
@@ -132,11 +143,13 @@ test("failed save keeps exact original and document ID for explicit retry withou
   await selectSource(page);
   await saveButton(page).click();
   await expect(page.getByRole("alert")).toBeVisible();
-  await expect(page.locator("pre")).toHaveText(sourceText);
+  await expect(selected(page)).toContainText("source.txt");
   await reconnectWithoutReplay(page);
   expect(uploads).toHaveLength(1);
   await saveButton(page).click();
-  await expect(page.getByRole("link", { name: "Open original" })).toBeVisible();
+  await expect(
+    page.getByRole("heading", { name: "Your material" }),
+  ).toBeVisible();
   expect(uploads).toHaveLength(2);
   expect(uploads[1]).toEqual(uploads[0]);
 });
@@ -160,9 +173,11 @@ test("failed replacement still uploads the original matching the preserved previ
     buffer: Buffer.from("   "),
   });
   await expect(page.getByRole("alert")).toBeVisible();
-  await expect(page.locator("pre")).toHaveText(sourceText);
+  await expect(selected(page)).toContainText("source.txt");
   await saveButton(page).click();
-  await expect(page.getByRole("link", { name: "Open original" })).toBeVisible();
+  await expect(
+    page.getByRole("heading", { name: "Your material" }),
+  ).toBeVisible();
   expect(uploaded?.originalName).toBe("source.txt");
   expect(uploaded?.originalText).toBe(sourceText);
   expect(uploaded?.preview.filename).toBe("source.txt");
@@ -183,12 +198,10 @@ test("failed deletion retains the pending confirmation and retries only explicit
   });
   await open(page);
   await selectSource(page);
-  await page
-    .getByRole("button", { name: "Delete study space", exact: true })
-    .click();
+  await requestDeletion(page);
   expect(deletes).toBe(0);
-  const confirm = page.getByRole("button", {
-    name: "Delete permanently",
+  const confirm = page.getByRole("dialog").getByRole("button", {
+    name: "Delete",
     exact: true,
   });
   await confirm.click();
@@ -196,12 +209,12 @@ test("failed deletion retains the pending confirmation and retries only explicit
   await expect(
     page.getByRole("button", { name: "Retry deletion" }),
   ).toBeVisible();
-  await expect(page.locator("pre")).toHaveCount(0);
+  await expect(selected(page)).toHaveCount(0);
   await reconnectWithoutReplay(page);
   expect(deletes).toBe(1);
   await page.getByRole("button", { name: "Retry deletion" }).click();
   await expect(
-    page.getByRole("heading", { name: /Material preview/ }),
+    page.getByRole("heading", { name: /Upload material|Your material/ }),
   ).toHaveCount(0);
   await expect(
     page.getByRole("button", { name: "Preview material" }),
@@ -224,10 +237,11 @@ test("cleanup pending never reports successful deletion and allows explicit retr
     });
   });
   await open(page);
+  await requestDeletion(page);
   await page
-    .getByRole("button", { name: "Delete study space", exact: true })
+    .getByRole("dialog")
+    .getByRole("button", { name: "Delete", exact: true })
     .click();
-  await page.getByRole("button", { name: "Delete permanently" }).click();
   await expect(
     page.getByRole("button", { name: "Retry deletion" }),
   ).toBeVisible();
@@ -235,7 +249,7 @@ test("cleanup pending never reports successful deletion and allows explicit retr
     page.getByRole("heading", { name: "Synthetic biology", exact: true }),
   ).toBeVisible();
   await expect(
-    page.getByRole("heading", { name: /Material preview/ }),
+    page.getByRole("heading", { name: /Upload material|Your material/ }),
   ).toHaveCount(0);
   await reconnectWithoutReplay(page);
   expect(deletes).toBe(1);
@@ -257,7 +271,7 @@ test("failed saved-material load blocks replacement until an explicit successful
       ? route.abort("failed")
       : route.fulfill({ json: { schemaVersion: 1, material: null } });
   });
-  await page.getByRole("button", { name: "Preview material" }).click();
+  await openFirstStudySpace(page);
   await expect(page.getByRole("alert")).toContainText(
     "Saved material could not be loaded",
   );
@@ -299,8 +313,10 @@ test("reloaded pending deletion prevents opening material and exposes cleanup re
     return route.fulfill({ status: 204 });
   });
   await page.reload();
+  await page.getByRole("button", { name: "Study Space", exact: true }).click();
+  await page.getByLabel("More actions for Synthetic biology").click();
   await expect(
-    page.getByRole("button", { name: "Preview material" }),
+    page.getByRole("menuitem", { name: "Preview material" }),
   ).toBeDisabled();
   await expect(
     page.getByRole("button", { name: "Retry deletion" }),

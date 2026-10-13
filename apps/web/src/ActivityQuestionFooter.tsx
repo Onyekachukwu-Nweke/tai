@@ -1,5 +1,5 @@
+import { useState } from "react";
 import type { LearnerActivityPack } from "../../../packages/contracts/activity-packs";
-
 type Question = LearnerActivityPack["questions"][number];
 export function ActivityQuestionFooter({
   question,
@@ -14,22 +14,27 @@ export function ActivityQuestionFooter({
   onFlag: (reason: "incorrect" | "ambiguous") => void;
   onSource: (source: Question["sources"][number]) => void;
 }) {
+  const [reason, setReason] = useState<"incorrect" | "ambiguous">("incorrect");
   return (
     <>
-      <div className="preview-actions">
+      <div className="flag-control">
+        <label>
+          Flag reason
+          <select
+            value={reason}
+            disabled={busy}
+            onChange={(event) => setReason(event.target.value as typeof reason)}
+          >
+            <option value="incorrect">Incorrect</option>
+            <option value="ambiguous">Ambiguous</option>
+          </select>
+        </label>
         <button
-          className="secondary"
+          className="meta-button flag-btn"
           disabled={busy}
-          onClick={() => onFlag("incorrect")}
+          onClick={() => onFlag(reason)}
         >
-          Flag incorrect
-        </button>
-        <button
-          className="secondary"
-          disabled={busy}
-          onClick={() => onFlag("ambiguous")}
-        >
-          Flag ambiguous
+          ⚑ Flag
         </button>
       </div>
       {flag && (
@@ -37,15 +42,19 @@ export function ActivityQuestionFooter({
           Flagged as {flag}. This question is excluded from future scoring.
         </p>
       )}
-      <ul aria-label={`Sources for ${question.prompt}`}>
+      <ul
+        className="source-chips"
+        aria-label={`Sources for ${question.prompt}`}
+      >
         {question.sources.map((source) => (
           <li key={source.id}>
             <button
               type="button"
-              className="source-link"
+              className="source-chip"
+              aria-label={`Open source page ${source.location}`}
               onClick={() => onSource(source)}
             >
-              Open source section {source.location}: {source.text.slice(0, 80)}
+              Page {source.location}
             </button>
           </li>
         ))}

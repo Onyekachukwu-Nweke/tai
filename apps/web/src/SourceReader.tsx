@@ -9,12 +9,12 @@ export function SourceReader({
   spaceId,
   page,
   onPageChange,
-  focusRequest = 0,
+  defaultOpen = false,
 }: {
   spaceId: string;
   page: number;
   onPageChange: (page: number) => void;
-  focusRequest?: number;
+  defaultOpen?: boolean;
 }) {
   const [open, setOpen] = useState(false);
   const [document, setDocument] = useState<PDFDocumentProxy | null>(null);
@@ -74,8 +74,11 @@ export function SourceReader({
   }, [document, open, page]);
 
   useEffect(() => {
-    if (focusRequest > 0 && !open) void load();
-  }, [focusRequest]);
+    if (!defaultOpen) return;
+    // Deferred so a StrictMode remount cancels it instead of fetching twice.
+    const timer = setTimeout(() => void load(), 0);
+    return () => clearTimeout(timer);
+  }, []);
 
   useEffect(
     () => () => {
@@ -85,71 +88,53 @@ export function SourceReader({
     [document],
   );
 
-  function close() {
-    loadController.current?.abort();
-    setDocument(null);
-    setOpen(false);
-    setLoading(false);
-    setRenderedPage(null);
-    setError("");
-  }
+  const pages = document?.numPages ?? 0;
 
   if (!open)
     return (
       <button type="button" className="secondary" onClick={() => void load()}>
-        View PDF page
+        View PDF
       </button>
     );
 
-  const pages = document?.numPages ?? 0;
   return (
     <section className="source-reader" aria-label="Original PDF page">
-      <div className="preview-actions">
-        {document && (
+      <div className="pdf-nav-bar">
+        {document ? (
           <>
             <button
               type="button"
-              className="secondary"
+              className="icon-button"
+              aria-label="Previous page"
               disabled={page <= 1}
               onClick={() => onPageChange(page - 1)}
             >
-              Previous page
+              ‹
             </button>
-            <label htmlFor="pdf-reader-page">PDF page</label>
-            <select
-              id="pdf-reader-page"
-              value={page}
-              onChange={(event) => onPageChange(Number(event.target.value))}
-            >
-              {Array.from({ length: pages }, (_, index) => (
-                <option value={index + 1} key={index + 1}>
-                  {index + 1} of {pages}
-                </option>
-              ))}
-            </select>
+            <span className="pdf-page-label">
+              Page {page} of {pages}
+            </span>
             <button
               type="button"
-              className="secondary"
+              className="icon-button"
+              aria-label="Next page"
               disabled={page >= pages}
               onClick={() => onPageChange(page + 1)}
             >
-              Next page
+              ›
             </button>
           </>
+        ) : (
+          <span className="pdf-page-label">
+            {loading ? "Loading PDF…" : ""}
+          </span>
         )}
-        <button type="button" className="secondary" onClick={close}>
-          Close PDF reader
-        </button>
       </div>
-      <p role="status">
-        {loading
-          ? "Loading saved PDF…"
-          : rendering
-            ? `Rendering PDF page ${page}…`
-            : document && renderedPage === page
-              ? `PDF page ${page} of ${pages} ready.`
-              : ""}
-      </p>
+      {rendering && (
+        <p role="status" className="fine-print">
+          Rendering page {page}…
+        </p>
+      )}
       {error && (
         <div>
           <p role="alert" className="error">

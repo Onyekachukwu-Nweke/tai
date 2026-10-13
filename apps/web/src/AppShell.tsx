@@ -1,0 +1,58 @@
+import type { ReactNode } from "react";
+export type AppView = "home" | "spaces" | "practice" | "settings";
+const items: Array<{ view: AppView; icon: string; label: string }> = [
+  { view: "home", icon: "⌂", label: "Home" },
+  { view: "spaces", icon: "▤", label: "Study Space" },
+  { view: "practice", icon: "▶", label: "Practice" },
+  { view: "settings", icon: "⚙", label: "Settings" },
+];
+export function AppShell({
+  view,
+  signedIn,
+  onView,
+  onSignOut,
+  busy,
+  children,
+}: {
+  view: AppView;
+  signedIn: boolean;
+  onView: (view: AppView) => void;
+  onSignOut: () => void;
+  busy: boolean;
+  children: ReactNode;
+}) {
+  return (
+    <div className="app-shell">
+      <aside className="sidebar">
+        <a className="wordmark" href="/" aria-label="TAI home">
+          TAI<span>Learning, at your pace.</span>
+        </a>
+        {signedIn && (
+          <nav aria-label="Main navigation">
+            {items.map((item) => (
+              <button
+                key={item.view}
+                className={view === item.view ? "nav-item active" : "nav-item"}
+                aria-current={view === item.view ? "page" : undefined}
+                onClick={() => onView(item.view)}
+              >
+                <span aria-hidden="true">{item.icon}</span>
+                <span className="nav-label">{item.label}</span>
+              </button>
+            ))}
+          </nav>
+        )}
+        <div className="sidebar-spacer" />
+        {signedIn && (
+          <button className="ghost signout" disabled={busy} onClick={onSignOut}>
+            Sign out
+          </button>
+        )}
+      </aside>
+      <div className="page">
+        <main id="main">{children}</main>
+        <footer>One step at a time.</footer>
+      </div>
+    </div>
+  );
+}

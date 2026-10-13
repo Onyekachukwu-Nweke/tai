@@ -3,7 +3,12 @@ import { ApiError } from "./api";
 import { Reauthenticate } from "./Reauthenticate";
 import { SourceReader } from "./SourceReader";
 import { ConceptExplorer } from "./ConceptExplorer";
-import { materialPath, saveMaterial } from "./material-storage";
+import { PracticeWorkspaceView } from "./PracticeWorkspaceView";
+import { MaterialGuidance } from "./MaterialGuidance";
+import { MaterialSummary } from "./MaterialSummary";
+import { CitationPanel, type Citation } from "./CitationPanel";
+import { conceptScopes } from "./concept-scopes";
+import { saveMaterial } from "./material-storage";
 import { extractMaterial } from "./material/extract";
 import {
   MaterialError,
@@ -18,12 +23,14 @@ export function MaterialPreview({
   userId,
   initialPreview,
   onClose,
+  practiceOnly = false,
 }: {
   title: string;
   spaceId: string;
   userId: string;
   initialPreview: Preview | null;
   onClose: () => void;
+  practiceOnly?: boolean;
 }) {
   const [selection, setSelection] = useState<Selection | null>(null);
   const [preview, setPreview] = useState<Preview | null>(initialPreview);
@@ -33,13 +40,7 @@ export function MaterialPreview({
   const [saving, setSaving] = useState(false);
   const saveController = useRef<AbortController | null>(null);
   const [sectionIndex, setSectionIndex] = useState(0);
-  const [focusedChunk, setFocusedChunk] = useState<{
-    id: string;
-    text: string;
-    start: number;
-    end: number;
-  } | null>(null);
-  const [readerRequest, setReaderRequest] = useState(0);
+  const [citation, setCitation] = useState<Citation | null>(null);
   const [busy, setBusy] = useState(false);
   const [status, setStatus] = useState("");
   const [error, setError] = useState("");
@@ -130,47 +131,34 @@ export function MaterialPreview({
   }
 
   const section = preview?.sections[sectionIndex];
-  const exactFocus =
-    section &&
-    focusedChunk &&
-    focusedChunk.start >= 0 &&
-    focusedChunk.end > focusedChunk.start &&
-    focusedChunk.end <= section.text.length &&
-    section.text.slice(focusedChunk.start, focusedChunk.end) ===
-      focusedChunk.text
-      ? focusedChunk
-      : null;
-  const windowStart = exactFocus
-    ? Math.max(
-        0,
-        Math.min(exactFocus.start - 5_000, section!.text.length - 20_000),
-      )
-    : 0;
-  const windowEnd = section
-    ? Math.min(section.text.length, windowStart + 20_000)
-    : 0;
+
+  if (practiceOnly && saved && preview && section)
+    return (
+      <PracticeWorkspaceView
+        title={title}
+        userId={userId}
+        spaceId={spaceId}
+        preview={preview}
+        onLocation={setSectionIndex}
+      />
+    );
+
   return (
     <section className="card material-preview" aria-labelledby="material-title">
-      <h2 id="material-title" tabIndex={-1} ref={heading}>
-        Material preview for {title}
-      </h2>
-      <p>
-        {saved
-          ? "This material is saved privately to your account. One material is allowed per study space; create a new space for another file."
-          : "This preview stays in this browser tab. It is not uploaded or saved until you choose Save material. Unsaved previews are cleared when you close or reload."}
-      </p>
-      <p id="material-help">
-        Text-based PDF or UTF-8 TXT, up to 10 MB (10,000,000 bytes) and 50 PDF
-        pages. English only. TAI does not detect or translate other languages.
-        If needed, upload a trusted English translation after checking its
-        terminology, symbols, numbers, and units against the original. Scanned
-        PDFs and OCR are not supported.
-      </p>
-      <p className="notice">
-        Check equations, symbols, tables, and reading order against your
-        original. Extracted text can lose meaning; this preview does not verify
-        correctness.
-      </p>
+      <div className="section-header">
+        <h2 id="material-title" tabIndex={-1} ref={heading}>
+          {saved ? "Your material" : "Upload material"}
+        </h2>
+        <button
+          type="button"
+          className="ghost small"
+          aria-label="Close preview"
+          onClick={onClose}
+        >
+          ✕ Close
+        </button>
+      </div>
+      <MaterialGuidance saved={saved} />
       {!saved && (
         <>
           <label htmlFor="material-file">Choose a PDF or TXT file</label>
@@ -204,125 +192,54 @@ export function MaterialPreview({
             Retry extraction
           </button>
         )}
-        <button type="button" className="secondary" onClick={onClose}>
-          Close preview
-        </button>
       </div>
-      {!saved && preview && (
-        <div>
-          <p>
-            Saving stores the original file privately and the extracted text in
-            your account until you delete the study space. Future AI activities
-            will send selected excerpts and submitted answers to the configured
-            AI service, not the original file. No AI request is made when
-            saving.
-          </p>
-          <button disabled={saving || busy} onClick={persist}>
-            {saving ? "Saving material…" : "Save material"}
-          </button>
-        </div>
-      )}
-      {saved && preview?.format === "pdf" && (
-        <SourceReader
-          spaceId={spaceId}
-          page={section?.location ?? 1}
-          onPageChange={(page) => setSectionIndex(page - 1)}
-          focusRequest={readerRequest}
-        />
-      )}
-      {saved && <a href={`${materialPath(spaceId)}/original`}>Open original</a>}
-      <p role="status">{status}</p>
+      <p role="status" className="fine-print">
+        {status}
+      </p>
       {error && (
         <p role="alert" className="error">
           {error}
-          {preview && " Your previous preview is still shown below."}
+          {preview && " Your previous file is still ready below."}
         </p>
       )}
       {expired && <Reauthenticate />}
-      {preview && (
-        <div>
-          <h3>{preview.filename}</h3>
-          <p className="fine-print">
-            Extracted text below is the source used for citations and learning
-            activities. For PDFs, open the matching rendered page to compare
-            layout, equations, tables, and symbols.
-          </p>
-          {preview.warnings.length > 0 && (
-            <ul aria-label="Extraction warnings">
-              {preview.warnings.map((warning, index) => (
-                <li key={index}>{warning}</li>
-              ))}
-            </ul>
-          )}
-          <label htmlFor="material-section">Page or section</label>
-          <select
-            id="material-section"
-            value={sectionIndex}
-            onChange={(event) => setSectionIndex(Number(event.target.value))}
-          >
-            {preview.sections.map((item, index) => (
-              <option key={item.location} value={index}>
-                {preview.format === "pdf" ? "Page" : "Section"} {item.location}
-              </option>
-            ))}
-          </select>
-          {section && (
-            <>
-              <p>
-                {preview.format === "pdf" ? "Page" : "Section"}{" "}
-                {section.location} · {section.text.length.toLocaleString()}{" "}
-                extracted characters
-              </p>
-              <pre
-                className="source-text"
-                tabIndex={-1}
-                data-focused-source={focusedChunk?.id ?? ""}
-              >
-                {exactFocus ? (
-                  <>
-                    {section.text.slice(windowStart, exactFocus.start)}
-                    <mark>
-                      {section.text.slice(exactFocus.start, exactFocus.end)}
-                    </mark>
-                    {section.text.slice(exactFocus.end, windowEnd)}
-                  </>
-                ) : (
-                  section.text.slice(0, 20_000) ||
-                  "No text could be extracted from this page."
-                )}
-              </pre>
-              {section.text.length > 20_000 && (
-                <p>
-                  Showing extracted characters {windowStart + 1}–{windowEnd} of{" "}
-                  {section.text.length.toLocaleString()} for this section.
-                </p>
-              )}
-            </>
-          )}
-          {saved && section && (
-            <ConceptExplorer
-              userId={userId}
-              spaceId={spaceId}
-              location={section.location}
-              onSource={(source) => {
-                const index = preview.sections.findIndex(
-                  (item) => item.location === source.location,
-                );
-                if (index >= 0) setSectionIndex(index);
-                setFocusedChunk({
-                  id: source.id,
-                  text: source.text,
-                  start: source.start,
-                  end: source.end,
-                });
-                setReaderRequest((value) => value + 1);
-                requestAnimationFrame(() =>
-                  document.querySelector<HTMLElement>(".source-text")?.focus(),
-                );
-              }}
-            />
-          )}
-        </div>
+      {preview && (!saved || preview.format === "txt") && (
+        <MaterialSummary
+          preview={preview}
+          saved={saved}
+          saving={saving}
+          busy={busy}
+          onSave={() => void persist()}
+        />
+      )}
+      {saved && preview?.format === "pdf" && section && (
+        <SourceReader
+          spaceId={spaceId}
+          page={section.location}
+          onPageChange={(page) => setSectionIndex(page - 1)}
+          defaultOpen
+        />
+      )}
+      {saved && section && (
+        <ConceptExplorer
+          userId={userId}
+          spaceId={spaceId}
+          scopes={conceptScopes(preview!)}
+          onSource={(source) => {
+            const index = preview!.sections.findIndex(
+              (item) => item.location === source.location,
+            );
+            if (index >= 0) setSectionIndex(index);
+            setCitation(source);
+          }}
+        />
+      )}
+      {citation && preview && (
+        <CitationPanel
+          citation={citation}
+          unit={preview.format === "pdf" ? "page" : "section"}
+          onClose={() => setCitation(null)}
+        />
       )}
     </section>
   );

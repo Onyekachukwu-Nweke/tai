@@ -47,7 +47,7 @@ export function DeleteAccount({
         under an AI provider’s retention practices.
       </p>
       {!confirming ? (
-        <button className="secondary" onClick={() => setConfirming(true)}>
+        <button className="destructive" onClick={() => setConfirming(true)}>
           Delete my account
         </button>
       ) : (
@@ -57,7 +57,7 @@ export function DeleteAccount({
             text, activities, answers, progress, and sessions? This cannot be
             undone.
           </p>
-          <button disabled={busy} onClick={remove}>
+          <button className="destructive" disabled={busy} onClick={remove}>
             {busy
               ? "Deleting…"
               : status

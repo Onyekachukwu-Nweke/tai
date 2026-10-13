@@ -37,7 +37,7 @@ export function MultipleChoiceAnswer({
         ))}
       </fieldset>
       <button disabled={busy || flagged || !selected} onClick={onSubmit}>
-        Submit answer
+        Check answer
       </button>
       {flagged && (
         <p>

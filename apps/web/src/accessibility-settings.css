@@ -50,3 +50,32 @@
     width: 100%;
   }
 }
+.accessibility-settings .settings-row {
+  display: grid;
+  grid-template-columns: minmax(8rem, 1fr) 2fr;
+  gap: 1.5rem;
+  align-items: center;
+  padding: 1rem 0;
+  border-top: 1px solid #d7dfd5;
+}
+.accessibility-settings fieldset {
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+.accessibility-settings p {
+  margin: 0;
+}
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+}
+@media (max-width: 32rem) {
+  .accessibility-settings .settings-row {
+    grid-template-columns: 1fr;
+    gap: 0.5rem;
+  }
+}

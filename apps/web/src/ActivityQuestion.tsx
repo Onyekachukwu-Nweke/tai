@@ -34,13 +34,13 @@ export function ActivityQuestion({
   onProgressChange,
   studySessionId,
   onAttemptSaved,
-  sessionReason,
   initialTutor = [],
   onTutorSaved,
   initialRubric,
   onRubricSaved,
   initialFollowup,
   onFollowupSaved,
+  active = true,
 }: {
   userId: string;
   spaceId: string;
@@ -52,13 +52,13 @@ export function ActivityQuestion({
   onProgressChange: () => void;
   studySessionId?: string;
   onAttemptSaved?: (result: ActivityAttemptResponse) => void;
-  sessionReason?: string;
   initialTutor?: ActivityTutorResponse[];
   onTutorSaved: (response: ActivityTutorResponse) => void;
   initialRubric: ActivityRubricResponse | null;
   onRubricSaved: (response: ActivityRubricResponse) => void;
   initialFollowup: ActivityFollowupResponse | null;
   onFollowupSaved: (response: ActivityFollowupResponse) => void;
+  active?: boolean;
 }) {
   const loaded = loadDraft(
     userId,
@@ -151,10 +151,10 @@ export function ActivityQuestion({
     setDraft((value) => ({ ...value, ...update }));
   }
   return (
-    <li className="activity-card">
-      {sessionReason && (
-        <p className="fine-print">Why this activity: {sessionReason}</p>
-      )}
+    <li className="activity-card" hidden={!active}>
+      <span className={`activity-type type-${question.type}`}>
+        {question.type === "mcq" ? "Multiple choice" : question.type}
+      </span>
       <ActivityQuestionPrompt question={question} />
       {!result && question.type === "mcq" && (
         <MultipleChoiceAnswer
@@ -238,10 +238,7 @@ export function ActivityQuestion({
                 })
               }
             >
-              Save{" "}
-              {question.type === "scenario"
-                ? "scenario response"
-                : "explanation"}
+              Check answer
             </button>
             {flag && (
               <p>

@@ -26,6 +26,7 @@ async function openSettings(page: Page, stored?: string, blockStorage = false) {
     route.fulfill({ json: { schemaVersion: 1, spaces: [] } }),
   );
   await page.goto("/");
+  await page.getByRole("button", { name: "Settings" }).click();
   return page.getByRole("region", { name: "Settings" });
 }
 
@@ -33,7 +34,7 @@ test("persists an accessible text-size choice across reload", async ({
   page,
 }) => {
   const settings = await openSettings(page);
-  const largest = settings.getByRole("radio", { name: "Largest (125%)" });
+  const largest = settings.getByRole("radio", { name: /largest/i });
   await largest.focus();
   await expect(largest).toBeFocused();
   await largest.press("Space");
@@ -43,9 +44,8 @@ test("persists an accessible text-size choice across reload", async ({
     "largest",
   );
   await page.reload();
-  await expect(
-    page.getByRole("radio", { name: "Largest (125%)" }),
-  ).toBeChecked();
+  await page.getByRole("button", { name: "Settings" }).click();
+  await expect(page.getByRole("radio", { name: /largest/i })).toBeChecked();
   await expect(page.locator("html")).toHaveAttribute(
     "data-text-size",
     "largest",
@@ -57,13 +57,10 @@ test("rejects a corrupt stored preference and discloses English-only limits", as
 }) => {
   const settings = await openSettings(page, "oversized");
   await expect(
-    settings.getByRole("radio", { name: "Standard (100%)" }),
+    settings.getByRole("radio", { name: /standard/i }),
   ).toBeChecked();
-  await expect(settings).toContainText("English learning materials only");
-  await expect(settings).toContainText("does not detect or translate");
-  await expect(settings).toContainText("trusted translation");
   await expect(settings).toContainText(
-    "terminology, symbols, numbers, and units",
+    "TAI currently supports English interface and learning materials.",
   );
 });
 
@@ -72,9 +69,9 @@ test("loads and applies a tab-only size when browser storage is unavailable", as
 }) => {
   const settings = await openSettings(page, undefined, true);
   await expect(
-    settings.getByRole("radio", { name: "Standard (100%)" }),
+    settings.getByRole("radio", { name: /standard/i }),
   ).toBeChecked();
-  await settings.getByRole("radio", { name: "Largest (125%)" }).check();
+  await settings.getByRole("radio", { name: /largest/i }).check();
   await expect(page.locator("html")).toHaveAttribute(
     "data-text-size",
     "largest",

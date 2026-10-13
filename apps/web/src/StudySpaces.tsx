@@ -5,7 +5,7 @@ import {
 } from "../../../packages/contracts/study-spaces";
 import { api, ApiError, authClient } from "./api";
 import { MaterialWorkspace } from "./MaterialWorkspace";
-import { DeleteStudySpace } from "./DeleteStudySpace";
+import { SpaceCardMenu } from "./SpaceCardMenu";
 
 type Space = {
   id: string;
@@ -14,7 +14,15 @@ type Space = {
   deletionPending?: boolean;
 };
 
-export function StudySpaces({ userId }: { userId: string }) {
+export function StudySpaces({
+  userId,
+  initialPractice = false,
+  onViewChange,
+}: {
+  userId: string;
+  initialPractice?: boolean;
+  onViewChange?: (view: "home" | "spaces" | "practice" | "settings") => void;
+}) {
   const [activeSpace, setActiveSpace] = useState<Space | null>(null);
   const [spaces, setSpaces] = useState<Space[]>([]);
   const [title, setTitle] = useState("");
@@ -95,30 +103,59 @@ export function StudySpaces({ userId }: { userId: string }) {
     }
   }
 
+  if (activeSpace)
+    return (
+      <section aria-labelledby="workspace-title">
+        <nav className="breadcrumbs" aria-label="Learning path">
+          <button onClick={() => setActiveSpace(null)}>All spaces</button>
+          <span aria-hidden="true">›</span>
+          <span>{activeSpace.title}</span>
+        </nav>
+        <div className="workspace-header">
+          <div>
+            <p className="eyebrow">{initialPractice ? "Practise" : "Read"}</p>
+            <h1 id="workspace-title">{activeSpace.title}</h1>
+          </div>
+          {initialPractice ? (
+            <button
+              className="secondary small"
+              onClick={() => onViewChange?.("spaces")}
+            >
+              ← Back to reading
+            </button>
+          ) : (
+            <button
+              className="small"
+              onClick={() => onViewChange?.("practice")}
+            >
+              Start practice ▶
+            </button>
+          )}
+        </div>
+        <MaterialWorkspace
+          userId={userId}
+          spaceId={activeSpace.id}
+          key={activeSpace.id}
+          title={activeSpace.title}
+          practiceOnly={initialPractice}
+          onClose={() => {
+            const id = activeSpace.id;
+            setActiveSpace(null);
+            onViewChange?.("spaces");
+            requestAnimationFrame(() =>
+              document.getElementById(`open-${id}`)?.focus(),
+            );
+          }}
+        />
+      </section>
+    );
   return (
     <section aria-labelledby="spaces-title">
-      <h2 id="spaces-title">Your study spaces</h2>
-      <form className="card" onSubmit={createSpace}>
-        <label htmlFor="space-title">What would you like to learn?</label>
-        <p id="title-help" className="fine-print">
-          Give your space a name, then preview a PDF or TXT file locally.
-        </p>
-        <div className="form-row">
-          <input
-            id="space-title"
-            disabled={saving}
-            value={title}
-            onChange={(event) => setTitle(event.target.value)}
-            maxLength={120}
-            required
-            aria-describedby="title-help"
-            placeholder="For example, introductory biology"
-          />
-          <button disabled={saving || loading || !title.trim()} type="submit">
-            {saving ? "Saving…" : "Create study space"}
-          </button>
-        </div>
-      </form>
+      <h1 id="spaces-title">
+        {initialPractice
+          ? "Choose a study space to practise"
+          : "Your study spaces"}
+      </h1>
       {error && (
         <div className="error" role="alert">
           <p>{error}</p>
@@ -133,67 +170,84 @@ export function StudySpaces({ userId }: { userId: string }) {
         </div>
       )}
       <p role="status">{loading ? "Loading study spaces…" : message}</p>
-      {!loading && spaces.length === 0 && !error && (
-        <p>No study spaces yet. Start with something you’re curious about.</p>
-      )}
       <ul className="spaces">
+        {!initialPractice && (
+          <li className="card new-space-card">
+            <span className="new-space-icon" aria-hidden="true">
+              ＋
+            </span>
+            <h2>New study space</h2>
+            <form onSubmit={createSpace}>
+              <label className="visually-hidden" htmlFor="space-title">
+                What would you like to learn?
+              </label>
+              <div className="form-row">
+                <input
+                  id="space-title"
+                  disabled={saving}
+                  value={title}
+                  onChange={(event) => setTitle(event.target.value)}
+                  maxLength={120}
+                  required
+                  placeholder="e.g. introductory biology"
+                />
+                <button
+                  disabled={saving || loading || !title.trim()}
+                  type="submit"
+                >
+                  {saving ? "Saving…" : "Create"}
+                </button>
+              </div>
+            </form>
+          </li>
+        )}
         {spaces.map((space) => (
-          <li className="card" key={space.id}>
-            <h3>{space.title}</h3>
+          <li className="card space-card" key={space.id}>
+            <h2>{space.title}</h2>
             <p className="fine-print">
-              Preview and save your material, or reopen a saved original.
+              Created {new Date(space.createdAt).toLocaleDateString()}
             </p>
-            <button
-              type="button"
-              className="secondary"
-              id={`preview-${space.id}`}
-              disabled={space.deletionPending}
-              onClick={() => setActiveSpace(space)}
-            >
-              Preview material
-            </button>
             {space.deletionPending && (
               <p role="status">
                 Deletion is pending. Retry to finish removing the material.
               </p>
             )}
-            <DeleteStudySpace
-              deletionPending={space.deletionPending}
-              spaceId={space.id}
-              title={space.title}
-              onDeleting={() => {
-                if (activeSpace?.id === space.id) setActiveSpace(null);
-                setSpaces((previous) =>
-                  previous.map((item) =>
-                    item.id === space.id
-                      ? { ...item, deletionPending: true }
-                      : item,
-                  ),
-                );
-              }}
-              onDeleted={() => {
-                setSpaces((previous) =>
-                  previous.filter((item) => item.id !== space.id),
-                );
-                setMessage("Study space and material deleted.");
-                document.getElementById("space-title")?.focus();
-              }}
-            />
+            <div className="space-actions">
+              <button
+                id={`open-${space.id}`}
+                disabled={space.deletionPending}
+                onClick={() => setActiveSpace(space)}
+              >
+                {initialPractice ? "▶ Start practice" : "▶ Open"}
+              </button>
+              <SpaceCardMenu
+                id={space.id}
+                title={space.title}
+                deletionPending={space.deletionPending}
+                onPreview={() => setActiveSpace(space)}
+                onDeleting={() =>
+                  setSpaces((previous) =>
+                    previous.map((item) =>
+                      item.id === space.id
+                        ? { ...item, deletionPending: true }
+                        : item,
+                    ),
+                  )
+                }
+                onDeleted={() => {
+                  setSpaces((previous) =>
+                    previous.filter((item) => item.id !== space.id),
+                  );
+                  setMessage("Study space and material deleted.");
+                  document.getElementById("space-title")?.focus();
+                }}
+              />
+            </div>
           </li>
         ))}
       </ul>
-      {activeSpace && (
-        <MaterialWorkspace
-          userId={userId}
-          spaceId={activeSpace.id}
-          key={activeSpace.id}
-          title={activeSpace.title}
-          onClose={() => {
-            const id = activeSpace.id;
-            setActiveSpace(null);
-            document.getElementById(`preview-${id}`)?.focus();
-          }}
-        />
+      {!loading && spaces.length === 0 && !error && (
+        <p>No study spaces yet. Start with something you’re curious about.</p>
       )}
     </section>
   );

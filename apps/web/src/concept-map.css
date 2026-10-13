@@ -1,0 +1,101 @@
+.concept-map-wrap {
+  margin-top: 12px;
+}
+.concept-map {
+  position: relative;
+  height: 340px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background:
+    radial-gradient(circle at 50% 50%, #ffffff 0%, #f3f7f4 70%), #f3f7f4;
+  overflow: hidden;
+}
+.concept-map-edges {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+.concept-map-edges line {
+  stroke: #9fb8ab;
+  stroke-width: 1.5;
+  stroke-dasharray: 4 4;
+}
+.concept-node-slot {
+  position: absolute;
+  width: max-content;
+  max-width: 44%;
+}
+button.concept-node {
+  min-height: 34px;
+  padding: 6px 14px;
+  border: 1px solid var(--green);
+  border-radius: 99px;
+  background: var(--green);
+  color: #fff;
+  font-size: 0.85rem;
+  font-weight: 650;
+  line-height: 1.25;
+  overflow-wrap: normal;
+  word-break: normal;
+  box-shadow: 0 4px 14px #12634f2e;
+  transition:
+    transform 0.12s,
+    box-shadow 0.12s;
+}
+button.concept-node:hover:not(:disabled) {
+  background: var(--green-dark);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 18px #12634f40;
+}
+button.concept-node.unselected {
+  border-color: var(--border);
+  background: #fff;
+  color: var(--muted);
+  box-shadow: none;
+}
+button.concept-node.unselected:hover:not(:disabled) {
+  background: #e8f0eb;
+  color: var(--green);
+}
+@media (max-width: 520px) {
+  .concept-node-slot {
+    max-width: 62%;
+  }
+  button.concept-node {
+    padding: 5px 10px;
+    font-size: 0.78rem;
+  }
+}
+.segmented.small {
+  margin-top: 4px;
+}
+.segmented.small button {
+  min-height: 30px;
+  padding: 4px 14px;
+  font-size: 0.85rem;
+}
+.segmented button:hover:not(:disabled):not([aria-pressed="true"]) {
+  background: #e3ebe5;
+  color: var(--green);
+}
+.workspace-header {
+  display: flex;
+  gap: 16px;
+  align-items: flex-end;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  margin-bottom: 8px;
+}
+.workspace-header h1 {
+  margin: 0;
+}
+.workspace-header .eyebrow {
+  margin: 0 0 4px;
+}
+.compact-field {
+  display: block;
+  max-width: 280px;
+  margin: 8px 0;
+  font-size: 0.9rem;
+}

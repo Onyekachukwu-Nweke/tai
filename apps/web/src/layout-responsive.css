@@ -1,0 +1,182 @@
+.space-actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  margin-top: auto;
+}
+.space-menu {
+  position: relative;
+}
+.space-menu summary {
+  display: grid;
+  place-items: center;
+  min-width: 44px;
+  min-height: 44px;
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  cursor: pointer;
+  list-style: none;
+  font-size: 1.3rem;
+}
+.space-menu[open] .menu-panel {
+  display: grid;
+}
+.menu-panel {
+  position: absolute;
+  right: 0;
+  z-index: 4;
+  width: 220px;
+  padding: 8px;
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  box-shadow: 0 10px 28px #17352c24;
+}
+.menu-panel button {
+  width: 100%;
+  text-align: left;
+}
+.new-space-card {
+  border-style: dashed;
+}
+.new-space-icon {
+  font-size: 1.4rem;
+  color: var(--green);
+}
+dialog {
+  width: min(520px, calc(100% - 32px));
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 24px;
+}
+dialog::backdrop {
+  background: #10251e99;
+}
+.danger-zone {
+  margin-top: 24px;
+  padding-top: 20px;
+  border-top: 1px solid #efd0d0;
+}
+@media (max-width: 720px) {
+  .app-shell {
+    grid-template-columns: 68px minmax(0, 1fr);
+  }
+  .sidebar {
+    padding: 20px 10px;
+    align-items: center;
+  }
+  .wordmark span,
+  .nav-label {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+  }
+  .sidebar nav {
+    margin-top: 36px;
+  }
+  .nav-item {
+    justify-content: center;
+    width: 46px;
+    padding: 10px;
+  }
+  .signout {
+    font-size: 0;
+  }
+  .signout:after {
+    content: "↪";
+    font-size: 1rem;
+  }
+  .page main,
+  .page footer {
+    padding-left: 20px;
+    padding-right: 20px;
+  }
+  .spaces {
+    grid-template-columns: 1fr;
+  }
+  .form-row {
+    align-items: stretch;
+    flex-direction: column;
+  }
+}
+/* Prevent enlarged content from widening the document on phone viewports. */
+.page,
+.page main,
+.card,
+section,
+form,
+fieldset,
+ul,
+li {
+  min-width: 0;
+  max-width: 100%;
+}
+.page main {
+  overflow-wrap: anywhere;
+}
+button,
+input,
+select,
+textarea,
+a {
+  max-width: 100%;
+}
+.form-row > * {
+  min-width: 0;
+}
+.preview-actions > * {
+  min-width: 0;
+}
+.menu-panel {
+  max-width: calc(100vw - 84px);
+}
+@media (max-width: 420px) {
+  .page main,
+  .page footer {
+    padding-left: 12px;
+    padding-right: 12px;
+  }
+  .card {
+    padding: 14px;
+  }
+  .sidebar {
+    padding-left: 6px;
+    padding-right: 6px;
+  }
+  .app-shell {
+    grid-template-columns: 60px minmax(0, 1fr);
+  }
+}
+/* Space actions must share the card width; the overflow trigger cannot create a new intrinsic column. */
+.space-actions {
+  min-width: 0;
+  flex-wrap: wrap;
+}
+.space-actions > button:first-child {
+  min-width: 0;
+  flex: 0 1 auto;
+}
+.space-actions > .space-menu {
+  flex: 0 0 auto;
+  margin-left: auto;
+}
+@media (max-width: 420px) {
+  .space-actions > button:first-child {
+    flex-basis: calc(100% - 60px);
+  }
+}
+@media (max-width: 420px) {
+  .space-actions {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    width: 100%;
+  }
+  .space-actions > button:first-child {
+    width: 100%;
+  }
+  .space-actions > .space-menu {
+    margin-left: 0;
+  }
+}

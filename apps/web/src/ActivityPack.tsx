@@ -16,6 +16,8 @@ import { loadTutorState } from "./activity-tutor-api";
 import type { ActivityRubricResponse } from "../../../packages/contracts/activity-rubric";
 import { loadRubricState } from "./activity-rubric-api";
 import { useActivityFollowups } from "./use-activity-followups";
+import { emptyStudySession } from "./empty-study-session";
+import { PracticePackHeader } from "./PracticePackHeader";
 
 type Source = LearnerActivityPack["questions"][number]["sources"][number];
 export function ActivityPack({
@@ -41,20 +43,8 @@ export function ActivityPack({
   const [busy, setBusy] = useState(false),
     [error, setError] = useState("");
   const [progressRevision, setProgressRevision] = useState(0);
-  const [session, setSession] = useState<SavedSession>({
-    schemaVersion: 1,
-    status: "empty",
-    sessionId: null,
-    packId: null,
-    budgetMinutes: null,
-    estimatedMinutes: 0,
-    mode: null,
-    kind: null,
-    conceptId: null,
-    items: [],
-    createdAt: null,
-    completedAt: null,
-  });
+  const [questionIndex, setQuestionIndex] = useState(0);
+  const [session, setSession] = useState<SavedSession>(emptyStudySession);
   const [recovery, setRecovery] = useState<RecoveryOffer | null>(null);
   const [tutor, setTutor] = useState<ActivityTutorResponse[]>([]);
   const [rubric, setRubric] = useState<ActivityRubricResponse[]>([]);
@@ -151,6 +141,11 @@ export function ActivityPack({
       );
     return () => controller.abort();
   }, [pack?.packId, spaceId]);
+  useEffect(() => {
+    setQuestionIndex((current) =>
+      Math.min(current, Math.max(0, session.items.length - 1)),
+    );
+  }, [pack?.packId, session.sessionId, session.items.length]);
   async function refreshSession() {
     try {
       setSession(await loadStudySession(spaceId));
@@ -177,73 +172,27 @@ export function ActivityPack({
   }
   return (
     <section className="activity-pack" aria-labelledby="activity-heading">
-      <ConceptProgress spaceId={spaceId} revision={progressRevision} />
-      <h3 id="activity-heading">Practice activities</h3>
-      <p className="notice">
-        {pack?.provider === "workers_ai"
-          ? "Workers AI prepared this saved pack through AI Gateway from the selected source excerpts. "
-          : pack?.provider === "fake"
-            ? "A deterministic development provider prepared this saved pack. "
-            : "Preparing a pack sends the selected source excerpts to the configured AI provider. "}
-        Prompts have not been reviewed for teaching quality. Multiple choice is
-        checked deterministically. Requesting free-text rubric feedback sends
-        the saved answer and cited excerpts to the configured AI provider; its
-        outcome does not advance review progress. Requesting a hint or alternate
-        explanation sends the question and cited excerpts to the configured AI
-        provider without the learner draft or hidden answer keys. Targeted
-        follow-up generation sends the assessed criterion, feedback, question,
-        and cited excerpts; grading also sends the saved follow-up answer.
-      </p>
-      <button
-        type="button"
-        disabled={busy || selectedCount < 2}
-        onClick={() => void prepare()}
-      >
-        {busy
-          ? "Preparing activities…"
-          : pack?.questions.length
-            ? "Prepare another pack"
-            : "Prepare activity pack"}
-      </button>
-      {selectedCount < 2 && (
-        <p>Select at least two concepts to prepare a pack.</p>
-      )}
-      {pack?.status === "failed" && (
-        <p>
-          Previous preparation failed. Retry explicitly; the last saved pack
-          remains below.
-        </p>
-      )}
-      {error && (
-        <p role="alert" className="error">
-          {error}
-        </p>
-      )}
       {pack && pack.questions.length > 0 && (
         <StudySession
           spaceId={spaceId}
           concepts={concepts}
           session={
             session.packId && session.packId !== pack.packId
-              ? {
-                  ...session,
-                  status: "empty",
-                  sessionId: null,
-                  packId: null,
-                  items: [],
-                  budgetMinutes: null,
-                  estimatedMinutes: 0,
-                  mode: null,
-                  kind: null,
-                  conceptId: null,
-                  createdAt: null,
-                  completedAt: null,
-                }
+              ? emptyStudySession
               : session
           }
           onChange={setSession}
         />
       )}
+      <PracticePackHeader
+        busy={busy}
+        selectedCount={selectedCount}
+        hasPack={Boolean(pack?.questions.length)}
+        failed={pack?.status === "failed"}
+        error={error}
+        onPrepare={() => void prepare()}
+      />
+      <ConceptProgress spaceId={spaceId} revision={progressRevision} />
       {pack && recovery && (
         <RecoveryReturn
           spaceId={spaceId}
@@ -257,92 +206,132 @@ export function ActivityPack({
       {pack &&
         session.status === "active" &&
         session.packId === pack.packId && (
-          <ol aria-label="Saved activity pack">
-            {session.items
-              .map((item) =>
-                pack.questions.find(
-                  (question) => question.id === item.questionId,
-                ),
-              )
-              .filter((question): question is NonNullable<typeof question> =>
-                Boolean(question),
-              )
-              .map((question) => {
-                const item = session.items.find(
-                  (entry) => entry.questionId === question.id,
-                )!;
-                return (
-                  <ActivityQuestion
-                    key={`${session.sessionId}:${question.id}`}
-                    userId={userId}
-                    spaceId={spaceId}
-                    packId={pack.packId!}
-                    question={question}
-                    onSource={onSource}
-                    initialResult={
-                      session.kind !== "recovery" || item.completedAt
-                        ? (attempts[question.id] ?? null)
-                        : null
-                    }
-                    initialFlag={flags[question.id] ?? null}
-                    onProgressChange={() =>
-                      setProgressRevision((value) => value + 1)
-                    }
-                    studySessionId={session.sessionId!}
-                    onAttemptSaved={(saved) => {
-                      setAttempts((current) => ({
-                        ...current,
-                        [question.id]: saved,
-                      }));
-                      void refreshSession();
-                    }}
-                    sessionReason={item.reason}
-                    initialTutor={tutor.filter(
-                      (interaction) => interaction.questionId === question.id,
-                    )}
-                    onTutorSaved={(saved) =>
-                      setTutor((current) => [
-                        ...current.filter(
-                          (item) =>
-                            item.questionId !== saved.questionId ||
-                            item.kind !== saved.kind,
-                        ),
-                        saved,
-                      ])
-                    }
-                    initialRubric={
-                      rubric.find(
-                        (grade) =>
-                          grade.attemptId === attempts[question.id]?.attemptId,
-                      ) ?? null
-                    }
-                    onRubricSaved={(saved) =>
-                      setRubric((current) => [
-                        ...current.filter(
-                          (grade) => grade.attemptId !== saved.attemptId,
-                        ),
-                        saved,
-                      ])
-                    }
-                    initialFollowup={
-                      followups.find(
-                        (followup) =>
-                          followup.attemptId ===
-                          attempts[question.id]?.attemptId,
-                      ) ?? null
-                    }
-                    onFollowupSaved={(saved) =>
-                      setFollowups((current) => [
-                        ...current.filter(
-                          (followup) => followup.attemptId !== saved.attemptId,
-                        ),
-                        saved,
-                      ])
-                    }
-                  />
-                );
-              })}
-          </ol>
+          <>
+            <div className="activity-toolbar">
+              <strong>
+                Question {Math.min(questionIndex + 1, session.items.length)} of{" "}
+                {session.items.length}
+              </strong>
+              <progress
+                value={questionIndex + 1}
+                max={session.items.length}
+                aria-label="Session progress"
+              />
+              <span>
+                {Math.max(0, session.estimatedMinutes - questionIndex * 2)}m
+                remaining
+              </span>
+            </div>
+            <ol className="activity-stage" aria-label="Saved activity pack">
+              {session.items
+                .map((item) =>
+                  pack.questions.find(
+                    (question) => question.id === item.questionId,
+                  ),
+                )
+                .filter((question): question is NonNullable<typeof question> =>
+                  Boolean(question),
+                )
+                .map((question, visibleIndex) => {
+                  const item = session.items.find(
+                    (entry) => entry.questionId === question.id,
+                  )!;
+                  return (
+                    <ActivityQuestion
+                      key={`${session.sessionId}:${question.id}`}
+                      active={visibleIndex === questionIndex}
+                      userId={userId}
+                      spaceId={spaceId}
+                      packId={pack.packId!}
+                      question={question}
+                      onSource={onSource}
+                      initialResult={
+                        session.kind !== "recovery" || item.completedAt
+                          ? (attempts[question.id] ?? null)
+                          : null
+                      }
+                      initialFlag={flags[question.id] ?? null}
+                      onProgressChange={() =>
+                        setProgressRevision((value) => value + 1)
+                      }
+                      studySessionId={session.sessionId!}
+                      onAttemptSaved={(saved) => {
+                        setAttempts((current) => ({
+                          ...current,
+                          [question.id]: saved,
+                        }));
+                        void refreshSession();
+                      }}
+                      initialTutor={tutor.filter(
+                        (interaction) => interaction.questionId === question.id,
+                      )}
+                      onTutorSaved={(saved) =>
+                        setTutor((current) => [
+                          ...current.filter(
+                            (item) =>
+                              item.questionId !== saved.questionId ||
+                              item.kind !== saved.kind,
+                          ),
+                          saved,
+                        ])
+                      }
+                      initialRubric={
+                        rubric.find(
+                          (grade) =>
+                            grade.attemptId ===
+                            attempts[question.id]?.attemptId,
+                        ) ?? null
+                      }
+                      onRubricSaved={(saved) =>
+                        setRubric((current) => [
+                          ...current.filter(
+                            (grade) => grade.attemptId !== saved.attemptId,
+                          ),
+                          saved,
+                        ])
+                      }
+                      initialFollowup={
+                        followups.find(
+                          (followup) =>
+                            followup.attemptId ===
+                            attempts[question.id]?.attemptId,
+                        ) ?? null
+                      }
+                      onFollowupSaved={(saved) =>
+                        setFollowups((current) => [
+                          ...current.filter(
+                            (followup) =>
+                              followup.attemptId !== saved.attemptId,
+                          ),
+                          saved,
+                        ])
+                      }
+                    />
+                  );
+                })}
+            </ol>
+            <div className="question-nav">
+              <button
+                className="secondary"
+                disabled={questionIndex === 0}
+                onClick={() =>
+                  setQuestionIndex((value) => Math.max(0, value - 1))
+                }
+              >
+                ← Previous
+              </button>
+              <button
+                disabled={questionIndex >= session.items.length - 1}
+                onClick={() =>
+                  setQuestionIndex((value) =>
+                    Math.min(session.items.length - 1, value + 1),
+                  )
+                }
+              >
+                Next →
+              </button>
+            </div>
+          </>
         )}
     </section>
   );

@@ -8,7 +8,8 @@ import type { SourceContext } from "../packages/contracts/concepts";
 const context: SourceContext = {
   studySpaceId: "11111111-1111-4111-8111-111111111111",
   materialId: "22222222-2222-4222-8222-222222222222",
-  location: 1,
+  startLocation: 1,
+  endLocation: 1,
   chunks: [
     {
       id: "source-1",
@@ -122,7 +123,7 @@ describe("Workers AI concept provider", () => {
     ).toEqual({
       provider: "workers_ai",
       model: "@cf/example/model",
-      promptVersion: "concept-organization-v1",
+      promptVersion: "concept-organization-v2",
       schemaVersion: 1,
     });
   });

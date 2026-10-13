@@ -2,6 +2,7 @@ import {
   conceptCollectionSchema,
   updateConceptSchema,
   type ConceptCollection,
+  type PageRange,
 } from "../../../packages/contracts/concepts";
 
 async function request(
@@ -30,7 +31,7 @@ export const loadConcepts = (spaceId: string, signal?: AbortSignal) =>
   request(path(spaceId), { signal });
 export const generateConcepts = (
   spaceId: string,
-  location: number,
+  selection: PageRange,
   requestId: string,
 ) =>
   request(`${path(spaceId)}/generate`, {
@@ -38,7 +39,7 @@ export const generateConcepts = (
     body: JSON.stringify({
       schemaVersion: 1,
       requestId,
-      selection: { location },
+      selection,
     }),
   });
 export const updateConcept = (

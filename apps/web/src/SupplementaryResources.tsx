@@ -83,46 +83,34 @@ export function SupplementaryResources({
                 <strong>Supports:</strong> {resource.supportedConcept.label}
               </p>
               <p>{resource.relevance}</p>
-              <dl>
-                <div>
-                  <dt>Publisher</dt>
-                  <dd>{resource.publisher}</dd>
-                </div>
-                <div>
-                  <dt>Format</dt>
-                  <dd>{resource.format}</dd>
-                </div>
-                <div>
-                  <dt>Language</dt>
-                  <dd>{resource.language}</dd>
-                </div>
-                <div>
-                  <dt>Access</dt>
-                  <dd>{resource.accessConditions}</dd>
-                </div>
-                <div>
-                  <dt>Last checked</dt>
-                  <dd>{resource.checkedAt}</dd>
-                </div>
-              </dl>
+              <p className="resource-meta">
+                {resource.publisher} · {resource.format} ·{" "}
+                {resource.accessConditions}
+              </p>
+              <p className="resource-footer">
+                <span>Last checked {resource.checkedAt}</span>
+              </p>
               <a
                 href={resource.url}
                 target="_blank"
                 rel="noopener noreferrer"
                 referrerPolicy="no-referrer"
               >
-                Open supplementary resource (opens in a new tab)
+                Open resource ↗
               </a>
             </li>
           ))}
         </ul>
       )}
       {!loading && !error && result && result.unmatchedConcepts.length > 0 && (
-        <p className="fine-print">
-          No checked match for:{" "}
-          {result.unmatchedConcepts.map(({ label }) => label).join(", ")}. The
-          catalog is intentionally limited.
-        </p>
+        <div aria-label="Concepts without a checked match">
+          <span className="fine-print">No checked match:</span>
+          {result.unmatchedConcepts.map(({ id, label }) => (
+            <span className="muted-chip" key={id}>
+              {label}
+            </span>
+          ))}
+        </div>
       )}
     </section>
   );

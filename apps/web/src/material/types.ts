@@ -18,6 +18,12 @@ export interface MaterialPreview {
   sections: MaterialSection[];
   chunks: MaterialChunk[];
   warnings: string[];
+  outline?: OutlineEntry[];
+}
+
+export interface OutlineEntry {
+  title: string;
+  location: number;
 }
 
 export interface ExtractionOptions {

@@ -15,18 +15,28 @@ const source = z
       value.end > value.start && value.end - value.start === value.text.length,
     "Invalid source offsets",
   );
+const page = z.number().int().min(1).max(50);
+export const pageRange = z
+  .object({ startLocation: page, endLocation: page })
+  .strict()
+  .refine(
+    (value) => value.startLocation <= value.endLocation,
+    "Invalid page range",
+  );
+export type PageRange = z.infer<typeof pageRange>;
 export const generateConceptsSchema = z
   .object({
     schemaVersion: z.literal(1),
     requestId: id,
-    selection: z.object({ location: z.number().int().min(1).max(50) }).strict(),
+    selection: pageRange,
   })
   .strict();
 export const sourceContextSchema = z
   .object({
     studySpaceId: id,
     materialId: id,
-    location: z.number().int().min(1).max(50),
+    startLocation: page,
+    endLocation: page,
     chunks: z
       .array(source.extend({ studySpaceId: id, materialId: id }))
       .min(1)
@@ -76,7 +86,7 @@ export const conceptCollectionSchema = z
     schemaVersion: z.literal(1),
     status: z.enum(["empty", "pending", "ready", "failed"]),
     requestId: id.nullable(),
-    location: z.number().int().min(1).max(50).nullable(),
+    scope: pageRange.nullable(),
     concepts: z.array(conceptSchema).max(15),
     relations: z
       .array(
@@ -107,7 +117,8 @@ export function validateSourceContext(input: unknown): SourceContext {
     if (
       chunk.studySpaceId !== context.studySpaceId ||
       chunk.materialId !== context.materialId ||
-      chunk.location !== context.location ||
+      chunk.location < context.startLocation ||
+      chunk.location > context.endLocation ||
       chunk.end <= chunk.start ||
       ids.has(chunk.id)
     )
