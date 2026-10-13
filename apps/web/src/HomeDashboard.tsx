@@ -20,7 +20,7 @@ export function HomeDashboard({
           <div className="step-icon" aria-hidden="true">
             <Icon className="icon" name="book-open" size={20} />
           </div>
-          <div>
+          <div className="next-step-copy">
             <p className="step-kicker">Your library</p>
             <h2>Study spaces</h2>
             <p>Read your material and choose the concepts to work on.</p>
@@ -31,7 +31,7 @@ export function HomeDashboard({
           <div className="step-icon practice-icon" aria-hidden="true">
             <Icon className="icon" name="play" size={20} />
           </div>
-          <div>
+          <div className="next-step-copy">
             <p className="step-kicker">Active recall</p>
             <h2>Practice</h2>
             <p>Resume saved questions or start with selected concepts.</p>

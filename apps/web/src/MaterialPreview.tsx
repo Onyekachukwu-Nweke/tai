@@ -145,7 +145,10 @@ export function MaterialPreview({
     );
 
   return (
-    <section className="card material-preview" aria-labelledby="material-title">
+    <section
+      className="material-workspace material-preview"
+      aria-labelledby="material-title"
+    >
       <div className="section-header">
         <h2 id="material-title" tabIndex={-1} ref={heading}>
           {saved ? "Your material" : "Upload material"}
@@ -159,7 +162,9 @@ export function MaterialPreview({
           <Icon className="icon" name="close" size={15} /> Close
         </button>
       </div>
-      <MaterialGuidance saved={saved} />
+      <div className="material-workspace-intro">
+        <MaterialGuidance saved={saved} />
+      </div>
       {!saved && (
         <>
           <label htmlFor="material-file">Choose a PDF or TXT file</label>
@@ -214,26 +219,30 @@ export function MaterialPreview({
         />
       )}
       {saved && preview?.format === "pdf" && section && (
-        <SourceReader
-          spaceId={spaceId}
-          page={section.location}
-          onPageChange={(page) => setSectionIndex(page - 1)}
-          defaultOpen
-        />
+        <div className="material-reader-panel">
+          <SourceReader
+            spaceId={spaceId}
+            page={section.location}
+            onPageChange={(page) => setSectionIndex(page - 1)}
+            defaultOpen
+          />
+        </div>
       )}
       {saved && section && (
-        <ConceptExplorer
-          userId={userId}
-          spaceId={spaceId}
-          scopes={conceptScopes(preview!)}
-          onSource={(source) => {
-            const index = preview!.sections.findIndex(
-              (item) => item.location === source.location,
-            );
-            if (index >= 0) setSectionIndex(index);
-            setCitation(source);
-          }}
-        />
+        <div className="material-learning-panel">
+          <ConceptExplorer
+            userId={userId}
+            spaceId={spaceId}
+            scopes={conceptScopes(preview!)}
+            onSource={(source) => {
+              const index = preview!.sections.findIndex(
+                (item) => item.location === source.location,
+              );
+              if (index >= 0) setSectionIndex(index);
+              setCitation(source);
+            }}
+          />
+        </div>
       )}
       {citation && preview && (
         <CitationPanel

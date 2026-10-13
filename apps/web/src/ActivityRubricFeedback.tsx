@@ -53,30 +53,54 @@ export function ActivityRubricFeedback({
   }, [gradeNow, grade]);
   if (grade)
     return (
-      <section className="notice" aria-label="Rubric feedback">
-        <p>
-          <strong>Source-supported rubric outcome:</strong> {grade.outcome}
-        </p>
+      <section
+        className="feedback-card rubric-feedback"
+        aria-label="Rubric feedback"
+      >
+        <header className="feedback-heading">
+          <div>
+            <p className="eyebrow">Source-supported feedback</p>
+            <h3>How your response met the rubric</h3>
+          </div>
+          <div className="feedback-outcome">
+            <span>Source-supported rubric outcome: {grade.outcome}</span>
+            <span className={`outcome-pill outcome-${grade.outcome}`}>
+              {grade.outcome}
+            </span>
+          </div>
+        </header>
         <p>{grade.feedback}</p>
-        <ul>
+        <ul className="criterion-list">
           {grade.elements.map((element) => (
             <li key={element.criterion}>
-              <strong>{element.criterion}</strong>: {element.outcome}.{" "}
-              {element.feedback}
+              <div className="criterion-heading">
+                <strong>{element.criterion}</strong>
+                <span
+                  className={`criterion-outcome outcome-${element.outcome}`}
+                >
+                  {element.outcome.replace("_", " ")}
+                </span>
+              </div>
+              <p>{element.feedback}</p>
             </li>
           ))}
         </ul>
-        {grade.sources.map((source) => (
-          <button
-            key={source.id}
-            type="button"
-            className="source-link"
-            onClick={() => onSource(source)}
-          >
-            Open supporting section {source.location}
-          </button>
-        ))}
-        <p>This feedback does not advance review progress.</p>
+        <div className="feedback-sources" aria-label="Supporting sources">
+          {grade.sources.map((source) => (
+            <button
+              key={source.id}
+              type="button"
+              className="source-chip"
+              aria-label={`Open supporting section ${source.location}`}
+              onClick={() => onSource(source)}
+            >
+              Section {source.location}
+            </button>
+          ))}
+        </div>
+        <p className="feedback-note">
+          This feedback does not advance review progress.
+        </p>
       </section>
     );
   return (

@@ -129,22 +129,28 @@ export function ActivityFollowup({
   }
   if (followup)
     return (
-      <section className="notice" aria-label="Targeted follow-up">
-        <p>
-          <strong>Practice this assessed gap:</strong>{" "}
-          {followup.targetedCriterion}
-        </p>
+      <section
+        className="feedback-card followup-panel"
+        aria-label="Targeted follow-up"
+      >
+        <header>
+          <p className="eyebrow">Next small step</p>
+          <h3>Practise {followup.targetedCriterion}</h3>
+        </header>
         <p>{followup.prompt}</p>
-        {followup.sources.map((source) => (
-          <button
-            key={source.id}
-            type="button"
-            className="source-link"
-            onClick={() => onSource(source)}
-          >
-            Open supporting section {source.location}
-          </button>
-        ))}
+        <div className="feedback-sources" aria-label="Follow-up sources">
+          {followup.sources.map((source) => (
+            <button
+              key={source.id}
+              type="button"
+              className="source-chip"
+              aria-label={`Open supporting section ${source.location}`}
+              onClick={() => onSource(source)}
+            >
+              Section {source.location}
+            </button>
+          ))}
+        </div>
         <label>
           Your follow-up response
           <textarea
@@ -179,11 +185,16 @@ export function ActivityFollowup({
           </button>
         )}
         {grade && (
-          <div aria-label="Follow-up feedback">
-            <p>
-              <strong>Source-supported follow-up outcome:</strong>{" "}
-              {grade.outcome.replace("_", " ")}
-            </p>
+          <div className="followup-result" aria-label="Follow-up feedback">
+            <div className="followup-outcome">
+              <strong>
+                Source-supported follow-up outcome:{" "}
+                {grade.outcome.replace("_", " ")}
+              </strong>
+              <span className={`outcome-pill outcome-${grade.outcome}`}>
+                {grade.outcome.replace("_", " ")}
+              </span>
+            </div>
             <p>{grade.feedback}</p>
             {grade.sources.map((source) => (
               <button

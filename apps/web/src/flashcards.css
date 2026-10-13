@@ -38,32 +38,67 @@ button.resume-session span {
 }
 .focus-card.flashcard {
   min-height: 260px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+  perspective: 1100px;
+  text-align: center;
+  transition:
+    opacity 220ms ease,
+    transform 220ms ease;
+}
+.flashcard-inner {
+  position: relative;
+  display: grid;
+  min-height: 286px;
+  transform-style: preserve-3d;
+  transition: transform 450ms cubic-bezier(0.22, 0.7, 0.25, 1);
+}
+.flashcard-inner.is-flipped {
+  transform: rotateY(180deg);
+}
+.flashcard-face {
+  grid-area: 1 / 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
   padding: 36px 32px;
   border: 1px solid var(--border);
   border-radius: 18px;
   background: #fff;
   box-shadow: 0 12px 36px #17352c14;
-  text-align: center;
+  backface-visibility: hidden;
+}
+.flashcard-face[aria-hidden="true"] {
+  pointer-events: none;
+}
+.flashcard-back {
+  transform: rotateY(180deg);
+}
+.flashcard.card-leaving {
+  opacity: 0;
+  transform: translateX(-18px) scale(0.985);
+}
+.flashcard.card-entering {
+  animation: flashcard-enter 260ms ease both;
+}
+@keyframes flashcard-enter {
+  from {
+    opacity: 0;
+    transform: translateX(18px) scale(0.985);
+  }
 }
 .flashcard h2 {
   margin-bottom: 12px;
   font-size: clamp(1.4rem, 3vw, 2rem);
 }
 .flashcard-back {
-  margin-top: 18px;
-  padding-top: 18px;
-  border-top: 1px dashed #cfdcd4;
   font-size: 1.05rem;
-  animation: card-in 0.25s ease;
 }
 .flashcard .source-chips {
   justify-content: center;
-}
-@keyframes card-in {
-  from {
-    opacity: 0;
-    transform: translateY(6px);
-  }
 }
 .focus-footer {
   display: flex;
@@ -115,6 +150,10 @@ button.star:focus-visible {
     gap: 12px;
   }
   .focus-card.flashcard {
+    min-height: 240px;
+  }
+  .flashcard-face {
+    min-height: 240px;
     padding: 24px 18px;
   }
   .question-actions,
@@ -125,7 +164,8 @@ button.star:focus-visible {
 }
 @media (prefers-reduced-motion: reduce) {
   .focus-bar span,
-  .flashcard-back {
+  .flashcard,
+  .flashcard-inner {
     transition: none;
     animation: none;
   }
