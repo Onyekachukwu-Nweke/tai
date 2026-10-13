@@ -14,11 +14,11 @@ const labels: Record<Question["type"], string> = {
 export function ActivityQuestionPrompt({ question }: { question: Question }) {
   return (
     <>
-      <p>
+      <p className={`question-meta type-${question.type}`}>
         <strong>{labels[question.type]}</strong> · about{" "}
         {question.estimatedMinutes} min
       </p>
-      <p>{question.prompt}</p>
+      <p className="question-prompt">{question.prompt}</p>
       {question.type === "scenario" && (
         <div className="notice">
           <p>

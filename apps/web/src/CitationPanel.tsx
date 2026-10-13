@@ -22,7 +22,9 @@ export function CitationPanel({
       tabIndex={-1}
       ref={panel}
       onKeyDown={(event) => {
-        if (event.key === "Escape") onClose();
+        if (event.key !== "Escape") return;
+        event.preventDefault();
+        onClose();
       }}
     >
       <div className="section-header">

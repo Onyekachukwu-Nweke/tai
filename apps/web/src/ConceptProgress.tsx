@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import type { ConceptProgressResponse } from "../../../packages/contracts/concept-progress";
 import { loadConceptProgress } from "./concept-progress-api";
-const storageKey = (spaceId: string) => `tai:concept-self-ratings:${spaceId}`;
+import { loadSelfRatings, saveSelfRating } from "./concept-self-ratings";
 export function ConceptProgress({
   spaceId,
   revision,
@@ -14,32 +14,26 @@ export function ConceptProgress({
   );
   const [error, setError] = useState("");
   const [ratingConcept, setRatingConcept] = useState<string | null>(null);
-  const [ratings, setRatings] = useState<Record<string, number>>(() => {
-    try {
-      return JSON.parse(localStorage.getItem(storageKey(spaceId)) ?? "{}");
-    } catch {
-      return {};
-    }
-  });
+  const [ratings, setRatings] = useState<Record<string, number>>(() =>
+    loadSelfRatings(spaceId),
+  );
   useEffect(() => {
+    setRatings(loadSelfRatings(spaceId));
     const controller = new AbortController();
     loadConceptProgress(spaceId, controller.signal)
       .then((value) => {
         setProgress(value);
         setError("");
       })
-      .catch(() => setError("Saved concept progress could not be loaded."));
+      .catch(() => {
+        if (!controller.signal.aborted)
+          setError("Saved concept progress could not be loaded.");
+      });
     return () => controller.abort();
   }, [revision, spaceId]);
   function rate(id: string, value: number) {
-    const next = { ...ratings, [id]: value };
-    setRatings(next);
+    setRatings(saveSelfRating(spaceId, id, value));
     setRatingConcept(null);
-    try {
-      localStorage.setItem(storageKey(spaceId), JSON.stringify(next));
-    } catch {
-      /* The rating remains available for this view. */
-    }
   }
   return (
     <section aria-labelledby="progress-heading" className="concept-progress">

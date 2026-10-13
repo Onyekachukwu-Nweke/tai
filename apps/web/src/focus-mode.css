@@ -1,0 +1,222 @@
+body.focus-open {
+  overflow: hidden;
+}
+.focus-shell {
+  position: fixed;
+  z-index: 25;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  background: #f6f9f7;
+  outline: none;
+}
+.focus-header {
+  position: sticky;
+  z-index: 1;
+  top: 0;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: 20px;
+  align-items: center;
+  padding: 16px 32px;
+  background: #f6f9f7eb;
+  backdrop-filter: blur(6px);
+}
+.focus-brand {
+  color: var(--green);
+  font-size: 1.3rem;
+  font-weight: 850;
+  letter-spacing: -0.05em;
+}
+.focus-progress {
+  display: grid;
+  gap: 4px;
+}
+.focus-count {
+  color: var(--muted);
+  font-size: 0.9rem;
+  font-variant-numeric: tabular-nums;
+}
+.focus-count strong {
+  color: var(--green-dark);
+  font-size: 1.25rem;
+}
+.focus-bar {
+  height: 8px;
+  overflow: hidden;
+  border-radius: 99px;
+  background: #dde7e1;
+}
+.focus-bar span {
+  display: block;
+  height: 100%;
+  border-radius: 99px;
+  background: linear-gradient(90deg, var(--green), #2f9c7a);
+  transition: width 0.3s ease;
+}
+button.focus-exit {
+  min-height: 32px;
+  padding: 4px 12px;
+  border: 1px solid var(--border);
+  border-radius: 99px;
+  background: #fff;
+  color: var(--green);
+  font-size: 0.85rem;
+}
+button.focus-exit:hover:not(:disabled) {
+  background: #e8f0eb;
+}
+kbd {
+  display: inline-block;
+  margin-left: 6px;
+  padding: 0 6px;
+  border-radius: 5px;
+  background: #17352c14;
+  font-family: inherit;
+  font-size: 0.72rem;
+  font-weight: 600;
+  line-height: 1.6;
+}
+button:not(.secondary):not(.ghost):not(.focus-exit) kbd {
+  background: #ffffff2e;
+}
+.focus-body {
+  flex: 1;
+  width: min(760px, calc(100% - 32px));
+  margin: 28px auto 48px;
+}
+.focus-stage .activity-stage {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.focus-shell .activity-card,
+.focus-card {
+  padding: 0;
+  border: 0;
+  background: transparent;
+}
+.question-meta {
+  margin: 0 0 6px;
+  font-size: 0.85rem;
+  background: none;
+}
+.question-meta.type-recall {
+  color: #1e4c8f;
+}
+.question-meta.type-explain {
+  color: #63359a;
+}
+.question-meta.type-scenario {
+  color: #7b5100;
+}
+.question-meta.type-mcq {
+  color: #075f57;
+}
+.question-meta.type-calculation {
+  color: #354a91;
+}
+.question-prompt,
+.focus-card h2 {
+  margin: 0 0 20px;
+  color: #10291f;
+  font-size: clamp(1.2rem, 2.4vw, 1.55rem);
+  font-weight: 700;
+  line-height: 1.35;
+  letter-spacing: -0.01em;
+}
+.response-field textarea {
+  min-height: 140px;
+  margin-top: 6px;
+  border-color: var(--border);
+  border-radius: 12px;
+  background: #fff;
+  font-size: 1rem;
+}
+.focus-label {
+  margin: 0 0 4px;
+  color: var(--muted);
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.focus-hint,
+.focus-meta {
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+.question-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px 20px;
+  align-items: flex-end;
+  justify-content: space-between;
+  margin-top: 20px;
+  padding-top: 16px;
+  border-top: 1px solid #e1e9e4;
+}
+.question-assist {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: flex-end;
+}
+.question-assist .preview-actions {
+  gap: 4px;
+}
+.question-main,
+.focus-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+}
+.question-actions > .focus-meta {
+  flex-basis: 100%;
+  margin: 0;
+}
+.answer-reveal {
+  margin-top: 16px;
+  padding: 16px 18px;
+  border-left: 4px solid var(--green);
+  border-radius: 12px;
+  background: #fff;
+  box-shadow: 0 6px 20px #17352c12;
+  outline: none;
+}
+.answer-text {
+  font-size: 1.05rem;
+  line-height: 1.6;
+}
+.assess-prompt {
+  margin-bottom: 8px;
+  font-weight: 700;
+}
+.assess-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+button.assess {
+  background: #fff;
+  color: var(--green-dark);
+  border-color: var(--border);
+}
+button.assess-not_yet:hover:not(:disabled) {
+  background: #fdecea;
+  border-color: #e3a29a;
+}
+button.assess-partial:hover:not(:disabled) {
+  background: #fff4d6;
+  border-color: #e0c06a;
+}
+button.assess-remembered:hover:not(:disabled) {
+  background: #dff1e7;
+  border-color: #7cc29d;
+}
+.focus-stage .question-nav {
+  align-items: center;
+  margin-top: 28px;
+}

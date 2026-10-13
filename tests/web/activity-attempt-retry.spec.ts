@@ -1,4 +1,7 @@
-import { openFirstSpacePractice } from "./shell-navigation";
+import {
+  openFirstSpacePractice,
+  resumePracticeSession,
+} from "./shell-navigation";
 import { expect, test } from "@playwright/test";
 import { routeRecoveryOffer } from "./study-session-fixture";
 import {
@@ -137,11 +140,10 @@ test("keeps an unacknowledged draft for explicit retry and hides review keys in 
   );
   await page.goto("/");
   await openFirstSpacePractice(page);
+  await resumePracticeSession(page);
   await page.getByLabel("Your response").first().fill("Light supports growth");
   await page.getByLabel("Confidence (optional)").first().selectOption("high");
-  await page
-    .getByRole("button", { name: "Check against supported answer" })
-    .click();
+  await page.getByRole("button", { name: "See the answer" }).click();
   await page.getByRole("button", { name: "Partial" }).click();
   await expect(page.getByText(/Save interrupted.*draft remains/)).toBeVisible();
   const stored = await page.evaluate(() => JSON.stringify(localStorage));
@@ -150,12 +152,11 @@ test("keeps an unacknowledged draft for explicit retry and hides review keys in 
   expect(stored).not.toContain("aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa");
   await page.reload();
   await openFirstSpacePractice(page);
+  await resumePracticeSession(page);
   await expect(page.getByLabel("Your response").first()).toHaveValue(
     "Light supports growth",
   );
-  await page
-    .getByRole("button", { name: "Check against supported answer" })
-    .click();
+  await page.getByRole("button", { name: "See the answer" }).click();
   await page.getByRole("button", { name: "Partial" }).click();
   await expect(
     page.getByText("No scored correctness result.").first(),
@@ -169,6 +170,7 @@ test("keeps an unacknowledged draft for explicit retry and hides review keys in 
   await expect(page.getByText("Saved.")).toBeVisible();
   await page.reload();
   await openFirstSpacePractice(page);
+  await resumePracticeSession(page);
   await expect(page.getByText("Saved.")).toBeVisible();
   await expect(page.getByText(/Flagged as ambiguous/)).toBeVisible();
 });
