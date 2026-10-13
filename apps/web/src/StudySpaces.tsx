@@ -6,6 +6,7 @@ import {
 import { api, ApiError, authClient } from "./api";
 import { MaterialWorkspace } from "./MaterialWorkspace";
 import { SpaceCardMenu } from "./SpaceCardMenu";
+import { Icon } from "./Icon";
 
 type Space = {
   id: string;
@@ -108,7 +109,7 @@ export function StudySpaces({
       <section aria-labelledby="workspace-title">
         <nav className="breadcrumbs" aria-label="Learning path">
           <button onClick={() => setActiveSpace(null)}>All spaces</button>
-          <span aria-hidden="true">›</span>
+          <Icon className="icon" name="chevron-right" size={15} />
           <span>{activeSpace.title}</span>
         </nav>
         <div className="workspace-header">
@@ -121,14 +122,14 @@ export function StudySpaces({
               className="secondary small"
               onClick={() => onViewChange?.("spaces")}
             >
-              ← Back to reading
+              <Icon className="icon" name="arrow-left" /> Back to reading
             </button>
           ) : (
             <button
               className="small"
               onClick={() => onViewChange?.("practice")}
             >
-              Start practice ▶
+              Start practice <Icon className="icon" name="arrow-right" />
             </button>
           )}
         </div>
@@ -186,7 +187,7 @@ export function StudySpaces({
         {spaces.map((space) => (
           <li className="card space-card" key={space.id}>
             <div className="space-card-mark" aria-hidden="true">
-              ▤
+              <Icon className="icon" name="book-open" size={18} />
             </div>
             <div className="space-card-copy">
               <h2>{space.title}</h2>
@@ -205,7 +206,8 @@ export function StudySpaces({
                 disabled={space.deletionPending}
                 onClick={() => setActiveSpace(space)}
               >
-                {initialPractice ? "▶ Start practice" : "▶ Open"}
+                <Icon className="icon" name="play" size={16} />
+                {initialPractice ? "Start practice" : "Open"}
               </button>
               <SpaceCardMenu
                 id={space.id}
@@ -237,7 +239,7 @@ export function StudySpaces({
             <form onSubmit={createSpace}>
               <div className="new-space-heading">
                 <span className="new-space-icon" aria-hidden="true">
-                  ＋
+                  <Icon className="icon" name="plus" size={20} />
                 </span>
                 <div>
                   <h2>New study space</h2>

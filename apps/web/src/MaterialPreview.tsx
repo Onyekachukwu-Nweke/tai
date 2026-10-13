@@ -14,6 +14,7 @@ import {
   MaterialError,
   type MaterialPreview as Preview,
 } from "./material/types";
+import { Icon } from "./Icon";
 
 type Selection = { file: File; documentId: string };
 
@@ -155,7 +156,7 @@ export function MaterialPreview({
           aria-label="Close preview"
           onClick={onClose}
         >
-          ✕ Close
+          <Icon className="icon" name="close" size={15} /> Close
         </button>
       </div>
       <MaterialGuidance saved={saved} />

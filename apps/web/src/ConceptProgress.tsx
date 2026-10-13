@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import type { ConceptProgressResponse } from "../../../packages/contracts/concept-progress";
 import { loadConceptProgress } from "./concept-progress-api";
 import { loadSelfRatings, saveSelfRating } from "./concept-self-ratings";
+import { Icon } from "./Icon";
 export function ConceptProgress({
   spaceId,
   revision,
@@ -71,7 +72,13 @@ export function ConceptProgress({
                       }
                       onClick={() => setRatingConcept(concept.conceptId)}
                     >
-                      {completed ? `✓ ${concept.label}` : "Not reviewed"}
+                      {completed && (
+                        <Icon className="icon" name="check" size={15} />
+                      )}
+                      {completed && (
+                        <span className="visually-hidden">Reviewed: </span>
+                      )}
+                      {completed ? concept.label : "Not reviewed"}
                       {ratings[concept.conceptId]
                         ? ` · self-rating ${ratings[concept.conceptId]}/5`
                         : ""}

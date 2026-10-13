@@ -8,6 +8,7 @@ import { PracticePackHeader } from "./PracticePackHeader";
 import { usePracticeState } from "./use-practice-state";
 import { FocusShell } from "./FocusShell";
 import { PracticeStage } from "./PracticeStage";
+import { Icon } from "./Icon";
 
 type Source = LearnerActivityPack["questions"][number]["sources"][number];
 export function ActivityPack({
@@ -83,7 +84,9 @@ export function ActivityPack({
       )}
       {active && (
         <button className="resume-session" onClick={() => setFocus(true)}>
-          Resume session ▶
+          <span className="control-with-icon">
+            Resume session <Icon className="icon" name="arrow-right" />
+          </span>
           <span>
             {answered} of {session.items.length} answered
           </span>

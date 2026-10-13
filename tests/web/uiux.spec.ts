@@ -101,7 +101,10 @@ test("signed-in shell exposes focused navigation and responsive study-space grid
   await expect(
     page.getByRole("heading", { name: "Your study spaces" }),
   ).toBeVisible();
-  await expect(page.getByRole("button", { name: "▶ Open" })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Open" })).toBeVisible();
+  await expect(
+    page.getByRole("button", { name: "Study Space", exact: true }),
+  ).toHaveAttribute("aria-current", "page");
   await expect(page.getByText(/^Created /)).toBeVisible();
   await page.setViewportSize({ width: 375, height: 812 });
   expect(

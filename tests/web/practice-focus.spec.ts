@@ -66,7 +66,7 @@ test("flashcards flip, rate privately in this browser and never call the server"
   });
   await page.goto("/");
   await openFirstSpacePractice(page);
-  await page.getByRole("button", { name: "Start flashcards ▶" }).click();
+  await page.getByRole("button", { name: "Start flashcards" }).click();
   const deck = page.getByRole("dialog", { name: "Flashcards" });
   const [first, second] = concepts.concepts;
   await expect(deck.getByRole("heading", { name: first!.label })).toBeVisible();

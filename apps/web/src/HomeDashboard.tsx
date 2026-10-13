@@ -18,7 +18,7 @@ export function HomeDashboard({
       <div className="next-step-grid">
         <article className="next-step primary-step">
           <div className="step-icon" aria-hidden="true">
-            ▤
+            <Icon className="icon" name="book-open" size={20} />
           </div>
           <div>
             <p className="step-kicker">Your library</p>
@@ -29,7 +29,7 @@ export function HomeDashboard({
         </article>
         <article className="next-step">
           <div className="step-icon practice-icon" aria-hidden="true">
-            ▶
+            <Icon className="icon" name="play" size={20} />
           </div>
           <div>
             <p className="step-kicker">Active recall</p>
@@ -65,10 +65,11 @@ export function HomeDashboard({
         </ol>
       </section>
       <p className="home-trust">
-        <span aria-hidden="true">◇</span> Your original file stays private; only
-        bounded excerpts needed for learning activities are sent to the
-        configured AI service.
+        <Icon className="icon" name="lock" size={15} /> Your original file stays
+        private; only bounded excerpts needed for learning activities are sent
+        to the configured AI service.
       </p>
     </section>
   );
 }
+import { Icon } from "./Icon";

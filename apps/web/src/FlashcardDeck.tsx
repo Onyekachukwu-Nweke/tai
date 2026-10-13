@@ -3,6 +3,7 @@ import type { ConceptCollection } from "../../../packages/contracts/concepts";
 import { FocusShell } from "./FocusShell";
 import { loadSelfRatings, saveSelfRating } from "./concept-self-ratings";
 import { isEditing, useKeydown } from "./use-keydown";
+import { Icon } from "./Icon";
 
 type Concept = ConceptCollection["concepts"][number];
 type Source = Concept["sources"][number];
@@ -131,7 +132,10 @@ export function FlashcardDeck({
             ) : (
               <div className="focus-actions">
                 <button type="button" className="secondary" onClick={next}>
-                  Skip <kbd>→</kbd>
+                  Skip{" "}
+                  <kbd aria-label="Right arrow key">
+                    <Icon className="icon" name="arrow-right" size={13} />
+                  </kbd>
                 </button>
                 <button type="button" onClick={() => setFlipped(true)}>
                   Flip card <kbd>space</kbd>

@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import type { ResourceRecommendations } from "../../../packages/contracts/resources";
 import { loadResources } from "./resource-api";
+import { Icon } from "./Icon";
 import "./supplementary-resources.css";
 
 export function SupplementaryResources({
@@ -96,7 +97,8 @@ export function SupplementaryResources({
                 rel="noopener noreferrer"
                 referrerPolicy="no-referrer"
               >
-                Open resource ↗
+                Open resource
+                <Icon className="icon" name="external-link" size={15} />
               </a>
             </li>
           ))}

@@ -2,6 +2,7 @@ import type { LearnerActivityPack } from "../../../packages/contracts/activity-p
 import { ActivityQuestion } from "./ActivityQuestion";
 import type { usePracticeState } from "./use-practice-state";
 import { isEditing, useKeydown } from "./use-keydown";
+import { Icon } from "./Icon";
 
 type Source = LearnerActivityPack["questions"][number]["sources"][number];
 
@@ -142,7 +143,7 @@ export function PracticeStage({
           disabled={questionIndex === 0}
           onClick={() => onQuestionIndex(questionIndex - 1)}
         >
-          ← Previous
+          <Icon className="icon" name="chevron-left" /> Previous
         </button>
         <span className="focus-meta">
           {answered} of {session.items.length} answered · no timer
@@ -152,10 +153,12 @@ export function PracticeStage({
             className="secondary"
             onClick={() => onQuestionIndex(questionIndex + 1)}
           >
-            Next →
+            Next <Icon className="icon" name="chevron-right" />
           </button>
         ) : (
-          <button onClick={onFinish}>Finish ✓</button>
+          <button onClick={onFinish}>
+            Finish <Icon className="icon" name="check" />
+          </button>
         )}
       </nav>
     </div>

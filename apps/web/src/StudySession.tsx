@@ -2,6 +2,7 @@ import { useId, useState, type ReactNode } from "react";
 import type { StudySession as SavedSession } from "../../../packages/contracts/study-sessions";
 import { createStudySession } from "./study-session-api";
 import { SessionSummary } from "./SessionSummary";
+import { Icon } from "./Icon";
 
 type Concept = { id: string; label: string };
 export function StudySession({
@@ -112,11 +113,15 @@ export function StudySession({
               disabled={busy}
               onClick={() => void prepare(session.status === "active")}
             >
-              {busy
-                ? "Preparing session…"
-                : session.status === "active"
-                  ? "Replace with these settings"
-                  : "Start session ▶"}
+              {busy ? (
+                "Preparing session…"
+              ) : session.status === "active" ? (
+                "Replace with these settings"
+              ) : (
+                <>
+                  Start session <Icon className="icon" name="arrow-right" />
+                </>
+              )}
             </button>
           </div>
         </SessionControlsWrapper>

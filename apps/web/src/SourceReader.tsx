@@ -4,6 +4,7 @@ import { ApiError } from "./api";
 import { fetchOriginal } from "./material-storage";
 import { loadPdfForReading, renderPdfPage } from "./material/pdf-render";
 import { Reauthenticate } from "./Reauthenticate";
+import { Icon } from "./Icon";
 
 export function SourceReader({
   spaceId,
@@ -109,7 +110,7 @@ export function SourceReader({
               disabled={page <= 1}
               onClick={() => onPageChange(page - 1)}
             >
-              ‹
+              <Icon className="icon" name="chevron-left" />
             </button>
             <span className="pdf-page-label">
               Page {page} of {pages}
@@ -121,7 +122,7 @@ export function SourceReader({
               disabled={page >= pages}
               onClick={() => onPageChange(page + 1)}
             >
-              ›
+              <Icon className="icon" name="chevron-right" />
             </button>
           </>
         ) : (

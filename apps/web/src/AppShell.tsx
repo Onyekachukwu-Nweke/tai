@@ -1,10 +1,11 @@
 import type { ReactNode } from "react";
+import { Icon, type IconName } from "./Icon";
 export type AppView = "home" | "spaces" | "practice" | "settings";
-const items: Array<{ view: AppView; icon: string; label: string }> = [
-  { view: "home", icon: "⌂", label: "Home" },
-  { view: "spaces", icon: "▤", label: "Study Space" },
-  { view: "practice", icon: "▶", label: "Practice" },
-  { view: "settings", icon: "⚙", label: "Settings" },
+const items: Array<{ view: AppView; icon: IconName; label: string }> = [
+  { view: "home", icon: "home", label: "Home" },
+  { view: "spaces", icon: "book-open", label: "Study Space" },
+  { view: "practice", icon: "play", label: "Practice" },
+  { view: "settings", icon: "settings", label: "Settings" },
 ];
 export function AppShell({
   view,
@@ -36,7 +37,7 @@ export function AppShell({
                 aria-current={view === item.view ? "page" : undefined}
                 onClick={() => onView(item.view)}
               >
-                <span aria-hidden="true">{item.icon}</span>
+                <Icon className="icon" name={item.icon} />
                 <span className="nav-label">{item.label}</span>
               </button>
             ))}
@@ -44,8 +45,13 @@ export function AppShell({
         )}
         <div className="sidebar-spacer" />
         {signedIn && (
-          <button className="ghost signout" disabled={busy} onClick={onSignOut}>
-            Sign out
+          <button
+            className="ghost signout control-with-icon"
+            disabled={busy}
+            onClick={onSignOut}
+          >
+            <Icon className="icon" name="log-out" />
+            <span className="nav-label">Sign out</span>
           </button>
         )}
       </aside>

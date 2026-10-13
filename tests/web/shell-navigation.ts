@@ -15,7 +15,7 @@ export async function showStudySpaces(page: Page) {
 
 export async function openFirstSpacePractice(page: Page) {
   await openFirstStudySpace(page);
-  await page.getByRole("button", { name: "Start practice ▶" }).click();
+  await page.getByRole("button", { name: "Start practice" }).click();
 }
 
 export async function resumePracticeSession(page: Page) {
