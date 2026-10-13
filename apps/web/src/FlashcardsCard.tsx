@@ -19,7 +19,7 @@ export function FlashcardsCard({
   const count = concepts.length;
   return (
     <section
-      className="card practice-mode"
+      className="practice-mode flashcards-card"
       aria-labelledby="flashcards-heading"
     >
       <p className="eyebrow">Instant · no AI</p>
@@ -28,7 +28,11 @@ export function FlashcardsCard({
         {count} card{count === 1 ? "" : "s"} from your selected concepts. Flip
         each card, then rate how well you knew it.
       </p>
-      <button disabled={!count} onClick={() => setOpen(true)}>
+      <button
+        className="secondary"
+        disabled={!count}
+        onClick={() => setOpen(true)}
+      >
         Start flashcards ▶
       </button>
       {open && (

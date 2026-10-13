@@ -17,8 +17,15 @@ export function PracticePackHeader({
   const modal = useModalDialog();
   return (
     <>
-      <p className="eyebrow">AI-prepared</p>
-      <h3 id="activity-heading">Practice questions</h3>
+      <div className="practice-title-row">
+        <span className="practice-symbol" aria-hidden="true">
+          ✦
+        </span>
+        <div>
+          <p className="eyebrow">AI-prepared</p>
+          <h3 id="activity-heading">Practice questions</h3>
+        </div>
+      </div>
       <p className="practice-disclosure">
         Recall, multiple choice, explain and scenario questions from your
         concepts. Multiple choice is graded locally ·{" "}

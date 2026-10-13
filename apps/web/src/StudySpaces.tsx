@@ -150,12 +150,24 @@ export function StudySpaces({
       </section>
     );
   return (
-    <section aria-labelledby="spaces-title">
-      <h1 id="spaces-title">
-        {initialPractice
-          ? "Choose a study space to practise"
-          : "Your study spaces"}
-      </h1>
+    <section className="library-view" aria-labelledby="spaces-title">
+      <header className="library-heading">
+        <div>
+          <p className="eyebrow">
+            {initialPractice ? "Practice" : "Your library"}
+          </p>
+          <h1 id="spaces-title">
+            {initialPractice
+              ? "Choose a study space to practise"
+              : "Your study spaces"}
+          </h1>
+          <p>
+            {initialPractice
+              ? "Choose the material whose concepts you want to practise."
+              : "Everything you are learning, ready when you return."}
+          </p>
+        </div>
+      </header>
       {error && (
         <div className="error" role="alert">
           <p>{error}</p>
@@ -171,42 +183,17 @@ export function StudySpaces({
       )}
       <p role="status">{loading ? "Loading study spaces…" : message}</p>
       <ul className="spaces">
-        {!initialPractice && (
-          <li className="card new-space-card">
-            <span className="new-space-icon" aria-hidden="true">
-              ＋
-            </span>
-            <h2>New study space</h2>
-            <form onSubmit={createSpace}>
-              <label className="visually-hidden" htmlFor="space-title">
-                What would you like to learn?
-              </label>
-              <div className="form-row">
-                <input
-                  id="space-title"
-                  disabled={saving}
-                  value={title}
-                  onChange={(event) => setTitle(event.target.value)}
-                  maxLength={120}
-                  required
-                  placeholder="e.g. introductory biology"
-                />
-                <button
-                  disabled={saving || loading || !title.trim()}
-                  type="submit"
-                >
-                  {saving ? "Saving…" : "Create"}
-                </button>
-              </div>
-            </form>
-          </li>
-        )}
         {spaces.map((space) => (
           <li className="card space-card" key={space.id}>
-            <h2>{space.title}</h2>
-            <p className="fine-print">
-              Created {new Date(space.createdAt).toLocaleDateString()}
-            </p>
+            <div className="space-card-mark" aria-hidden="true">
+              ▤
+            </div>
+            <div className="space-card-copy">
+              <h2>{space.title}</h2>
+              <p className="fine-print">
+                Created {new Date(space.createdAt).toLocaleDateString()}
+              </p>
+            </div>
             {space.deletionPending && (
               <p role="status">
                 Deletion is pending. Retry to finish removing the material.
@@ -245,6 +232,41 @@ export function StudySpaces({
             </div>
           </li>
         ))}
+        {!initialPractice && (
+          <li className="new-space-card">
+            <form onSubmit={createSpace}>
+              <div className="new-space-heading">
+                <span className="new-space-icon" aria-hidden="true">
+                  ＋
+                </span>
+                <div>
+                  <h2>New study space</h2>
+                  <p>Start with a subject or course.</p>
+                </div>
+              </div>
+              <label className="visually-hidden" htmlFor="space-title">
+                What would you like to learn?
+              </label>
+              <div className="form-row">
+                <input
+                  id="space-title"
+                  disabled={saving}
+                  value={title}
+                  onChange={(event) => setTitle(event.target.value)}
+                  maxLength={120}
+                  required
+                  placeholder="e.g. introductory biology"
+                />
+                <button
+                  disabled={saving || loading || !title.trim()}
+                  type="submit"
+                >
+                  {saving ? "Saving…" : "Create"}
+                </button>
+              </div>
+            </form>
+          </li>
+        )}
       </ul>
       {!loading && spaces.length === 0 && !error && (
         <p>No study spaces yet. Start with something you’re curious about.</p>

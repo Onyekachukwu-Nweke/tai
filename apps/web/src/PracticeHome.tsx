@@ -38,11 +38,15 @@ export function PracticeHome({
         </p>
       ) : (
         <>
-          <p className="fine-print">
-            Practising {selected.length} selected concept
-            {selected.length === 1 ? "" : "s"}. Choose a way to practise.
-          </p>
-          <div className="practice-modes">
+          <header className="practice-intro">
+            <p className="eyebrow">Active learning</p>
+            <h2>Strengthen what you understand.</h2>
+            <p>
+              {selected.length} selected concept
+              {selected.length === 1 ? "" : "s"}, ready for active recall.
+            </p>
+          </header>
+          <div className="practice-primary">
             <ActivityPack
               userId={userId}
               spaceId={spaceId}
@@ -51,20 +55,40 @@ export function PracticeHome({
               onSource={onSource}
               onProgressChange={() => setRevision((value) => value + 1)}
             />
+          </div>
+          <section
+            className="practice-secondary"
+            aria-labelledby="quick-practice-title"
+          >
+            <div className="section-heading-inline">
+              <div>
+                <p className="eyebrow">Quick practice</p>
+                <h2 id="quick-practice-title">Keep the ideas moving.</h2>
+              </div>
+            </div>
             <FlashcardsCard
               spaceId={spaceId}
               concepts={selected}
               onSource={onSource}
               onClose={() => setRevision((value) => value + 1)}
             />
-          </div>
-          <ConceptProgress spaceId={spaceId} revision={revision} />
-          <PracticalTask
-            spaceId={spaceId}
-            concepts={labels}
-            sources={concepts.flatMap((concept) => concept.sources)}
-            onSource={onSource}
-          />
+          </section>
+          <section
+            className="more-learning"
+            aria-labelledby="more-learning-title"
+          >
+            <header>
+              <p className="eyebrow">More ways to learn</p>
+              <h2 id="more-learning-title">Review and apply</h2>
+            </header>
+            <ConceptProgress spaceId={spaceId} revision={revision} />
+            <PracticalTask
+              spaceId={spaceId}
+              concepts={labels}
+              sources={concepts.flatMap((concept) => concept.sources)}
+              onSource={onSource}
+            />
+          </section>
         </>
       )}
     </section>

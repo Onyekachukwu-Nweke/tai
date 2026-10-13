@@ -1,0 +1,246 @@
+.landing-shell {
+  --landing-ink: #123b31;
+  min-height: 100vh;
+  color: var(--landing-ink);
+  background:
+    radial-gradient(circle at 78% 42%, #d9eee3 0, transparent 28%),
+    linear-gradient(135deg, #f7faf6 0%, #f3f7f2 55%, #edf5ef 100%);
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  overflow: hidden;
+}
+.landing-header,
+.landing-footer,
+.landing-main {
+  width: min(1240px, calc(100% - 64px));
+  margin-inline: auto;
+}
+.landing-header {
+  min-height: 84px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid #17352c12;
+}
+.landing-wordmark {
+  color: #06644e;
+  font-size: 1.55rem;
+  font-weight: 900;
+  letter-spacing: -0.07em;
+  text-decoration: none;
+}
+.landing-main {
+  display: grid;
+  grid-template-columns: minmax(0, 0.9fr) minmax(460px, 1.1fr);
+  gap: clamp(48px, 8vw, 120px);
+  align-items: center;
+  padding-block: clamp(56px, 8vh, 104px);
+}
+.landing-copy {
+  max-width: 600px;
+}
+.landing-copy h1 {
+  max-width: 590px;
+  margin: 16px 0 22px;
+  font-size: clamp(2.75rem, 5vw, 5.2rem);
+  line-height: 0.98;
+  letter-spacing: -0.065em;
+  text-wrap: balance;
+}
+.landing-intro {
+  max-width: 560px;
+  margin: 0 0 28px;
+  color: #4d675e;
+  font-size: clamp(1.05rem, 1.5vw, 1.25rem);
+  line-height: 1.6;
+}
+button.landing-cta {
+  min-height: 50px;
+  padding-inline: 22px;
+  border-radius: 10px;
+  box-shadow: 0 8px 20px #075f4a24;
+}
+.landing-privacy {
+  max-width: 530px;
+  margin-top: 20px;
+  color: #60756d;
+  font-size: 0.8rem;
+  line-height: 1.55;
+}
+.learning-vignette {
+  position: relative;
+  margin-top: 0;
+  min-height: 500px;
+  isolation: isolate;
+}
+.learning-vignette article {
+  position: absolute;
+  z-index: 2;
+  border: 1px solid #bbd0c6;
+  border-radius: 16px;
+  background: #ffffffeb;
+  box-shadow: 0 24px 60px #17352c18;
+  backdrop-filter: blur(10px);
+}
+.vignette-glow {
+  position: absolute;
+  inset: 14% 6% 8% 12%;
+  border-radius: 50%;
+  background: #b9ddc8;
+  filter: blur(60px);
+  opacity: 0.48;
+}
+.source-sheet {
+  top: 5%;
+  left: 0;
+  width: 67%;
+  min-height: 165px;
+  padding: 25px;
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 16px;
+  transform: rotate(-2deg);
+}
+.source-file {
+  display: grid;
+  place-items: center;
+  width: 45px;
+  height: 54px;
+  border-radius: 7px;
+  background: #e7f2eb;
+  color: #087057;
+  font-size: 0.68rem;
+  font-weight: 850;
+}
+.source-sheet p,
+.practice-sheet p {
+  margin: 2px 0;
+  color: var(--muted);
+  font-size: 0.8rem;
+}
+.source-lines {
+  grid-column: 1 / -1;
+  display: grid;
+  gap: 8px;
+}
+.source-lines i {
+  height: 6px;
+  border-radius: 9px;
+  background: #dfe8e2;
+}
+.source-lines i:nth-child(2) {
+  width: 86%;
+}
+.source-lines i:nth-child(3) {
+  width: 62%;
+  background: #a9d5bc;
+}
+.concept-sheet {
+  z-index: 3 !important;
+  top: 32%;
+  right: 0;
+  width: 65%;
+  padding: 24px;
+}
+.vignette-label {
+  margin: 0 0 3px;
+  color: #547067;
+  font-size: 0.7rem;
+  font-weight: 800;
+  letter-spacing: 0.11em;
+  text-transform: uppercase;
+}
+.concept-pills {
+  display: flex;
+  gap: 7px;
+  flex-wrap: wrap;
+  margin-top: 18px;
+}
+.concept-pills span {
+  padding: 6px 10px;
+  border-radius: 99px;
+  background: #e7f2eb;
+  color: #20604d;
+  font-size: 0.72rem;
+}
+.practice-sheet {
+  bottom: 2%;
+  left: 7%;
+  width: 76%;
+  padding: 26px;
+  display: flex;
+  gap: 18px;
+  align-items: flex-start;
+  transform: rotate(1.5deg);
+}
+.practice-number {
+  color: #85ad9e;
+  font-size: 1.7rem;
+  font-weight: 300;
+}
+.practice-sheet .citation-mark {
+  margin-top: 14px;
+  color: #087057;
+  font-weight: 700;
+}
+.vignette-path {
+  position: absolute;
+  inset: 23% 15% 20% 20%;
+  z-index: 1;
+  border-right: 1px dashed #6ca98f;
+  border-bottom: 1px dashed #6ca98f;
+}
+.landing-footer {
+  display: flex;
+  justify-content: space-between;
+  gap: 24px;
+  padding-block: 22px;
+  border-top: 1px solid #17352c12;
+  color: #5b7168;
+  font-size: 0.78rem;
+}
+@media (max-width: 860px) {
+  .landing-main {
+    grid-template-columns: 1fr;
+    gap: 24px;
+    padding-top: 48px;
+  }
+  .landing-copy {
+    max-width: 680px;
+  }
+  .learning-vignette {
+    min-height: 430px;
+    max-width: 620px;
+    width: 100%;
+  }
+}
+@media (max-width: 540px) {
+  .landing-header,
+  .landing-footer,
+  .landing-main {
+    width: min(100% - 36px, 1240px);
+  }
+  .landing-copy h1 {
+    font-size: clamp(2.45rem, 12vw, 3.5rem);
+  }
+  .learning-vignette {
+    min-height: 390px;
+  }
+  .source-sheet {
+    width: 80%;
+    padding: 18px;
+  }
+  .concept-sheet {
+    width: 76%;
+    padding: 18px;
+  }
+  .practice-sheet {
+    left: 2%;
+    width: 90%;
+    padding: 20px;
+  }
+  .landing-footer {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}

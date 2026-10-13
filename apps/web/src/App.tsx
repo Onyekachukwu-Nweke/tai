@@ -5,6 +5,8 @@ import { StudySpaces } from "./StudySpaces";
 import { DeleteAccount } from "./DeleteAccount";
 import { AccessibilitySettings } from "./AccessibilitySettings";
 import { AppShell, type AppView } from "./AppShell";
+import { SignedOutLanding } from "./SignedOutLanding";
+import { HomeDashboard } from "./HomeDashboard";
 
 type User = { id: string; name: string; email: string };
 
@@ -72,9 +74,7 @@ export function App() {
       setBusy(false);
     }
   }
-  const content = loading ? (
-    <p role="status">Checking your session…</p>
-  ) : user ? (
+  const content = user ? (
     view === "settings" ? (
       <>
         <AccessibilitySettings />
@@ -90,14 +90,11 @@ export function App() {
         />
       </>
     ) : view === "home" ? (
-      <section className="welcome">
-        <p className="eyebrow">Your learning companion</p>
-        <h1>Welcome, {user.name}.</h1>
-        <p className="intro">
-          Pick up where you left off, or make room for something new.
-        </p>
-        <button onClick={() => setView("spaces")}>View study spaces</button>
-      </section>
+      <HomeDashboard
+        name={user.name}
+        onSpaces={() => setView("spaces")}
+        onPractice={() => setView("practice")}
+      />
     ) : (
       <StudySpaces
         key={user.id}
@@ -106,42 +103,40 @@ export function App() {
         onViewChange={setView}
       />
     )
-  ) : (
-    <section className="card signin" aria-labelledby="signin-title">
-      <h1 id="signin-title">Make room for understanding.</h1>
-      <p>Bring your own material and take the next small step.</p>
-      <button disabled={busy} onClick={signIn}>
-        {busy ? "Connecting…" : "Continue with Google"}
-      </button>
-      <p className="fine-print">
-        TAI uses your Google identity, email, and display name for sign-in. This
-        preview supports English.
-      </p>
-    </section>
-  );
+  ) : null;
   return (
     <>
       <a className="skip-link" href="#main">
         Skip to content
       </a>
-      <AppShell
-        view={view}
-        signedIn={Boolean(user)}
-        onView={setView}
-        onSignOut={signOut}
-        busy={busy}
-      >
-        <span className="preview-badge">Early development preview</span>
-        {error && (
-          <div className="error" role="alert">
-            <p>{error}</p>
-            <button className="secondary" onClick={() => setRetry(retry + 1)}>
-              Retry session check
-            </button>
-          </div>
-        )}
-        {content}
-      </AppShell>
+      {user ? (
+        <AppShell
+          view={view}
+          signedIn={Boolean(user)}
+          onView={setView}
+          onSignOut={signOut}
+          busy={busy}
+        >
+          <span className="preview-badge">Early preview</span>
+          {error && (
+            <div className="error" role="alert">
+              <p>{error}</p>
+              <button className="secondary" onClick={() => setRetry(retry + 1)}>
+                Retry session check
+              </button>
+            </div>
+          )}
+          {content}
+        </AppShell>
+      ) : (
+        <SignedOutLanding
+          busy={busy}
+          loading={loading}
+          error={error}
+          onSignIn={() => void signIn()}
+          onRetry={() => setRetry(retry + 1)}
+        />
+      )}
     </>
   );
 }
