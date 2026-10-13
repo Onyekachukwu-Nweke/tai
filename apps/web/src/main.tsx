@@ -11,6 +11,8 @@ import "./focus-mode.css";
 import "./flashcards.css";
 import "./mobile-learning.css";
 import "./layout-responsive.css";
+import "./landing.css";
+import "./demo-ui.css";
 
 initializeTextSize();
 

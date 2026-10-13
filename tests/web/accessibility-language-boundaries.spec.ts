@@ -69,5 +69,7 @@ test("does not expose account settings before sign-in", async ({ page }) => {
   await expect(
     page.getByRole("button", { name: "Continue with Google" }),
   ).toBeVisible();
-  await expect(page.getByText("This preview supports English.")).toBeVisible();
+  await expect(
+    page.getByText("English materials are supported in this preview."),
+  ).toBeVisible();
 });

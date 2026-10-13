@@ -58,7 +58,7 @@ export function ActivityPack({
   const answered = session.items.filter((item) => item.completedAt).length;
   return (
     <section
-      className="card practice-mode activity-pack"
+      className="practice-mode activity-pack"
       aria-labelledby="activity-heading"
     >
       <PracticePackHeader
