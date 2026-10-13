@@ -25,6 +25,7 @@ import type { ActivityFollowupGradeProvider } from "../../../packages/adapters/f
 import { activityFollowupGradeRoutes } from "./activity-followup-grade-routes";
 import type { PracticalTaskProvider } from "../../../packages/adapters/fake-practical-tasks";
 import { practicalTaskRoutes } from "./practical-task-routes";
+import { resourceRoutes } from "./resource-routes";
 
 export function createStudySpaces(
   provider: ConceptProvider | undefined,
@@ -150,5 +151,6 @@ export function createStudySpaces(
     activityFollowupGradeRoutes(followupGradeProvider, clock),
   );
   studySpaces.route("/", practicalTaskRoutes(practicalProvider, clock));
+  studySpaces.route("/", resourceRoutes);
   return studySpaces;
 }

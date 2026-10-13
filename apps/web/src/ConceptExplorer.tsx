@@ -3,6 +3,7 @@ import type { ConceptCollection } from "../../../packages/contracts/concepts";
 import { generateConcepts, loadConcepts, updateConcept } from "./concept-api";
 import { ActivityPack } from "./ActivityPack";
 import { PracticalTask } from "./PracticalTask";
+import { SupplementaryResources } from "./SupplementaryResources";
 
 type Source = ConceptCollection["concepts"][number]["sources"][number];
 export function ConceptExplorer({
@@ -205,6 +206,16 @@ export function ConceptExplorer({
               .map((concept) => concept.id)}
             sources={concepts.flatMap((concept) => concept.sources)}
             onSource={onSource}
+          />
+          <SupplementaryResources
+            spaceId={spaceId}
+            selectedConceptKey={JSON.stringify({
+              revision: collection?.requestId,
+              concepts: concepts
+                .filter((concept) => concept.selected)
+                .map(({ id, label }) => ({ id, label }))
+                .sort((left, right) => left.id.localeCompare(right.id)),
+            })}
           />
         </>
       )}
