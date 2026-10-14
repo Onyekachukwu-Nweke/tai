@@ -67,7 +67,7 @@ function LearningVignette() {
       <div className="vignette-glow" aria-hidden="true" />
       <article className="source-sheet">
         <span className="source-file" aria-hidden="true">
-          PDF
+          <Icon className="icon" name="file-text" size={24} />
         </span>
         <div>
           <strong>Your material</strong>
@@ -99,9 +99,13 @@ function LearningVignette() {
         <div>
           <p className="vignette-label">Focused practice</p>
           <strong>Explain it in your own words</strong>
-          <p className="citation-mark">↗ Backed by page 4</p>
+          <p className="citation-mark control-with-icon">
+            <Icon className="icon" name="external-link" size={14} /> Backed by
+            page 4
+          </p>
         </div>
       </article>
     </section>
   );
 }
+import { Icon } from "./Icon";

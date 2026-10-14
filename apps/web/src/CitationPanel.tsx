@@ -1,4 +1,5 @@
 import { useEffect, useRef } from "react";
+import { Icon } from "./Icon";
 
 export type Citation = { id: string; location: number; text: string };
 
@@ -37,7 +38,7 @@ export function CitationPanel({
           aria-label="Close cited passage"
           onClick={onClose}
         >
-          ✕
+          <Icon className="icon" name="close" />
         </button>
       </div>
       <blockquote>

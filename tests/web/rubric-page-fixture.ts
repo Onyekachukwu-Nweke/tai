@@ -45,6 +45,7 @@ export async function routeRubricPage(
     flagged?: boolean;
     immediate?: boolean;
     lostFollowupGradeResponse?: boolean;
+    rubricOutcome?: "supported" | "partial" | "uncertain" | "not_supported";
   } = {},
 ) {
   let attempt: Record<string, unknown> | null = null;
@@ -238,12 +239,12 @@ export async function routeRubricPage(
         attemptId: input.attemptId,
         packId: rubricIds.pack,
         questionId: rubricIds.question,
-        outcome: "partial",
+        outcome: options.rubricOutcome ?? "partial",
         feedback: "Add the role described in the cited source.",
         elements: [
           {
             criterion: "Connect light to growth",
-            outcome: "partial",
+            outcome: options.rubricOutcome ?? "partial",
             feedback: "The connection needs one more detail.",
           },
         ],

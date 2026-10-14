@@ -73,13 +73,13 @@ test("prepares an ID-only learner-safe pack, reloads it and opens exact evidence
         policy: "heuristic",
         disclosure:
           "Review timing is a simple study heuristic, not a validated prediction of memory.",
-        concepts: concepts.concepts.map((item) => ({
+        concepts: concepts.concepts.map((item, index) => ({
           conceptId: item.id,
           conceptLabel: item.label,
-          label: "Not checked",
-          reviewStep: 0,
-          lastCheckedAt: null,
-          nextReviewAt: null,
+          label: index === 0 ? "Not checked" : "Recall successful",
+          reviewStep: index,
+          lastCheckedAt: index === 0 ? null : "2026-10-08T00:00:00.000Z",
+          nextReviewAt: index === 0 ? null : "2026-10-12T00:00:00.000Z",
         })),
       },
     }),
@@ -183,6 +183,9 @@ test("prepares an ID-only learner-safe pack, reloads it and opens exact evidence
   await openFirstSpacePractice(page);
   await expect(
     page.getByRole("button", { name: "Not reviewed" }).first(),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("button", { name: /^Reviewed: Recall successful/ }),
   ).toBeVisible();
   await page.getByText("How review status works").click();
   await expect(

@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { DeleteStudySpace } from "./DeleteStudySpace";
+import { Icon } from "./Icon";
 export function SpaceCardMenu({
   id,
   title,
@@ -38,13 +39,13 @@ export function SpaceCardMenu({
     <div className="space-menu" ref={root}>
       <button
         ref={menuTrigger}
-        className="secondary"
+        className="icon-button"
         aria-label={`More actions for ${title}`}
         aria-haspopup="menu"
         aria-expanded={open}
         onClick={() => setOpen((value) => !value)}
       >
-        ⋯
+        <Icon className="icon" name="more-horizontal" />
       </button>
       {open && (
         <div className="menu-panel" role="menu">

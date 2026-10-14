@@ -97,7 +97,11 @@ test("saved PDF opens once and page navigation re-renders without refetching", a
     timeout: 15_000,
   });
   await expect(page.getByText("Page 1 of 2")).toBeVisible();
-  await page.getByRole("button", { name: "Next page" }).click();
+  const nextPage = page.getByRole("button", { name: "Next page" });
+  const target = await nextPage.boundingBox();
+  expect(target?.width).toBeGreaterThanOrEqual(40);
+  expect(target?.height).toBeGreaterThanOrEqual(40);
+  await nextPage.click();
   await expect(page.getByLabel("Rendered PDF page 1")).toBeHidden();
   await expect(page.getByLabel("Rendered PDF page 2")).toBeVisible({
     timeout: 15_000,

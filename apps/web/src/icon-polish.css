@@ -1,0 +1,97 @@
+.icon {
+  flex: none;
+}
+.control-with-icon {
+  display: inline-flex;
+  gap: 7px;
+  align-items: center;
+  justify-content: center;
+}
+button:has(> .icon),
+a:has(> .icon) {
+  display: inline-flex;
+  gap: 7px;
+  align-items: center;
+  justify-content: center;
+}
+button.icon-button:has(> .icon) {
+  gap: 0;
+}
+button.icon-button,
+button.concept-edit {
+  min-width: 40px;
+  min-height: 40px;
+}
+.concept-select {
+  min-height: 40px;
+  height: auto;
+}
+.status-chip:has(> .icon) {
+  gap: 5px;
+}
+.control-with-icon.trailing {
+  gap: 6px;
+}
+.nav-item {
+  position: relative;
+  gap: 10px;
+  border-color: transparent;
+  transition:
+    background-color 160ms ease,
+    color 160ms ease;
+}
+button.nav-item.active {
+  border-color: transparent;
+  background: #dfece4;
+  box-shadow: none;
+}
+button.nav-item.active::before {
+  position: absolute;
+  inset-block: 9px;
+  left: 0;
+  width: 3px;
+  border-radius: 0 3px 3px 0;
+  background: var(--green);
+  content: "";
+}
+.step-icon .icon,
+.space-card-mark .icon,
+.new-space-icon .icon {
+  display: block;
+}
+.space-menu > .icon-button {
+  min-width: 40px;
+  min-height: 40px;
+}
+.resource-list a:has(> .icon) {
+  gap: 6px;
+}
+.home-trust {
+  display: flex;
+  gap: 7px;
+  align-items: flex-start;
+}
+.home-trust .icon {
+  margin-top: 2px;
+}
+@media (max-width: 720px) {
+  button.icon-button,
+  button.concept-edit {
+    min-width: 44px;
+    min-height: 44px;
+  }
+  .concept-select {
+    min-height: 44px;
+  }
+  button.nav-item.active::before {
+    inset-block: 10px;
+  }
+  .signout::after {
+    content: none;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .nav-item {
+    transition: none;
+  }
+}

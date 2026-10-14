@@ -1,0 +1,135 @@
+.feedback-card {
+  margin-top: 18px;
+  padding: 18px;
+  border: 1px solid #d6e0da;
+  border-radius: 14px;
+  background: #fff;
+  box-shadow: 0 8px 24px rgb(23 53 44 / 6%);
+}
+.feedback-card > :first-child,
+.feedback-card header > :first-child,
+.feedback-card header h3 {
+  margin-top: 0;
+}
+.feedback-heading {
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+  justify-content: space-between;
+}
+.feedback-heading > p {
+  margin: 0;
+}
+.feedback-status,
+.outcome-pill {
+  flex: none;
+  padding: 4px 9px;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  font-size: 0.76rem;
+  font-weight: 750;
+  text-transform: capitalize;
+}
+.outcome-supported {
+  border-color: #b7d8c8;
+  background: #e5f2eb;
+  color: #075d49;
+}
+.outcome-partial {
+  border-color: #e4cf91;
+  background: #f8f0d8;
+  color: #674d0b;
+}
+.feedback-outcome {
+  display: grid;
+  gap: 5px;
+  justify-items: end;
+  color: var(--muted);
+  font-size: 0.76rem;
+  font-weight: 700;
+}
+.outcome-uncertain {
+  border-color: #d2d9d5;
+  background: #edf1ef;
+  color: #44524c;
+}
+.outcome-not_supported {
+  border-color: #e8b8b2;
+  background: #fbe9e7;
+  color: #832f27;
+}
+.criterion-list {
+  display: grid;
+  gap: 8px;
+  margin: 16px 0;
+  padding: 0;
+  list-style: none;
+}
+.criterion-list li {
+  padding: 12px 14px;
+  border: 1px solid #e1e8e4;
+  border-radius: 10px;
+  background: #fafcfb;
+}
+.criterion-heading {
+  display: flex;
+  gap: 12px;
+  justify-content: space-between;
+}
+.criterion-outcome {
+  padding: 2px 7px;
+  border-width: 1px;
+  border-style: solid;
+  border-radius: 999px;
+  font-size: 0.82rem;
+  text-transform: capitalize;
+}
+.criterion-list p {
+  margin: 4px 0 0;
+}
+.feedback-sources {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  margin-block: 12px;
+}
+.feedback-note {
+  margin-bottom: 0;
+  color: var(--muted);
+  font-size: 0.82rem;
+}
+.feedback-details {
+  margin-top: 10px;
+  color: var(--muted);
+  font-size: 0.86rem;
+}
+.feedback-details summary {
+  cursor: pointer;
+  font-weight: 700;
+}
+.followup-panel {
+  border-color: #cbd9d1;
+  background: #f8fbf9;
+}
+.followup-panel textarea {
+  background: #fff;
+}
+.followup-result {
+  margin-top: 16px;
+  padding-top: 14px;
+  border-top: 1px solid var(--border);
+}
+.followup-outcome {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+@media (max-width: 600px) {
+  .feedback-heading,
+  .criterion-heading {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 6px;
+  }
+}

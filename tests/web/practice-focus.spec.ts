@@ -66,7 +66,7 @@ test("flashcards flip, rate privately in this browser and never call the server"
   });
   await page.goto("/");
   await openFirstSpacePractice(page);
-  await page.getByRole("button", { name: "Start flashcards ▶" }).click();
+  await page.getByRole("button", { name: "Start flashcards" }).click();
   const deck = page.getByRole("dialog", { name: "Flashcards" });
   const [first, second] = concepts.concepts;
   await expect(deck.getByRole("heading", { name: first!.label })).toBeVisible();
@@ -92,4 +92,45 @@ test("flashcards flip, rate privately in this browser and never call the server"
   await expect(deck).toBeHidden();
   await expect(page.getByText(/self-rating 4\/5/)).toBeVisible();
   expect(writes).toEqual([]);
+});
+
+test("flashcard motion is paced and rapid ratings advance only once", async ({
+  page,
+}) => {
+  await routePracticePage(page);
+  await page.goto("/");
+  await openFirstSpacePractice(page);
+  await page.getByRole("button", { name: "Start flashcards" }).click();
+  const deck = page.getByRole("dialog", { name: "Flashcards" });
+  await deck.getByRole("button", { name: "Flip card" }).click();
+  const transition = await deck
+    .locator(".flashcard-inner")
+    .evaluate((element) => getComputedStyle(element).transitionDuration);
+  expect(transition).toBe("0.45s");
+  await deck
+    .getByRole("button", { name: "Rate 4 out of 5" })
+    .evaluate((button) => {
+      (button as HTMLButtonElement).click();
+      (button as HTMLButtonElement).click();
+    });
+  await expect(
+    deck.getByRole("heading", { name: concepts.concepts[1]!.label }),
+  ).toBeVisible();
+  await expect(deck.getByText("Deck complete")).toHaveCount(0);
+});
+
+test("reduced motion advances flashcards immediately", async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await routePracticePage(page);
+  await page.goto("/");
+  await openFirstSpacePractice(page);
+  await page.getByRole("button", { name: "Start flashcards" }).click();
+  const deck = page.getByRole("dialog", { name: "Flashcards" });
+  await expect(deck.getByRole("region", { name: "Answer" })).toHaveCount(0);
+  await deck.getByRole("button", { name: "Flip card" }).click();
+  await expect(deck.getByRole("region", { name: "Answer" })).toBeVisible();
+  await deck.getByRole("button", { name: "Rate 3 out of 5" }).click();
+  await expect(
+    deck.getByRole("heading", { name: concepts.concepts[1]!.label }),
+  ).toBeVisible();
 });

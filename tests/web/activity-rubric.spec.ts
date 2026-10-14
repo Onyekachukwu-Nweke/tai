@@ -128,3 +128,27 @@ test("restores a completed follow-up grade after its response is lost", async ({
   ).toBeVisible();
   expect(observed.followupGradeCalls()).toBe(1);
 });
+
+for (const [outcome, background] of [
+  ["supported", "rgb(229, 242, 235)"],
+  ["partial", "rgb(248, 240, 216)"],
+  ["uncertain", "rgb(237, 241, 239)"],
+  ["not_supported", "rgb(251, 233, 231)"],
+] as const) {
+  test(`rubric ${outcome} keeps a textual label and distinct semantic style`, async ({
+    page,
+  }) => {
+    await routeRubricPage(page, { immediate: true, rubricOutcome: outcome });
+    await page.goto("/");
+    await openFirstSpacePractice(page);
+    await resumePracticeSession(page);
+    await page.getByLabel("Your response").fill("A source-grounded response.");
+    await page.getByRole("button", { name: "Check answer" }).click();
+    const pill = page.locator(".rubric-feedback .outcome-pill");
+    await expect(pill).toHaveText(outcome);
+    await expect(pill).toHaveCSS("background-color", background);
+    const criterion = page.locator(".criterion-outcome");
+    await expect(criterion).toHaveText(outcome.replace("_", " "));
+    await expect(criterion).toHaveCSS("background-color", background);
+  });
+}

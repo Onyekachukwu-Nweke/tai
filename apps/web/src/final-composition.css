@@ -1,0 +1,120 @@
+.sidebar nav,
+.signout {
+  width: 100%;
+}
+.nav-item,
+.signout {
+  display: grid !important;
+  grid-template-columns: 22px minmax(0, 1fr);
+  column-gap: 10px !important;
+  align-items: center;
+  justify-content: initial !important;
+  text-align: left;
+}
+.nav-item .icon,
+.signout .icon {
+  justify-self: center;
+}
+button.nav-item.active,
+button.nav-item.active:hover:not(:disabled) {
+  border-color: rgb(255 255 255 / 78%);
+  background: rgb(255 255 255 / 66%);
+  box-shadow: 0 6px 18px rgb(21 65 51 / 7%);
+}
+button.nav-item.active::before {
+  width: 2px;
+  inset-block: 10px;
+}
+.next-step {
+  grid-template-rows: 1fr auto;
+}
+.next-step-copy {
+  min-height: 92px;
+}
+.next-step button {
+  margin-top: 18px;
+}
+.material-workspace {
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  background: #fff;
+  box-shadow: 0 14px 34px rgb(23 53 44 / 7%);
+}
+.material-workspace > .section-header,
+.material-workspace > .material-workspace-intro,
+.material-workspace > label,
+.material-workspace > input,
+.material-workspace > .preview-actions,
+.material-workspace > .fine-print,
+.material-workspace > .error,
+.material-workspace > .material-summary {
+  margin-inline: 22px;
+}
+.material-workspace > .section-header {
+  padding-top: 18px;
+}
+.material-workspace-intro {
+  color: var(--muted);
+}
+.material-reader-panel {
+  padding: 14px 22px 22px;
+  border-top: 1px solid var(--border);
+  background: #f3f6f4;
+}
+.material-learning-panel {
+  padding: 6px 22px 24px;
+  border-top: 1px solid var(--border);
+}
+.material-learning-panel > section {
+  margin-top: 24px;
+}
+.practice-primary .activity-pack {
+  border-color: #c7d9d0;
+  background: #fff;
+  box-shadow: 0 10px 28px rgb(23 53 44 / 7%);
+}
+.practice-primary .session-card {
+  padding: 16px 0 0;
+  background: transparent;
+}
+.practice-primary .session-controls button {
+  width: auto;
+  justify-self: start;
+  padding-inline: 18px;
+}
+.practice-primary button.resume-session {
+  background: #08785f;
+}
+.practice-secondary > .flashcards-card {
+  background: #fbfcfb;
+  box-shadow: none;
+}
+@media (max-width: 720px) {
+  .nav-item,
+  .signout {
+    grid-template-columns: 1fr;
+  }
+  .next-step-copy {
+    min-height: 0;
+  }
+  .material-workspace > .section-header,
+  .material-workspace > .material-workspace-intro,
+  .material-workspace > label,
+  .material-workspace > input,
+  .material-workspace > .preview-actions,
+  .material-workspace > .fine-print,
+  .material-workspace > .error,
+  .material-workspace > .material-summary {
+    margin-inline: 16px;
+  }
+  .material-reader-panel,
+  .material-learning-panel {
+    padding-inline: 16px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .nav-item {
+    transition: none;
+  }
+}

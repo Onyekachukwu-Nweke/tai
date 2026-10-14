@@ -13,6 +13,9 @@ import "./mobile-learning.css";
 import "./layout-responsive.css";
 import "./landing.css";
 import "./demo-ui.css";
+import "./icon-polish.css";
+import "./final-composition.css";
+import "./feedback.css";
 
 initializeTextSize();
 

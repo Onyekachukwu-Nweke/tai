@@ -83,6 +83,12 @@ test("home dashboard presents two clear next steps without overflow", async ({
   await expect(
     page.getByRole("button", { name: "Go to practice" }),
   ).toBeVisible();
+  const ctaPositions = await page
+    .locator(".next-step button")
+    .evaluateAll((buttons) =>
+      buttons.map((button) => button.getBoundingClientRect().y),
+    );
+  expect(Math.abs(ctaPositions[0]! - ctaPositions[1]!)).toBeLessThan(2);
   await expect(
     page.getByRole("heading", { name: "Read. Make sense of it. Recall it." }),
   ).toBeVisible();
@@ -101,7 +107,29 @@ test("signed-in shell exposes focused navigation and responsive study-space grid
   await expect(
     page.getByRole("heading", { name: "Your study spaces" }),
   ).toBeVisible();
-  await expect(page.getByRole("button", { name: "▶ Open" })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Open" })).toBeVisible();
+  await expect(
+    page.getByRole("button", { name: "Study Space", exact: true }),
+  ).toHaveAttribute("aria-current", "page");
+  const activeStyle = await page
+    .getByRole("button", { name: "Study Space", exact: true })
+    .evaluate((element) => {
+      const style = getComputedStyle(element);
+      const icon = element.querySelector("svg")!.getBoundingClientRect();
+      const label = element
+        .querySelector(".nav-label")!
+        .getBoundingClientRect();
+      return {
+        background: style.backgroundColor,
+        shadow: style.boxShadow,
+        aligned: Math.abs(
+          icon.y + icon.height / 2 - (label.y + label.height / 2),
+        ),
+      };
+    });
+  expect(activeStyle.background).toMatch(/^rgba\(255, 255, 255, 0\.[4-7]/);
+  expect(activeStyle.shadow).not.toBe("none");
+  expect(activeStyle.aligned).toBeLessThan(2);
   await expect(page.getByText(/^Created /)).toBeVisible();
   await page.setViewportSize({ width: 375, height: 812 });
   expect(

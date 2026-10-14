@@ -1,5 +1,6 @@
 import { useState, type FormEvent } from "react";
 import type { ConceptCollection } from "../../../packages/contracts/concepts";
+import { Icon } from "./Icon";
 type Concept = ConceptCollection["concepts"][number];
 export function ConceptCard({
   concept,
@@ -51,7 +52,7 @@ export function ConceptCard({
             aria-expanded={editing}
             onClick={() => setEditing((value) => !value)}
           >
-            ✎
+            <Icon className="icon" name="edit" size={15} />
           </button>
         </div>
         {editing && (

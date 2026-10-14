@@ -1,5 +1,6 @@
 import { useState } from "react";
 import type { LearnerActivityPack } from "../../../packages/contracts/activity-packs";
+import { Icon } from "./Icon";
 type Question = LearnerActivityPack["questions"][number];
 export function ActivityQuestionFooter({
   question,
@@ -34,7 +35,7 @@ export function ActivityQuestionFooter({
           disabled={busy}
           onClick={() => onFlag(reason)}
         >
-          ⚑ Flag
+          <Icon className="icon" name="flag" size={15} /> Flag
         </button>
       </div>
       {flag && (

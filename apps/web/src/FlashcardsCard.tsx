@@ -1,6 +1,7 @@
 import { useState } from "react";
 import type { ConceptCollection } from "../../../packages/contracts/concepts";
 import { FlashcardDeck } from "./FlashcardDeck";
+import { Icon } from "./Icon";
 
 type Concept = ConceptCollection["concepts"][number];
 
@@ -33,7 +34,7 @@ export function FlashcardsCard({
         disabled={!count}
         onClick={() => setOpen(true)}
       >
-        Start flashcards ▶
+        Start flashcards <Icon className="icon" name="arrow-right" />
       </button>
       {open && (
         <FlashcardDeck
