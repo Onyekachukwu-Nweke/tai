@@ -26,7 +26,7 @@ export function AppShell({
     <div className="app-shell">
       <aside className="sidebar">
         <a className="wordmark" href="/" aria-label="TAI home">
-          TAI<span>Learning, at your pace.</span>
+          TAI
         </a>
         {signedIn && (
           <nav aria-label="Main navigation">
@@ -45,11 +45,7 @@ export function AppShell({
         )}
         <div className="sidebar-spacer" />
         {signedIn && (
-          <button
-            className="ghost signout control-with-icon"
-            disabled={busy}
-            onClick={onSignOut}
-          >
+          <button className="ghost signout" disabled={busy} onClick={onSignOut}>
             <Icon className="icon" name="log-out" />
             <span className="nav-label">Sign out</span>
           </button>
