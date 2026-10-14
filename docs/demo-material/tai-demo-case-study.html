@@ -1,0 +1,185 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Project Lantern: Delivering a Resilient Campus Learning Platform</title>
+    <style>
+      @page { size: A4; margin: 20mm 18mm 18mm; }
+      * { box-sizing: border-box; }
+      body { color: #173b32; font: 11.5pt/1.55 "Liberation Sans", sans-serif; }
+      h1, h2, h3 { color: #075444; line-height: 1.15; }
+      h1 { margin: 0 0 10mm; font-size: 29pt; }
+      h2 { margin: 0 0 5mm; font-size: 20pt; }
+      h3 { margin: 6mm 0 2mm; font-size: 13pt; }
+      p, li { max-width: 72ch; }
+      .page { page-break-after: always; }
+      .page:last-child { page-break-after: auto; }
+      .eyebrow { color: #08705a; font-size: 9pt; font-weight: bold; letter-spacing: 0.13em; text-transform: uppercase; }
+      .lede { color: #315f52; font-size: 14pt; }
+      .callout { margin: 6mm 0; padding: 4mm 5mm; border-left: 4px solid #37aa86; background: #eef8f3; }
+      .warning { border-left-color: #b27712; background: #fff8e8; }
+      table { width: 100%; margin: 4mm 0; border-collapse: collapse; font-size: 10pt; }
+      th, td { padding: 2.6mm; border: 1px solid #b9d3c8; text-align: left; vertical-align: top; }
+      th { background: #e4f3ec; }
+      code { padding: 1px 4px; background: #edf3f0; font-family: "Liberation Mono", monospace; }
+      .formula { margin: 4mm 0; padding: 4mm; border-radius: 3mm; background: #f3f6f4; font: 12pt/1.7 "Liberation Mono", monospace; }
+      .footer { margin-top: 10mm; color: #5f746c; font-size: 8.5pt; }
+    </style>
+  </head>
+  <body>
+    <section class="page">
+      <p class="eyebrow">Applied project management case study</p>
+      <h1>Project Lantern</h1>
+      <p class="lede">Delivering a resilient campus learning platform under tight time, cost, and connectivity constraints.</p>
+      <div class="callout">
+        <strong>Learning purpose.</strong> Use this case to practise stakeholder analysis, requirements prioritization, hybrid delivery, governance, risk management, quality, change control, and earned value analysis.
+      </div>
+      <h3>The situation</h3>
+      <p>Northbridge Polytechnic serves 8,000 learners across one urban campus and three satellite centres. Students currently receive course material through email, messaging groups, and shared drives. Files are duplicated, links expire, and instructors cannot tell whether a newer version reached every class. Connectivity at two satellite centres is intermittent, and many learners rely on low-cost mobile devices.</p>
+      <p>The institution approved Project Lantern: a twelve-week initiative to deliver a secure web platform for publishing course material, tracking acknowledgement, and supporting lightweight quizzes. The approved budget is 24 million naira. The first release must support 2,000 pilot learners and 80 instructors. It must work on narrow screens, tolerate unstable connections without losing submitted work, and provide auditable access control.</p>
+      <h3>Definition of success</h3>
+      <ul>
+        <li>At least 90% of pilot learners can open assigned material on a mobile device.</li>
+        <li>A submitted quiz answer is never silently lost or duplicated.</li>
+        <li>Only authorized learners can access a course space.</li>
+        <li>Instructors can publish a corrected file and identify its current version.</li>
+        <li>The pilot launches within twelve weeks and does not exceed the approved budget.</li>
+      </ul>
+      <p class="footer">Original synthetic material · CC0 1.0 · Prepared for the TAI hackathon demo</p>
+    </section>
+
+    <section class="page">
+      <p class="eyebrow">1 · Stakeholders and value</p>
+      <h2>Start with people, not features</h2>
+      <p>A stakeholder is any person or group that can affect the project, is affected by it, or believes it may be affected. The team used a power-interest grid to decide how to engage each group. High-power, high-interest stakeholders require close collaboration; high-power, lower-interest stakeholders need concise assurance; high-interest groups with less formal power still need frequent opportunities to shape usability.</p>
+      <table>
+        <tr><th>Stakeholder</th><th>Primary need</th><th>Engagement approach</th></tr>
+        <tr><td>Learners</td><td>Fast mobile access and recovery from weak connections</td><td>Weekly usability sessions and pilot feedback</td></tr>
+        <tr><td>Instructors</td><td>Simple publishing and clear version status</td><td>Workflow prototypes and acceptance reviews</td></tr>
+        <tr><td>Registry</td><td>Accurate enrolment and course membership</td><td>Data mapping and fortnightly decisions</td></tr>
+        <tr><td>IT operations</td><td>Observable, supportable, secure service</td><td>Architecture reviews and runbook ownership</td></tr>
+        <tr><td>Executive sponsor</td><td>Visible educational value within budget</td><td>Biweekly exception report</td></tr>
+      </table>
+      <h3>Value hypothesis</h3>
+      <p>The project does not assume that a platform automatically improves learning. Its value hypothesis is narrower: if learners can reliably find the current material, practise with timely feedback, and resume after interruption, then avoidable friction will fall. The pilot must test this hypothesis with observed task completion and interviews rather than vanity measures such as page views alone.</p>
+      <div class="callout warning"><strong>Case tension.</strong> The sponsor asks for a public leaderboard to “drive engagement.” Learner representatives warn that it may expose performance, punish late participation, and distract from the core launch. The project manager records the request but does not add it directly to scope.</div>
+    </section>
+
+    <section class="page">
+      <p class="eyebrow">2 · Requirements and scope</p>
+      <h2>Turn needs into testable boundaries</h2>
+      <p>A requirement is useful when it is specific enough to verify. “The platform should be reliable” is an aspiration. “A retry with the same submission identifier does not create a second quiz attempt” is testable. The team separates functional requirements, which describe behaviour, from non-functional requirements, which describe qualities and constraints.</p>
+      <table>
+        <tr><th>Type</th><th>Example</th><th>Acceptance evidence</th></tr>
+        <tr><td>Functional</td><td>An instructor publishes one current file per lesson.</td><td>Version replacement walkthrough</td></tr>
+        <tr><td>Functional</td><td>A learner resumes an unfinished quiz.</td><td>Reload and second-device test</td></tr>
+        <tr><td>Non-functional</td><td>Controls remain usable at 320 pixels wide.</td><td>Responsive browser test</td></tr>
+        <tr><td>Non-functional</td><td>Every data query is scoped to the signed-in user.</td><td>Cross-user authorization tests</td></tr>
+      </table>
+      <h3>Prioritization</h3>
+      <p>The team uses MoSCoW categories. Must-have items define a viable and safe pilot. Should-have items add significant value but have a workaround. Could-have items are included only if time remains. Won't-have-for-now items are explicit boundaries, not forgotten promises.</p>
+      <ul>
+        <li><strong>Must:</strong> sign-in, course membership, material publishing, mobile reading, saved quiz attempts, deletion, and audit records.</li>
+        <li><strong>Should:</strong> instructor analytics and downloadable class summaries.</li>
+        <li><strong>Could:</strong> theme customization and optional profile photographs.</li>
+        <li><strong>Won't for the pilot:</strong> public leaderboard, native mobile apps, video hosting, and automated exam grading.</li>
+      </ul>
+      <p>The scope baseline combines the approved requirements, schedule, and budget. A work breakdown structure then decomposes the outcome into manageable deliverables: identity, course spaces, content delivery, quizzes, operations, training, and pilot evaluation. Decomposition improves estimation and ownership; it must not become a list of unrelated technical tasks.</p>
+    </section>
+
+    <section class="page">
+      <p class="eyebrow">3 · Delivery strategy</p>
+      <h2>A hybrid plan for uncertainty and control</h2>
+      <p>Project Lantern uses a hybrid delivery approach. Fixed governance checkpoints protect budget, privacy, and institutional readiness. Within those boundaries, a cross-functional team works in one-week iterations, demonstrates usable increments, and revises the backlog using evidence from learners and instructors.</p>
+      <h3>Twelve-week outline</h3>
+      <table>
+        <tr><th>Weeks</th><th>Outcome</th><th>Decision</th></tr>
+        <tr><td>1–2</td><td>Discovery, baseline, architecture spike</td><td>Approve scope and major controls</td></tr>
+        <tr><td>3–5</td><td>Identity, course spaces, content flow</td><td>Security and usability review</td></tr>
+        <tr><td>6–8</td><td>Quiz flow, persistence, reporting</td><td>Pilot readiness assessment</td></tr>
+        <tr><td>9–10</td><td>Hardening, training, data migration</td><td>Go/no-go recommendation</td></tr>
+        <tr><td>11–12</td><td>Pilot launch, observation, handover</td><td>Close, extend, or stop</td></tr>
+      </table>
+      <h3>Why hybrid?</h3>
+      <p>A purely predictive plan would assume that needs and technical risks are already understood. A purely adaptive approach could leave executives without clear cost and readiness gates. Hybrid delivery keeps the outcome, constraints, and decision rights visible while allowing the solution to improve through short feedback cycles.</p>
+      <div class="callout"><strong>Definition of done.</strong> A feature is done only when its acceptance checks pass, keyboard use is possible, errors are recoverable, privacy controls are reviewed, operational notes are updated, and the product owner accepts the behaviour. Code completion alone is not completion.</div>
+      <p>Each weekly review asks three questions: What usable value exists now? What evidence changed our assumptions? What is the smallest next step that reduces the greatest uncertainty?</p>
+    </section>
+
+    <section class="page">
+      <p class="eyebrow">4 · Risk and governance</p>
+      <h2>Make uncertainty discussable</h2>
+      <p>A risk is an uncertain event or condition that may affect objectives. An issue has already happened. The team records each risk with a cause, uncertain event, potential effect, owner, probability, impact, response, trigger, and review date. Multiplying probability by impact creates a useful priority signal, but it does not replace judgment.</p>
+      <table>
+        <tr><th>Risk</th><th>P</th><th>I</th><th>Response and trigger</th></tr>
+        <tr><td>Weak connectivity causes duplicate quiz submissions.</td><td>4</td><td>5</td><td>Mitigate with idempotent IDs and retry tests; trigger: duplicate attempt in staging.</td></tr>
+        <tr><td>Enrolment data arrives late.</td><td>3</td><td>4</td><td>Mitigate with an agreed snapshot date; trigger: mapping incomplete at week 4.</td></tr>
+        <tr><td>Instructors resist a new publishing workflow.</td><td>3</td><td>3</td><td>Reduce through co-design and short training; trigger: task success below 80%.</td></tr>
+        <tr><td>Security review finds cross-course access.</td><td>2</td><td>5</td><td>Avoid launch until fixed; trigger: any unauthorized read in testing.</td></tr>
+      </table>
+      <h3>Decision rights</h3>
+      <p>The steering group owns changes to budget, launch date, and pilot population. The product owner orders the backlog inside the approved baseline. The technical lead owns implementation choices that meet the constraints. The security lead can block release when a critical control fails. Clear decision rights prevent both uncontrolled change and decision paralysis.</p>
+      <h3>Escalation by exception</h3>
+      <p>The project manager reports trends and exceptions rather than overwhelming the sponsor with task detail. A variance crosses the escalation threshold when forecast cost exceeds the baseline by 10%, a critical milestone is forecast more than one week late, or a severe privacy or security risk lacks an effective response.</p>
+    </section>
+
+    <section class="page">
+      <p class="eyebrow">5 · Quality and change</p>
+      <h2>Protect the outcome while learning</h2>
+      <p>Quality assurance improves the process used to create the platform. Quality control inspects the resulting product. Lantern needs both: peer review and automated checks reduce defect introduction, while usability sessions, authorization tests, and acceptance walkthroughs reveal whether the finished behaviour meets the need.</p>
+      <h3>Change-control path</h3>
+      <ol>
+        <li>Record the request and the problem it is meant to solve.</li>
+        <li>Assess value, cost, schedule, risk, privacy, and operational impact.</li>
+        <li>Identify options, including deferment or a smaller experiment.</li>
+        <li>Send changes beyond delegated tolerance to the steering group.</li>
+        <li>Update the baseline, backlog, risks, tests, and communication after approval.</li>
+      </ol>
+      <p>When the sponsor repeats the leaderboard request in week 6, the team offers a safer experiment: private personal progress with no public ranking. The option supports reflection without exposing classmates. Because even this alternative consumes design and testing capacity, it is classified as a Could-have and does not displace launch-critical work.</p>
+      <h3>Quality measures</h3>
+      <ul>
+        <li>Task completion: learners open an assigned file and submit one quiz without help.</li>
+        <li>Reliability: retries do not duplicate attempts and unsent answers remain visible.</li>
+        <li>Accessibility: labelled controls, visible focus, large-text reflow, and untimed tasks.</li>
+        <li>Security: authenticated, owner-scoped access with tested denial between users.</li>
+        <li>Operability: support staff can identify a failed request without viewing learner answers.</li>
+      </ul>
+      <div class="callout warning"><strong>Important distinction.</strong> Passing a technical test does not prove that learners understand the material. Product reliability and learning outcomes require different evidence.</div>
+    </section>
+
+    <section class="page">
+      <p class="eyebrow">6 · Schedule and cost</p>
+      <h2>Use earned value to see the trend</h2>
+      <p>At the end of week 6, the steering group wants to know whether Lantern is merely busy or actually on track. The project uses three earned-value measures:</p>
+      <ul>
+        <li><strong>Planned value (PV):</strong> budgeted cost of work scheduled.</li>
+        <li><strong>Earned value (EV):</strong> budgeted cost of work actually completed.</li>
+        <li><strong>Actual cost (AC):</strong> cost incurred for completed and incomplete work.</li>
+      </ul>
+      <p>The total budget, or budget at completion (BAC), is ₦24,000,000. By week 6, the baseline planned 50% completion, so PV is ₦12,000,000. Accepted deliverables represent 40% of the total budget, so EV is ₦9,600,000. Actual spending is ₦10,800,000.</p>
+      <div class="formula">Schedule performance index: SPI = EV / PV = 9.6 / 12.0 = 0.80<br />Cost performance index: CPI = EV / AC = 9.6 / 10.8 = 0.89<br />Simple estimate at completion: EAC = BAC / CPI = 24.0 / 0.89 ≈ ₦26.97 million</div>
+      <p>An SPI below 1 indicates that less work has been earned than planned. A CPI below 1 indicates that the project is receiving less budgeted value than each naira spent. If current cost efficiency continues, the simple EAC forecasts an overrun of about ₦2.97 million. The indices are signals, not explanations: the team must investigate causes before selecting a response.</p>
+      <h3>Management response</h3>
+      <p>Analysis shows that enrolment integration and accessibility rework caused most variance. The team protects the security and accessibility acceptance criteria, defers optional analytics, assigns a specialist to the data mapping, and reforecasts the remaining work. It does not hide the variance by declaring partially tested features complete.</p>
+    </section>
+
+    <section>
+      <p class="eyebrow">7 · Decision point and lessons</p>
+      <h2>Recommend a controlled pilot</h2>
+      <p>By week 10, critical authorization tests pass, mobile task completion reaches 92% in the rehearsal group, and no duplicate submissions occur during network interruption tests. Instructor publishing is usable but slower than expected. The forecast remains above the original budget, although deferring optional analytics reduces the estimate to ₦25.4 million.</p>
+      <p>The project manager recommends a controlled pilot rather than an institution-wide launch. The pilot is limited to 2,000 learners, includes daily operational review for the first week, and defines rollback conditions. Approval requires an explicit budget exception and acceptance of the remaining instructor-workflow risk.</p>
+      <h3>Lessons from Project Lantern</h3>
+      <ol>
+        <li>Start with the learner problem and define measurable success before choosing features.</li>
+        <li>Translate broad expectations into acceptance evidence and explicit exclusions.</li>
+        <li>Use short feedback cycles inside clear governance and decision rights.</li>
+        <li>Treat risk, privacy, accessibility, and operations as design inputs from the start.</li>
+        <li>Separate progress signals from explanations; investigate variance before acting.</li>
+        <li>A controlled pilot can be a responsible success when uncertainty remains.</li>
+      </ol>
+      <div class="callout"><strong>Practice scenario.</strong> In week 8, the sponsor asks the team to add live video classes before launch. Explain how the project manager should assess and govern this request while protecting the pilot's value, privacy, schedule, and budget.</div>
+      <div class="callout"><strong>Calculation check.</strong> Using PV = ₦12.0m, EV = ₦9.6m, and AC = ₦10.8m, calculate SPI and CPI. State what each result suggests and one limitation of using the indices alone.</div>
+      <p class="footer">Project Lantern is fictional. Original synthetic material released under CC0 1.0. No third-party text or learner data is included.</p>
+    </section>
+  </body>
+</html>
