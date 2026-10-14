@@ -89,6 +89,12 @@ test("home dashboard presents two clear next steps without overflow", async ({
       buttons.map((button) => button.getBoundingClientRect().y),
     );
   expect(Math.abs(ctaPositions[0]! - ctaPositions[1]!)).toBeLessThan(2);
+  const cardWidths = await page
+    .locator(".next-step")
+    .evaluateAll((cards) =>
+      cards.map((card) => card.getBoundingClientRect().width),
+    );
+  expect(cardWidths[0]).toBeGreaterThan(cardWidths[1]!);
   await expect(
     page.getByRole("heading", { name: "Read. Make sense of it. Recall it." }),
   ).toBeVisible();
@@ -228,6 +234,9 @@ test("practice keeps questions primary and supporting modes compact", async ({
   await expect(
     page.getByRole("heading", { name: "Review and apply" }),
   ).toBeVisible();
+  const primaryTop = await page.locator(".practice-primary").boundingBox();
+  const secondaryTop = await page.locator(".practice-secondary").boundingBox();
+  expect(primaryTop!.y).toBeLessThan(secondaryTop!.y);
   await page.setViewportSize({ width: 375, height: 812 });
   expect(
     await page.evaluate(() => document.documentElement.scrollWidth),

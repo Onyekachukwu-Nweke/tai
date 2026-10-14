@@ -133,3 +133,41 @@
     gap: 6px;
   }
 }
+.feedback-summary {
+  max-width: 72ch;
+  margin-block: 16px 10px;
+  color: var(--tai-ink);
+  font-size: 1rem;
+  line-height: 1.6;
+}
+.followup-panel {
+  margin-top: 26px;
+  border-color: #a9d1bf;
+  border-left: 4px solid var(--tai-mint);
+  background: linear-gradient(145deg, #f5fbf8, #fff);
+}
+.followup-panel header {
+  padding-bottom: 10px;
+  border-bottom: 1px solid #dce9e3;
+}
+.followup-panel header h3 {
+  margin-bottom: 0;
+}
+.followup-prompt {
+  max-width: 68ch;
+  margin-block: 18px;
+  font-size: 1.05rem;
+  line-height: 1.6;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .feedback-card,
+  .citation-panel {
+    animation: learning-surface-arrive 220ms var(--tai-ease) both;
+  }
+  @keyframes learning-surface-arrive {
+    from {
+      opacity: 0;
+      transform: translateY(5px);
+    }
+  }
+}

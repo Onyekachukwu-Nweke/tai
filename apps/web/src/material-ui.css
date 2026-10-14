@@ -100,6 +100,46 @@
     bottom: 16px;
   }
 }
+.material-study-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1.25fr) minmax(320px, 0.75fr);
+  min-height: 620px;
+  border-top: 1px solid var(--border);
+}
+.material-study-layout.text-only {
+  grid-template-columns: minmax(0, 760px);
+  justify-content: center;
+}
+.material-study-layout .material-reader-panel,
+.material-study-layout .material-learning-panel {
+  min-width: 0;
+  border-top: 0;
+}
+.material-study-layout .material-reader-panel {
+  border-right: 1px solid var(--border);
+}
+.source-reader .pdf-nav-bar {
+  position: sticky;
+  z-index: 2;
+  top: 0;
+  width: fit-content;
+  margin: 0 auto 12px;
+  padding: 5px 8px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: rgb(255 255 255 / 94%);
+  box-shadow: 0 4px 14px rgb(18 54 44 / 6%);
+}
+@media (max-width: 1080px) {
+  .material-study-layout {
+    grid-template-columns: 1fr;
+    min-height: 0;
+  }
+  .material-study-layout .material-reader-panel {
+    border-right: 0;
+    border-bottom: 1px solid var(--border);
+  }
+}
 .source-chips {
   display: flex;
   flex-wrap: wrap;

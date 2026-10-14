@@ -38,7 +38,10 @@ export function DeleteAccount({
   }
 
   return (
-    <section className="card" aria-labelledby="delete-account-title">
+    <section
+      className="card danger-zone account-danger-zone"
+      aria-labelledby="delete-account-title"
+    >
       <h2 id="delete-account-title">Delete account and data</h2>
       <p>
         TAI stores your original files privately and sends bounded excerpts and
