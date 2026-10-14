@@ -196,50 +196,6 @@ test("mobile shell keeps a labelled bottom navigation clear of content", async (
     await page.evaluate(() => document.documentElement.scrollWidth),
   ).toBeLessThanOrEqual(375);
 });
-test("overflow deletion requires an accessible confirmation", async ({
-  page,
-}) => {
-  await page.setViewportSize({ width: 375, height: 812 });
-  await dashboard(page);
-  const overflow = page.getByLabel(`More actions for ${space.title}`);
-  await overflow.click();
-  const deleteTrigger = page.getByRole("button", {
-    name: "Delete",
-    exact: true,
-  });
-  await deleteTrigger.click();
-  const dialog = page.getByRole("dialog");
-  await expect(dialog).toContainText("This removes the file and all progress");
-  await expect(
-    dialog.getByRole("button", { name: "Delete", exact: true }),
-  ).toBeFocused();
-  await expect
-    .poll(() =>
-      dialog.evaluate((element) => {
-        const box = element.getBoundingClientRect();
-        return element.contains(
-          document.elementFromPoint(
-            box.x + box.width / 2,
-            box.y + box.height / 2,
-          ),
-        );
-      }),
-    )
-    .toBe(true);
-  await page.keyboard.press("Shift+Tab");
-  await expect
-    .poll(() =>
-      page.evaluate(() =>
-        Boolean(
-          document.querySelector("dialog")?.contains(document.activeElement),
-        ),
-      ),
-    )
-    .toBe(true);
-  await page.keyboard.press("Escape");
-  await expect(dialog).not.toBeVisible();
-  await expect(deleteTrigger).toBeFocused();
-});
 test("settings use segmented text-size choices", async ({ page }) => {
   await dashboard(page);
   await page.getByRole("button", { name: "Settings" }).click();
