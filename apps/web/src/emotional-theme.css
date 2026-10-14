@@ -1,0 +1,297 @@
+:root {
+  --tai-canvas: #f4f8f5;
+  --tai-surface: #ffffff;
+  --tai-surface-soft: #f8fbf9;
+  --tai-evergreen: #08705a;
+  --tai-evergreen-deep: #075444;
+  --tai-mint: #37aa86;
+  --tai-mint-soft: #dff3ea;
+  --tai-attention: #9a650d;
+  --tai-danger: #9a3030;
+  --tai-ink: #12362c;
+  --tai-muted: #536b62;
+  --tai-line: #cfddd6;
+  --tai-shadow-rest: 0 8px 24px rgb(18 54 44 / 6%);
+  --tai-shadow-lift: 0 14px 34px rgb(18 54 44 / 11%);
+  --tai-ease: cubic-bezier(0.2, 0.7, 0.2, 1);
+  --green: var(--tai-evergreen);
+  --green-dark: var(--tai-evergreen-deep);
+  --border: var(--tai-line);
+  --muted: var(--tai-muted);
+  --paper: var(--tai-surface);
+}
+
+body,
+.focus-shell {
+  color: var(--tai-ink);
+  background: var(--tai-canvas);
+}
+
+button,
+.nav-item,
+.next-step,
+.space-card,
+.flashcard-face {
+  transition-duration: 160ms;
+  transition-timing-function: var(--tai-ease);
+}
+
+button:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+/* One soft light source gives the signed-out page depth without visual noise. */
+.landing-shell {
+  position: relative;
+  isolation: isolate;
+  background: linear-gradient(145deg, #f8fbf8 0%, #f1f7f3 100%);
+}
+
+.landing-shell::before {
+  position: absolute;
+  z-index: -1;
+  width: min(720px, 70vw);
+  aspect-ratio: 1;
+  right: -10%;
+  top: 12%;
+  border-radius: 50%;
+  background: rgb(113 203 166 / 22%);
+  filter: blur(86px);
+  content: "";
+  pointer-events: none;
+}
+
+.vignette-glow {
+  display: none;
+}
+
+button.landing-cta {
+  background: var(--tai-evergreen);
+  box-shadow: 0 9px 22px rgb(8 112 90 / 20%);
+  transition:
+    transform 160ms var(--tai-ease),
+    box-shadow 160ms var(--tai-ease),
+    background 160ms var(--tai-ease);
+}
+
+button.landing-cta:hover:not(:disabled),
+button.landing-cta:focus-visible {
+  transform: translateY(-2px);
+  background: var(--tai-evergreen-deep);
+  box-shadow: 0 14px 30px rgb(8 112 90 / 24%);
+}
+
+.learning-vignette article {
+  border-color: rgb(137 169 155 / 48%);
+  box-shadow: 0 22px 52px rgb(18 54 44 / 12%);
+}
+
+/* Elevation is reserved for the choices that move learning forward. */
+.next-step,
+.library-view .space-card {
+  border-color: var(--tai-line);
+  box-shadow: var(--tai-shadow-rest);
+  transition:
+    transform 220ms var(--tai-ease),
+    border-color 220ms var(--tai-ease),
+    box-shadow 220ms var(--tai-ease);
+}
+
+.next-step:has(button:hover),
+.next-step:focus-within,
+.library-view .space-card:has(button:hover),
+.library-view .space-card:focus-within {
+  transform: translateY(-2px);
+  border-color: #acd0c0;
+  box-shadow: var(--tai-shadow-lift);
+}
+
+.next-step.primary-step {
+  border-color: #add3c2;
+  background: linear-gradient(145deg, #ffffff, #f1faf5);
+}
+
+.next-step:not(.primary-step) {
+  background: var(--tai-surface);
+}
+
+.next-step:not(.primary-step) button {
+  border-color: #84b8a5;
+  background: #fff;
+  color: var(--tai-evergreen-deep);
+}
+
+.learning-loop {
+  background: transparent;
+  box-shadow: none;
+}
+
+.step-icon,
+.space-card-mark,
+.practice-symbol {
+  background: var(--tai-mint-soft);
+  color: var(--tai-evergreen);
+}
+
+.practice-icon {
+  background: #eaf5f0;
+  color: var(--tai-evergreen-deep);
+}
+
+.library-view .space-card:has(button:hover) .space-card-mark,
+.library-view .space-card:focus-within .space-card-mark {
+  background: #ccebdd;
+}
+
+.material-workspace {
+  border-color: #d5e1db;
+  box-shadow: 0 10px 28px rgb(18 54 44 / 6%);
+}
+
+.material-reader-panel {
+  background: #f7faf8;
+}
+
+.material-learning-panel {
+  background: #fff;
+}
+
+/* Practice uses one clear primary surface and quiet supporting modes. */
+.practice-primary .activity-pack {
+  border-color: #b8d8ca;
+  background: linear-gradient(145deg, #fff, #f7fcf9);
+  box-shadow: 0 14px 36px rgb(18 54 44 / 8%);
+}
+
+.practice-secondary > .flashcards-card,
+.more-learning .card {
+  border-color: #d9e3de;
+  background: #fbfcfb;
+  box-shadow: none;
+}
+
+.focus-bar,
+progress {
+  accent-color: var(--tai-mint);
+}
+
+.focus-bar span {
+  background: linear-gradient(90deg, var(--tai-evergreen), var(--tai-mint));
+}
+
+.practice-primary button.resume-session {
+  background: var(--tai-evergreen);
+}
+
+/* Ratings express increasing familiarity; low ratings are not failures. */
+button.star {
+  border-color: #cbdcd4;
+  color: var(--tai-evergreen);
+  box-shadow: 0 3px 10px rgb(18 54 44 / 4%);
+  transition:
+    transform 160ms var(--tai-ease),
+    background 160ms var(--tai-ease),
+    border-color 160ms var(--tai-ease),
+    box-shadow 160ms var(--tai-ease);
+}
+
+button.star:nth-child(1) {
+  background: #f5faf7;
+}
+button.star:nth-child(2) {
+  background: #eef8f3;
+}
+button.star:nth-child(3) {
+  background: #e6f5ee;
+}
+button.star:nth-child(4) {
+  background: #dbf1e7;
+}
+button.star:nth-child(5) {
+  background: #cfebdf;
+}
+
+button.star:hover:not(:disabled),
+button.star:focus-visible {
+  transform: translateY(-2px);
+  border-color: #75b79f;
+  background: #e1f4eb;
+  color: var(--tai-evergreen-deep);
+  box-shadow: 0 9px 20px rgb(18 54 44 / 12%);
+}
+
+.flashcard-face {
+  border-color: #cbdcd4;
+  box-shadow: 0 14px 38px rgb(18 54 44 / 10%);
+}
+
+.focus-done {
+  position: relative;
+  border-radius: 22px;
+  animation: completion-arrive 420ms var(--tai-ease) both;
+}
+
+.focus-done::before {
+  position: absolute;
+  z-index: -1;
+  inset: 12% 18%;
+  border-radius: 50%;
+  background: rgb(55 170 134 / 17%);
+  filter: blur(34px);
+  content: "";
+  animation: completion-halo 700ms var(--tai-ease) both;
+}
+
+.session-summary {
+  border-color: #b9d8ca;
+  background: linear-gradient(145deg, #fff, #f3faf6);
+  animation: completion-arrive 420ms var(--tai-ease) both;
+}
+
+@keyframes completion-arrive {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes completion-halo {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  55% {
+    opacity: 1;
+  }
+  to {
+    opacity: 0.7;
+    transform: scale(1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  button,
+  .nav-item,
+  .next-step,
+  .space-card,
+  .flashcard-face,
+  .focus-done,
+  .focus-done::before,
+  .session-summary {
+    animation: none !important;
+    transition: none !important;
+  }
+
+  button:hover:not(:disabled),
+  button:focus-visible,
+  .next-step:has(button:hover),
+  .next-step:focus-within,
+  .space-card:has(button:hover),
+  .space-card:focus-within {
+    transform: none;
+  }
+}

@@ -2,7 +2,10 @@ import type { StudySession } from "../../../packages/contracts/study-sessions";
 
 export function SessionSummary({ session }: { session: StudySession }) {
   return (
-    <section className="card" aria-labelledby="session-summary-heading">
+    <section
+      className="card session-summary"
+      aria-labelledby="session-summary-heading"
+    >
       <h4 id="session-summary-heading">Session saved</h4>
       <p>
         {session.items.length

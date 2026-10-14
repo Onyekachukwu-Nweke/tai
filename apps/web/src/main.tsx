@@ -16,6 +16,7 @@ import "./demo-ui.css";
 import "./icon-polish.css";
 import "./final-composition.css";
 import "./feedback.css";
+import "./emotional-theme.css";
 
 initializeTextSize();
 
