@@ -218,30 +218,34 @@ export function MaterialPreview({
           onSave={() => void persist()}
         />
       )}
-      {saved && preview?.format === "pdf" && section && (
-        <div className="material-reader-panel">
-          <SourceReader
-            spaceId={spaceId}
-            page={section.location}
-            onPageChange={(page) => setSectionIndex(page - 1)}
-            defaultOpen
-          />
-        </div>
-      )}
       {saved && section && (
-        <div className="material-learning-panel">
-          <ConceptExplorer
-            userId={userId}
-            spaceId={spaceId}
-            scopes={conceptScopes(preview!)}
-            onSource={(source) => {
-              const index = preview!.sections.findIndex(
-                (item) => item.location === source.location,
-              );
-              if (index >= 0) setSectionIndex(index);
-              setCitation(source);
-            }}
-          />
+        <div
+          className={`material-study-layout ${preview.format === "txt" ? "text-only" : ""}`}
+        >
+          {preview.format === "pdf" && (
+            <div className="material-reader-panel">
+              <SourceReader
+                spaceId={spaceId}
+                page={section.location}
+                onPageChange={(page) => setSectionIndex(page - 1)}
+                defaultOpen
+              />
+            </div>
+          )}
+          <div className="material-learning-panel">
+            <ConceptExplorer
+              userId={userId}
+              spaceId={spaceId}
+              scopes={conceptScopes(preview)}
+              onSource={(source) => {
+                const index = preview.sections.findIndex(
+                  (item) => item.location === source.location,
+                );
+                if (index >= 0) setSectionIndex(index);
+                setCitation(source);
+              }}
+            />
+          </div>
         </div>
       )}
       {citation && preview && (

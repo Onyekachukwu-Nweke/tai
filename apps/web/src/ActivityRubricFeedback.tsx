@@ -63,13 +63,18 @@ export function ActivityRubricFeedback({
             <h3>How your response met the rubric</h3>
           </div>
           <div className="feedback-outcome">
-            <span>Source-supported rubric outcome: {grade.outcome}</span>
-            <span className={`outcome-pill outcome-${grade.outcome}`}>
+            <span className="sr-only">
+              Source-supported rubric outcome: {grade.outcome}
+            </span>
+            <span
+              className={`outcome-pill outcome-${grade.outcome}`}
+              aria-hidden="true"
+            >
               {grade.outcome}
             </span>
           </div>
         </header>
-        <p>{grade.feedback}</p>
+        <p className="feedback-summary">{grade.feedback}</p>
         <ul className="criterion-list">
           {grade.elements.map((element) => (
             <li key={element.criterion}>

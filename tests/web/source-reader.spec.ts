@@ -97,6 +97,22 @@ test("saved PDF opens once and page navigation re-renders without refetching", a
     timeout: 15_000,
   });
   await expect(page.getByText("Page 1 of 2")).toBeVisible();
+  const workspaceLayout = await page
+    .locator(".material-workspace")
+    .evaluate((workspace) => ({
+      overflow: getComputedStyle(workspace).overflow,
+      readerX: workspace
+        .querySelector(".material-reader-panel")!
+        .getBoundingClientRect().x,
+      conceptsX: workspace
+        .querySelector(".material-learning-panel")!
+        .getBoundingClientRect().x,
+      pagerPosition: getComputedStyle(workspace.querySelector(".pdf-nav-bar")!)
+        .position,
+    }));
+  expect(workspaceLayout.overflow).toBe("clip");
+  expect(workspaceLayout.readerX).toBeLessThan(workspaceLayout.conceptsX);
+  expect(workspaceLayout.pagerPosition).toBe("sticky");
   const nextPage = page.getByRole("button", { name: "Next page" });
   const target = await nextPage.boundingBox();
   expect(target?.width).toBeGreaterThanOrEqual(40);

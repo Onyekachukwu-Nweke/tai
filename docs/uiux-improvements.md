@@ -2,6 +2,15 @@
 
 > Audience: demo prep. Priority-ordered. Highest-impact changes first.
 
+## Current demo treatment
+
+The implemented interface now gives Home one dominant continuation path, presents
+saved PDFs and concepts as a reader-first two-zone workspace on wide screens, and
+stacks that workspace below 1080px. Practice prioritizes its active session before
+supporting modes. Rubric feedback uses a concise result header, scannable criteria,
+and a separate targeted next step. Motion is restrained and removed when the learner
+prefers reduced motion. Supplementary resources remain deferred for the demo.
+
 ---
 
 ## Summary of Problems

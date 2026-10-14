@@ -79,3 +79,29 @@
     gap: 0.5rem;
   }
 }
+.account-danger-zone {
+  margin-top: 32px;
+  padding: 20px 22px;
+  border-color: #ead9d6;
+  background: #fffcfb;
+  box-shadow: none;
+}
+.account-danger-zone h2 {
+  margin-top: 0;
+  color: #6f302b;
+  font-size: 1.1rem;
+}
+.account-danger-zone > p {
+  max-width: 76ch;
+  color: var(--muted);
+  font-size: 0.9rem;
+  line-height: 1.55;
+}
+.account-danger-zone button + button {
+  margin-left: 8px;
+}
+@media (max-width: 420px) {
+  .account-danger-zone button + button {
+    margin: 8px 0 0;
+  }
+}

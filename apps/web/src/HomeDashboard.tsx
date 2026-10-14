@@ -27,7 +27,7 @@ export function HomeDashboard({
           </div>
           <button onClick={onSpaces}>Open study spaces</button>
         </article>
-        <article className="next-step">
+        <article className="next-step supporting-step">
           <div className="step-icon practice-icon" aria-hidden="true">
             <Icon className="icon" name="play" size={20} />
           </div>

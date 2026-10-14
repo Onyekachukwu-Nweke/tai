@@ -35,7 +35,7 @@ button.nav-item.active::before {
   margin-top: 18px;
 }
 .material-workspace {
-  overflow: hidden;
+  overflow: clip;
   border: 1px solid var(--border);
   border-radius: 16px;
   background: #fff;
@@ -116,5 +116,67 @@ button.nav-item.active::before {
 @media (prefers-reduced-motion: reduce) {
   .nav-item {
     transition: none;
+  }
+}
+.next-step-grid {
+  grid-template-columns: minmax(0, 1.35fr) minmax(260px, 0.65fr);
+}
+.supporting-step {
+  min-height: 0;
+  align-content: start;
+  background: rgb(255 255 255 / 66%) !important;
+  box-shadow: none !important;
+}
+.supporting-step .step-icon {
+  width: 34px;
+  height: 34px;
+}
+.supporting-step button {
+  min-height: 36px;
+}
+.concept-row:not(.unselected) {
+  background: linear-gradient(90deg, #eef8f3, #fff 38%);
+  box-shadow: inset 3px 0 var(--tai-mint);
+}
+.concept-row.unselected {
+  background: #fafbfa;
+}
+.concept-row:not(.unselected) .concept-select input {
+  width: 18px;
+  height: 18px;
+}
+.practice-primary .practice-disclosure {
+  margin-bottom: 12px;
+}
+.practice-primary .resume-session {
+  margin-block: 14px 2px;
+  box-shadow: 0 8px 20px rgb(8 112 90 / 16%);
+}
+.practice-secondary,
+.more-learning {
+  margin-top: 26px;
+}
+.more-learning {
+  opacity: 0.94;
+}
+@media (max-width: 720px) {
+  .next-step-grid {
+    grid-template-columns: 1fr;
+  }
+  .supporting-step {
+    grid-template-rows: auto;
+  }
+  .supporting-step button,
+  button.concept-edit,
+  button.source-chip {
+    min-height: 44px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .concept-row,
+  .feedback-card,
+  .citation-panel {
+    animation: none !important;
+    transition: none !important;
   }
 }

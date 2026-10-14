@@ -137,7 +137,7 @@ export function ActivityFollowup({
           <p className="eyebrow">Next small step</p>
           <h3>Practise {followup.targetedCriterion}</h3>
         </header>
-        <p>{followup.prompt}</p>
+        <p className="followup-prompt">{followup.prompt}</p>
         <div className="feedback-sources" aria-label="Follow-up sources">
           {followup.sources.map((source) => (
             <button
@@ -187,11 +187,14 @@ export function ActivityFollowup({
         {grade && (
           <div className="followup-result" aria-label="Follow-up feedback">
             <div className="followup-outcome">
-              <strong>
+              <strong className="sr-only">
                 Source-supported follow-up outcome:{" "}
                 {grade.outcome.replace("_", " ")}
               </strong>
-              <span className={`outcome-pill outcome-${grade.outcome}`}>
+              <span
+                className={`outcome-pill outcome-${grade.outcome}`}
+                aria-hidden="true"
+              >
                 {grade.outcome.replace("_", " ")}
               </span>
             </div>

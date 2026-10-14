@@ -53,6 +53,17 @@ test("preserves an explanation across grading failure and restores rubric feedba
   await expect(
     page.getByText(/Source-supported follow-up outcome: partial/),
   ).toBeVisible();
+  const followupRegion = page.getByRole("region", {
+    name: "Targeted follow-up",
+  });
+  await expect(followupRegion.locator(".outcome-pill")).toHaveAttribute(
+    "aria-hidden",
+    "true",
+  );
+  const accessibleFollowup = await followupRegion.ariaSnapshot();
+  expect(
+    accessibleFollowup.match(/Source-supported follow-up outcome: partial/g),
+  ).toHaveLength(1);
   expect(await page.evaluate(() => JSON.stringify(localStorage))).not.toContain(
     "Light supplies energy.",
   );
@@ -146,6 +157,18 @@ for (const [outcome, background] of [
     await page.getByRole("button", { name: "Check answer" }).click();
     const pill = page.locator(".rubric-feedback .outcome-pill");
     await expect(pill).toHaveText(outcome);
+    await expect(
+      page.getByText(`Source-supported rubric outcome: ${outcome}`),
+    ).toHaveClass(/sr-only/);
+    await expect(pill).toHaveAttribute("aria-hidden", "true");
+    const accessibleFeedback = await page
+      .getByRole("region", { name: "Rubric feedback" })
+      .ariaSnapshot();
+    expect(
+      accessibleFeedback.match(
+        new RegExp(`Source-supported rubric outcome: ${outcome}`, "g"),
+      ),
+    ).toHaveLength(1);
     await expect(pill).toHaveCSS("background-color", background);
     const criterion = page.locator(".criterion-outcome");
     await expect(criterion).toHaveText(outcome.replace("_", " "));
