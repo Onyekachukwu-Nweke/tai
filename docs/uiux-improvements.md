@@ -219,25 +219,11 @@ scrolling past the entire practice activities section.
 
 ---
 
-## 10. Supplementary Resources — Reduce Metadata Noise
+## 10. Supplementary Resources — Deferred
 
-**Problem:** Each resource card lists Publisher, Format, Language, Access, Last
-checked as five separate label-value rows, making the card tall and hard to scan.
-
-**Fix:**
-```
-┌─────────────────────────────────────────────────────┐
-│  Project management: the start of the project journey│
-│  Supports: IT Project Management                    │
-│  Introduces project planning, feasibility, risk…    │
-│                                                     │
-│  The Open University – OpenLearn  ·  course  ·  Free│
-│  Last checked 2026-10-12    [Open resource ↗]       │
-└─────────────────────────────────────────────────────┘
-```
-- Condense Publisher / Format / Access into one line with `·` separators.
-- "No checked match for: SystemSpecs" → show as a muted chip inside the resources
-  section, not floating plain text after the cards.
+Supplementary resources are removed from the current demo interface to keep the
+study workspace focused on the learner's material, concepts, citations, and
+practice. Reintroduce this surface only after the core learning loop is stable.
 
 ---
 

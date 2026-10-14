@@ -2,7 +2,6 @@ import { useEffect, useState } from "react";
 import type { ConceptCollection } from "../../../packages/contracts/concepts";
 import { generateConcepts, loadConcepts, updateConcept } from "./concept-api";
 import { PracticeHome } from "./PracticeHome";
-import { SupplementaryResources } from "./SupplementaryResources";
 import { ConceptCard } from "./ConceptCard";
 import { ConceptMap } from "./ConceptMap";
 import type { ConceptScope } from "./concept-scopes";
@@ -180,20 +179,6 @@ export function ConceptExplorer({
             />
           ))}
         </ul>
-      )}
-      {concepts.length > 0 && (
-        <>
-          <SupplementaryResources
-            spaceId={spaceId}
-            selectedConceptKey={JSON.stringify({
-              revision: collection?.requestId,
-              concepts: concepts
-                .filter((concept) => concept.selected)
-                .map(({ id, label }) => ({ id, label }))
-                .sort((left, right) => left.id.localeCompare(right.id)),
-            })}
-          />
-        </>
       )}
     </section>
   );
