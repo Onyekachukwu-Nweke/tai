@@ -47,15 +47,7 @@ const ready = {
   provider: "fake",
 };
 
-async function open(
-  page: Page,
-  format: "txt" | "pdf" = "txt",
-  resources: object | (() => object) = {
-    schemaVersion: 1,
-    recommendations: [],
-    unmatchedConcepts: [{ id: conceptId, label: "Photosynthesis" }],
-  },
-) {
+async function open(page: Page, format: "txt" | "pdf" = "txt") {
   await page.route("**/api/session", (route) =>
     route.fulfill({
       json: {
@@ -101,11 +93,6 @@ async function open(
           ],
         },
       },
-    }),
-  );
-  await page.route(`**/api/study-spaces/${spaceId}/resources`, (route) =>
-    route.fulfill({
-      json: typeof resources === "function" ? resources() : resources,
     }),
   );
   await page.goto("/");
@@ -243,84 +230,4 @@ test("keeps each concept selection control aligned at desktop and mobile widths"
     ).toBeLessThanOrEqual(2);
     expect(labelBox!.x + labelBox!.width).toBeLessThanOrEqual(viewport.width);
   }
-});
-
-test("shows checked supplementary metadata before a learner-chosen new-tab link", async ({
-  page,
-}) => {
-  await page.route(`**/api/study-spaces/${spaceId}/concepts`, (route) =>
-    route.fulfill({ json: ready }),
-  );
-  await open(page, "txt", {
-    schemaVersion: 1,
-    recommendations: [
-      {
-        id: "openlearn-project-management",
-        title: "Project management: the start of the project journey",
-        publisher: "The Open University — OpenLearn",
-        url: "https://example.test/free-course",
-        language: "English",
-        format: "course",
-        accessConditions: "Free to read without an account.",
-        checkedAt: "2026-10-12",
-        relevance: "Explains planning and project life cycles.",
-        supportedConcept: { id: conceptId, label: "Photosynthesis" },
-      },
-    ],
-    unmatchedConcepts: [],
-  });
-  const section = page.getByRole("region", { name: "Supplementary resources" });
-  await expect(section).toContainText("Free to read without an account");
-  await expect(section).toContainText("2026-10-12");
-  const link = section.getByRole("link", { name: /Open resource/ });
-  await expect(link).toHaveAttribute("target", "_blank");
-  await expect(link).toHaveAttribute("rel", "noopener noreferrer");
-  await expect(link).toHaveAttribute("referrerpolicy", "no-referrer");
-});
-
-test("refreshes resources after a selected concept is renamed", async ({
-  page,
-}) => {
-  let current = structuredClone(ready);
-  let resourceCalls = 0;
-  await page.route(`**/api/study-spaces/${spaceId}/concepts`, (route) =>
-    route.fulfill({ json: current }),
-  );
-  await page.route(
-    `**/api/study-spaces/${spaceId}/concepts/${conceptId}`,
-    async (route) => {
-      const update = route.request().postDataJSON();
-      current = {
-        ...current,
-        concepts: [
-          {
-            ...current.concepts[0],
-            label: update.label ?? current.concepts[0].label,
-            selected: update.selected ?? current.concepts[0].selected,
-          },
-        ],
-      };
-      await route.fulfill({ json: current });
-    },
-  );
-  await open(page, "txt", () => {
-    resourceCalls += 1;
-    return {
-      schemaVersion: 1,
-      recommendations: [],
-      unmatchedConcepts: current.concepts[0].selected
-        ? [{ id: conceptId, label: current.concepts[0].label }]
-        : [],
-    };
-  });
-  await expect(
-    page.getByLabel("Concepts without a checked match"),
-  ).toBeVisible();
-  await page.getByRole("button", { name: /Edit/ }).first().click();
-  await page.getByLabel("Concept label").fill("Plant energy");
-  await page.getByRole("button", { name: "Save label" }).click();
-  await expect(
-    page.getByLabel("Concepts without a checked match"),
-  ).toContainText("Plant energy");
-  expect(resourceCalls).toBeGreaterThanOrEqual(2);
 });

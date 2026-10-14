@@ -9,6 +9,7 @@ import { concepts, spaceId } from "./activity-pack-fixture";
 test("seeing a recall answer without a response is saved as a reveal", async ({
   page,
 }) => {
+  await page.setViewportSize({ width: 375, height: 812 });
   const { attempts } = await routePracticePage(page);
   await page.goto("/");
   await openFirstSpacePractice(page);
@@ -18,6 +19,11 @@ test("seeing a recall answer without a response is saved as a reveal", async ({
   await resumePracticeSession(page);
   const focus = page.getByRole("dialog", { name: "Practice session" });
   await expect(focus).toBeVisible();
+  expect(
+    await focus.evaluate((element) =>
+      element.contains(document.elementFromPoint(8, innerHeight - 8)),
+    ),
+  ).toBe(true);
   await expect(focus.getByText("Recall how plants grow.")).toBeVisible();
   await expect(focus.getByText(/saved as a reveal/)).toBeVisible();
   await focus.getByRole("button", { name: "See the answer" }).click();

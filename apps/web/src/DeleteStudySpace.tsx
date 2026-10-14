@@ -54,6 +54,7 @@ export function DeleteStudySpace({
         Delete
       </button>
       <dialog
+        className="delete-space-dialog"
         ref={modal.dialogRef}
         aria-labelledby={`delete-${spaceId}`}
         onKeyDown={(event) => {
@@ -75,7 +76,7 @@ export function DeleteStudySpace({
             {error}
           </p>
         )}
-        <div className="button-row">
+        <div className="button-row delete-dialog-actions">
           <button
             className="destructive"
             disabled={busy}
