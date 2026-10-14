@@ -10,6 +10,8 @@ helps you understand it, practise it, and always check where an answer came from
 > English. Need something to try? Use the
 > [demo case study](docs/demo-material/tai-demo-case-study.pdf).
 
+> Hackathon Theme: Engagement & Staying in the Learning Journey. Tools that help learners stay motivated and keep going, so they remain in the learning process over time rather than falling off.
+
 ## Why TAI
 
 Students already have lecture notes, handbooks and PDFs. Access is rarely the problem.
