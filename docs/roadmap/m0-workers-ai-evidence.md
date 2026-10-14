@@ -1,7 +1,7 @@
 # M0 Workers AI live-provider evidence
 
 **Date:** 11 October 2026  
-**Status:** concept and activity-pack adapters, synthetic-binding verification, and a bounded live-evaluation tool are complete; Cloudflare authentication, core remote resources and a four-call two-model comparison are verified. Both model candidates failed the first manual pack-quality audit, so selection remains open. Deployed OAuth remains blocked by the public production origin and callback.
+**Status:** concept and activity-pack adapters, synthetic-binding verification, and a bounded live-evaluation tool are complete; Cloudflare authentication, core remote resources and a four-call two-model comparison are verified. Both model candidates failed the first manual pack-quality audit, so selection remains open. The application is deployed; a completed Google consent walkthrough remains a release check.
 
 ## Implemented slice
 
@@ -25,12 +25,25 @@ On 12 October 2026, the local Worker loaded the configured Better Auth and Googl
 
 A minimal direct invocation of `@cf/meta/llama-3.3-70b-instruct-fp8-fast` through gateway `tai` returned structured JSON successfully on 11 October 2026. It used synthetic content and establishes authenticated model access only; latency, usage, cost, source fidelity, and comparative quality were not measured.
 
-The Cloudflare account does not yet have a `workers.dev` subdomain, so the production HTTPS origin and matching Google OAuth callback cannot be finalized. `APP_ORIGIN` remains local and no application deployment has been made. The comparison measured latency, tokens and neurons, but Cloudflare returned no dollar cost. Both v1 packs failed manual quality review; `activity-pack-v2` now fails closed on single-type packs and strengthens source-only instructions, but it has not received another live run. Deployed end-to-end behavior remains unverified.
+On 14 October 2026, TAI was deployed to
+`https://tai.nwekeejioforscheller.workers.dev` with D1 `tai`, R2
+`tai-originals`, the Workers AI binding, and encrypted `APP_ORIGIN`, Better Auth,
+and Google OAuth bindings. Remote D1 reported no pending migrations. Production
+smoke checks returned HTTP 200 for the app shell, hashed web asset, signed-out
+session endpoint, and Google authorization initiation. The generated OAuth
+redirect URI is
+`https://tai.nwekeejioforscheller.workers.dev/api/auth/callback/google`.
+This verifies deployed initiation and callback construction; it does not claim a
+completed Google consent/callback walkthrough. The comparison measured latency,
+tokens and neurons, but Cloudflare returned no dollar cost. Both v1 packs failed
+manual quality review; `activity-pack-v2` now fails closed on single-type packs
+and strengthens source-only instructions, but it has not received another live
+run.
 
 Before the deployed walkthrough:
 
-1. Open Workers & Pages in the Cloudflare dashboard once to register the account's `workers.dev` subdomain, or choose a custom domain.
-2. Set the deployed HTTPS `APP_ORIGIN` and matching Google OAuth callback.
+1. Add the generated production callback URI to the Google OAuth client's authorized redirect URIs if it is not already registered.
+2. Complete one Google consent/callback walkthrough and verify the session survives reload.
 3. Keep the checked-in low daily quotas and recheck deployed bindings and privacy settings before learner use.
 4. Run the bounded evaluator against the two configured Workers AI models, then manually audit its validated output for source fidelity and usefulness. Record provider-reported usage and cost only when available; do not replace missing values with estimates.
 
